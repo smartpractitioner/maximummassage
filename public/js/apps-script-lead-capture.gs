@@ -9,12 +9,15 @@
  *   public/js/therapist-picker.js       (LEAD_CAPTURE_ENDPOINT)
  *   public/massage-therapy-calgary-flow-b/confirmation/index.html  (LEAD_CAPTURE_ENDPOINT)
  *
- * The script handles two actions:
- *   - action: "lead"    → appends a new row with the form data
- *   - action: "notify"  → updates that same row with notify_preference (yes/no)
+ * The script handles three actions:
+ *   - action: "lead"            → appends a new row with the form data
+ *   - action: "notify"          → updates that row with notify_preference (yes/no)
+ *   - action: "update_contact"  → updates phone + email on the existing row
  *
  * Rows are matched back by GCLID when available. If GCLID is empty
  * (direct/organic traffic), the most recent row with the same email is updated.
+ * For "update_contact", match_email carries the OLD email so we can find the
+ * row before applying the new email.
  */
 
 const SHEET_NAME = 'Leads';
@@ -52,6 +55,10 @@ function doPost(e) {
     }
     if (action === 'notify') {
       updateNotify(sheet, body);
+      return jsonOk();
+    }
+    if (action === 'update_contact') {
+      updateContact(sheet, body);
       return jsonOk();
     }
     return jsonErr('unknown action: ' + action);
@@ -141,6 +148,40 @@ function updateNotify(sheet, body) {
     row[HEADERS.indexOf('flow')] = body.flow || '';
     row[notifyCol] = body.notify_preference || '';
     row[notifyTsCol] = new Date();
+    sheet.appendRow(row);
+  }
+}
+
+function updateContact(sheet, body) {
+  const data = sheet.getDataRange().getValues();
+  const gclidCol = HEADERS.indexOf('GCLID');
+  const emailCol = HEADERS.indexOf('Email');
+  const phoneCol = HEADERS.indexOf('Phone');
+
+  let targetRow = -1;
+
+  if (body.match_gclid) {
+    for (let i = data.length - 1; i >= 1; i--) {
+      if (String(data[i][gclidCol]) === String(body.match_gclid)) { targetRow = i + 1; break; }
+    }
+  }
+  if (targetRow === -1 && body.match_email) {
+    for (let i = data.length - 1; i >= 1; i--) {
+      if (String(data[i][emailCol]).toLowerCase() === String(body.match_email).toLowerCase()) {
+        targetRow = i + 1; break;
+      }
+    }
+  }
+
+  if (targetRow !== -1) {
+    if (body.phone) sheet.getRange(targetRow, phoneCol + 1).setValue(body.phone);
+    if (body.email) sheet.getRange(targetRow, emailCol + 1).setValue(body.email);
+  } else {
+    // No matching row found — append a "contact-only" row so we don't lose the signal
+    const row = new Array(HEADERS.length).fill('');
+    row[0] = new Date();
+    row[emailCol] = body.email || '';
+    row[phoneCol] = body.phone || '';
     sheet.appendRow(row);
   }
 }

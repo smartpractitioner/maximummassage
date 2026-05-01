@@ -41,6 +41,7 @@
       max-width: 420px;
     }
     .btn--sage:hover { background: #547564; }
+    .btn--sage:disabled { background: #6B8F7A; opacity: 0.7; cursor: not-allowed; }
     @media (min-width: 720px) {
       .btn--sage { width: auto; min-width: 320px; }
     }
@@ -57,6 +58,128 @@
       cursor: pointer;
     }
     .hold-spot__decline:hover { color: var(--text-dark); }
+
+    /* Loading state shown after Yes click while we record + reassure. */
+    .hold-spot__loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-lg) 0;
+    }
+    .hold-spot__spinner {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 4px solid #e3ece6;
+      border-top-color: #6B8F7A;
+      animation: holdSpotSpin 900ms linear infinite;
+    }
+    @keyframes holdSpotSpin { to { transform: rotate(360deg); } }
+    .hold-spot__loading-text {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* Thanks state with editable contact details. */
+    .hold-spot__contact {
+      background: var(--bg-light);
+      border: 1px solid var(--brand-primary-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      margin: var(--space-md) auto;
+      max-width: 420px;
+      text-align: left;
+    }
+    .hold-spot__contact-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-md);
+      padding: 4px 0;
+    }
+    .hold-spot__contact-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .hold-spot__contact-value {
+      font-size: 15px;
+      color: var(--text-dark);
+      font-weight: 600;
+      word-break: break-all;
+    }
+    .hold-spot__edit-link {
+      display: inline-block;
+      margin-top: var(--space-sm);
+      background: transparent;
+      border: 0;
+      padding: 6px 4px;
+      font: inherit;
+      font-size: 14px;
+      color: var(--brand-primary-dark);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .hold-spot__edit-link:hover { color: var(--text-dark); }
+    .hold-spot__edit-form {
+      max-width: 420px;
+      margin: var(--space-md) auto 0;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    .hold-spot__edit-form label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--text-body);
+      font-weight: 600;
+    }
+    .hold-spot__edit-form input {
+      font: inherit;
+      font-weight: 400;
+      font-size: 16px;
+      padding: 10px 12px;
+      border: 1px solid var(--brand-primary-border);
+      border-radius: var(--radius-sm);
+      background: #fff;
+      color: var(--text-dark);
+      -webkit-appearance: none;
+    }
+    .hold-spot__edit-form input:focus {
+      outline: 2px solid #6B8F7A;
+      outline-offset: 1px;
+      border-color: #6B8F7A;
+    }
+    .hold-spot__edit-actions {
+      display: flex;
+      gap: var(--space-sm);
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .hold-spot__edit-cancel {
+      background: transparent;
+      border: 0;
+      font: inherit;
+      font-size: 14px;
+      color: var(--text-muted);
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 8px 12px;
+    }
+    .hold-spot__edit-err {
+      color: #b74a4a;
+      font-size: 13px;
+      margin: 0;
+      text-align: center;
+    }
   </style>
 
   <!-- Google Tag Manager -->
@@ -100,14 +223,53 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </div>
 
+    <div data-step="loading" hidden>
+      <div class="hold-spot__loading">
+        <div class="hold-spot__spinner" role="status" aria-label="Saving your spot"></div>
+        <p class="hold-spot__loading-text">Holding your spot&hellip;</p>
+      </div>
+    </div>
+
     <div data-step="thanks" hidden>
       <div class="offer-closed__thanks">
         <p class="offer-closed__thanks-headline">You&rsquo;re on the list.</p>
         <p class="offer-closed__thanks-body">
           We&rsquo;ll text <strong data-thanks-phone>your phone</strong> and email <strong data-thanks-email>your email</strong> as soon as availability returns.
-          <br><span class="offer-closed__thanks-note">(Typically a few weeks.)</span>
+        </p>
+
+        <div class="hold-spot__contact" data-contact-summary>
+          <div class="hold-spot__contact-row">
+            <span class="hold-spot__contact-label">Text</span>
+            <span class="hold-spot__contact-value" data-contact-phone>—</span>
+          </div>
+          <div class="hold-spot__contact-row">
+            <span class="hold-spot__contact-label">Email</span>
+            <span class="hold-spot__contact-value" data-contact-email>—</span>
+          </div>
+        </div>
+
+        <button type="button" class="hold-spot__edit-link" data-action="edit-contact">Not right? Edit details</button>
+
+        <p class="offer-closed__thanks-body" style="margin-top: var(--space-md);">
+          <span class="offer-closed__thanks-note">(Typically within a week, depending on demand.)</span>
         </p>
       </div>
+
+      <form class="hold-spot__edit-form" data-edit-form hidden novalidate>
+        <label>
+          Phone
+          <input type="tel" name="phone" autocomplete="tel" required>
+        </label>
+        <label>
+          Email
+          <input type="email" name="email" autocomplete="email" required>
+        </label>
+        <p class="hold-spot__edit-err" data-edit-err hidden></p>
+        <div class="hold-spot__edit-actions">
+          <button type="submit" class="btn btn--sage" data-edit-submit>Save changes</button>
+          <button type="button" class="hold-spot__edit-cancel" data-action="cancel-edit">Cancel</button>
+        </div>
+      </form>
     </div>
 
     <div data-step="noted" hidden>
@@ -132,6 +294,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   'use strict';
 
   const LEAD_CAPTURE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwt0ZJ1RW8unG2Uj5vyXWC4Xn7k5fhPGpUL57ysYYoGX-i0fkacxyr-uIGhxx3Le_cKFQ/exec';
+  const MIN_LOADING_MS = 3500;
 
   let lead = null;
   try {
@@ -141,11 +304,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   const main = document.getElementById('offer-closed-main');
   const stepAsk = main.querySelector('[data-step="ask"]');
+  const stepLoading = main.querySelector('[data-step="loading"]');
   const stepThanks = main.querySelector('[data-step="thanks"]');
   const stepNoted = main.querySelector('[data-step="noted"]');
+  const editForm = main.querySelector('[data-edit-form]');
+  const contactSummary = main.querySelector('[data-contact-summary]');
+  const editErr = main.querySelector('[data-edit-err]');
 
-  // Personalize the headline. Falls back gracefully if the lead is missing
-  // (e.g. user hits the page directly without going through the picker).
+  // ---------- Personalize headline ----------
   const firstNameEl = main.querySelector('[data-firstname]');
   const firstNamePrefix = main.querySelector('[data-firstname-prefix]');
   const therapistEl = main.querySelector('[data-therapist]');
@@ -156,33 +322,49 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if (firstNamePrefix) firstNamePrefix.textContent = '';
     if (firstNameEl) firstNameEl.remove();
   }
-
   if (therapistEl) {
     if (lead && lead.selected_therapist) {
-      // Use just the first word of the therapist's name for a friendlier read.
       therapistEl.textContent = String(lead.selected_therapist).split(' ')[0];
     } else {
       therapistEl.textContent = 'this therapist';
     }
   }
 
-  const phoneEl = main.querySelector('[data-thanks-phone]');
-  const emailEl = main.querySelector('[data-thanks-email]');
-  if (phoneEl && lead && lead.phone) phoneEl.textContent = lead.phone;
-  if (emailEl && lead && lead.email) emailEl.textContent = lead.email;
+  // ---------- Render contact details from sessionStorage ----------
+  function renderContact() {
+    const phoneEl = main.querySelector('[data-thanks-phone]');
+    const emailEl = main.querySelector('[data-thanks-email]');
+    const phoneSummary = main.querySelector('[data-contact-phone]');
+    const emailSummary = main.querySelector('[data-contact-email]');
+    const phone = (lead && lead.phone) || '';
+    const email = (lead && lead.email) || '';
+    if (phoneEl) phoneEl.textContent = phone || 'your phone';
+    if (emailEl) emailEl.textContent = email || 'your email';
+    if (phoneSummary) phoneSummary.textContent = phone || '—';
+    if (emailSummary) emailSummary.textContent = email || '—';
+  }
+  renderContact();
 
+  // ---------- Step transitions ----------
   function swapTo(target) {
-    [stepAsk, stepThanks, stepNoted].forEach((el) => { if (el) el.hidden = (el !== target); });
+    [stepAsk, stepLoading, stepThanks, stepNoted].forEach((el) => {
+      if (el) el.hidden = (el !== target);
+    });
     target.classList.add('offer-closed__fade-in');
     if (target === stepThanks) main.classList.add('offer-closed--success');
   }
 
+  // ---------- Submit notify preference ----------
   function recordAnswer(answer) {
     const payload = {
       action: 'notify',
       notify_preference: answer,
       ...(lead || {})
     };
+    return postJson(payload);
+  }
+
+  function postJson(payload) {
     if (!LEAD_CAPTURE_ENDPOINT || LEAD_CAPTURE_ENDPOINT === 'REPLACE_WITH_APPS_SCRIPT_URL') {
       return Promise.resolve();
     }
@@ -195,12 +377,93 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   main.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-notify]');
-    if (!btn) return;
-    const answer = btn.getAttribute('data-notify');
-    stepAsk.querySelectorAll('button').forEach((b) => { b.disabled = true; });
-    recordAnswer(answer).finally(() => {
-      swapTo(answer === 'yes' ? stepThanks : stepNoted);
+    const notifyBtn = e.target.closest('[data-notify]');
+    if (notifyBtn) {
+      const answer = notifyBtn.getAttribute('data-notify');
+      stepAsk.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+
+      if (answer === 'yes') {
+        // Show loader for at least MIN_LOADING_MS so the user feels the
+        // request is processing (prevents the jarring instant flip).
+        const startedAt = Date.now();
+        swapTo(stepLoading);
+        recordAnswer('yes').finally(() => {
+          const elapsed = Date.now() - startedAt;
+          const wait = Math.max(MIN_LOADING_MS - elapsed, 0);
+          setTimeout(() => swapTo(stepThanks), wait);
+        });
+      } else {
+        recordAnswer('no').finally(() => swapTo(stepNoted));
+      }
+      return;
+    }
+
+    const editBtn = e.target.closest('[data-action="edit-contact"]');
+    if (editBtn) {
+      contactSummary.hidden = true;
+      editBtn.hidden = true;
+      editForm.hidden = false;
+      editForm.phone.value = (lead && lead.phone) || '';
+      editForm.email.value = (lead && lead.email) || '';
+      editErr.hidden = true;
+      editForm.phone.focus();
+      return;
+    }
+
+    const cancelBtn = e.target.closest('[data-action="cancel-edit"]');
+    if (cancelBtn) {
+      editForm.hidden = true;
+      contactSummary.hidden = false;
+      const editLink = main.querySelector('[data-action="edit-contact"]');
+      if (editLink) editLink.hidden = false;
+      editErr.hidden = true;
+      return;
+    }
+  });
+
+  editForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const phone = (editForm.phone.value || '').trim();
+    const email = (editForm.email.value || '').trim();
+    if (!phone || !email) {
+      editErr.textContent = 'Please fill in both fields.';
+      editErr.hidden = false;
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      editErr.textContent = 'That email doesn’t look right.';
+      editErr.hidden = false;
+      return;
+    }
+    editErr.hidden = true;
+    const submitBtn = editForm.querySelector('[data-edit-submit]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving…';
+
+    const previousEmail = (lead && lead.email) || '';
+    const updatePayload = {
+      action: 'update_contact',
+      match_gclid: (lead && lead.gclid) || '',
+      match_email: previousEmail,
+      phone: phone,
+      email: email
+    };
+
+    postJson(updatePayload).finally(() => {
+      // Update local copy + sessionStorage so any future edit cycle sees the
+      // new values, then re-render.
+      lead = lead || {};
+      lead.phone = phone;
+      lead.email = email;
+      try { sessionStorage.setItem('mh_lead', JSON.stringify(lead)); } catch (_) {}
+      renderContact();
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Save changes';
+      editForm.hidden = true;
+      contactSummary.hidden = false;
+      const editLink = main.querySelector('[data-action="edit-contact"]');
+      if (editLink) editLink.hidden = false;
     });
   });
 })();
