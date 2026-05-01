@@ -448,12 +448,23 @@
     });
   }
 
+  // TEMP: while polishing the Flow B page (hero copy, layout, etc.) we
+  // skip the Tally quiz so the rest of the lightbox (grid → detail →
+  // lead form → confirmation) is one click away. Flip back to showQuiz()
+  // before launch — see TODO marker in openLightbox below.
+  const SKIP_QUIZ_FOR_DESIGN_REVIEW = true;
+
   function openLightbox() {
     ensureOverlay();
     lastFocus = document.activeElement;
     overlay.setAttribute('data-open', 'true');
     document.body.style.overflow = 'hidden';
-    showQuiz();
+    // TODO(restore-quiz): swap back to showQuiz() once page polish is done.
+    if (SKIP_QUIZ_FOR_DESIGN_REVIEW) {
+      showGrid(null);
+    } else {
+      showQuiz();
+    }
   }
 
   function closeLightbox() {
