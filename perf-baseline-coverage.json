@@ -1,0 +1,447 @@
+{
+  "generatedAt": "2026-05-01T18:17:57.764Z",
+  "toolchain": "lighthouse@12 mobile/simulate",
+  "notes": [
+    "PSI public API was over quota on this run; used local Lighthouse CLI against the live URLs instead.",
+    "Lighthouse simulate-throttling tends to score better than PSI lab data — treat metrics as a directional baseline, not a direct compare to the May-1 PSI numbers in the spec.",
+    "Flow B scored worse than Flow A in this single run (LCP 12.1s vs 2.8s). Likely run-to-run variance on a Cloudflare cold edge — re-run before drawing conclusions."
+  ],
+  "flows": [
+    {
+      "label": "Flow A",
+      "fetchedAt": "2026-05-01T18:15:33.694Z",
+      "finalUrl": "https://go.maximummassage.ca/massage-therapy-calgary-flow-a/",
+      "metrics": {
+        "performanceScore": 72,
+        "firstContentfulPaint": "2.3 s",
+        "largestContentfulPaint": "2.8 s",
+        "speedIndex": "2.3 s",
+        "totalBlockingTime": "930 ms",
+        "cumulativeLayoutShift": "0.019",
+        "timeToInteractive": "8.7 s"
+      },
+      "totals": {
+        "requests": 90,
+        "transferBytes": 827665,
+        "unusedJsBytes": 116583,
+        "unusedCssBytes": 0
+      },
+      "perAsset": [
+        {
+          "url": "https://www.googletagmanager.com/gtm.js?id=GTM-5M8LTCF8",
+          "type": "Script",
+          "transferSize": 143556,
+          "resourceSize": 403195,
+          "wastedBytes": 63368,
+          "wastedPct": 16
+        },
+        {
+          "url": "https://www.googletagmanager.com/gtag/js?id=AW-17632628958&cx=c&gtm=4e64t1",
+          "type": "Script",
+          "transferSize": 140593,
+          "resourceSize": 396660,
+          "wastedBytes": 53215,
+          "wastedPct": 13
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/css/landingi/JAwfiYhghMw3Mxgs-base.css",
+          "type": "Stylesheet",
+          "transferSize": 34942,
+          "resourceSize": 310904,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://scripts.clarity.ms/0.8.61/clarity.js",
+          "type": "Script",
+          "transferSize": 25647,
+          "resourceSize": 74158,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/css/landingi/landend-base.css",
+          "type": "Stylesheet",
+          "transferSize": 17089,
+          "resourceSize": 79686,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516",
+          "type": "Script",
+          "transferSize": 10993,
+          "resourceSize": 31169,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/jquery.form.min.js",
+          "type": "Script",
+          "transferSize": 7182,
+          "resourceSize": 17108,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/lightbox-render.js",
+          "type": "Script",
+          "transferSize": 6063,
+          "resourceSize": 18812,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/new_landend.js",
+          "type": "Script",
+          "transferSize": 4980,
+          "resourceSize": 11845,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/css/overrides.css",
+          "type": "Stylesheet",
+          "transferSize": 2287,
+          "resourceSize": 4405,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/17632628958/?random=1777659335475&cv=11&fst=1777659335475&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be64t1v9236596479z89236594304za20gzb9236594304zd9236594304xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115938466~115938469~116363098&u_w=412&u_h=823&url=https%3A%2F%2Fgo.maximummassage.ca%2Fmassage-therapy-calgary-flow-a%2F%3Fpage_variant%3Da%26flow%3Da&rcb=9&frm=0&tiba=Maximum%20Health%20Massage%20Therapy%20Calgary&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=322007898.1777659335&uaa=&uab=64&uafvl=Google%2520Chrome%3B147.0.7727.138%7CNot.A%252FBrand%3B8.0.0.0%7CChromium%3B147.0.7727.138&uamb=1&uam=moto%20g%20power%20(2022)&uap=Android&uapv=11.0&uaw=0&data=event%3Dgtag.config&rfmt=3&fmt=4",
+          "type": "Script",
+          "transferSize": 2245,
+          "resourceSize": 5496,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext&display=swap",
+          "type": "Stylesheet",
+          "transferSize": 2218,
+          "resourceSize": 36501,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://fonts.googleapis.com/css?family=Roboto:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext&display=swap",
+          "type": "Stylesheet",
+          "transferSize": 2142,
+          "resourceSize": 33885,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://scripts.assets-landingi.com/landend/071025/accordion.js",
+          "type": "Script",
+          "transferSize": 1994,
+          "resourceSize": 3713,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://www.clarity.ms/tag/ufvui95pqj",
+          "type": "Script",
+          "transferSize": 1128,
+          "resourceSize": 707,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/anchors.js",
+          "type": "Script",
+          "transferSize": 962,
+          "resourceSize": 860,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/files.js",
+          "type": "Script",
+          "transferSize": 921,
+          "resourceSize": 784,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://fonts.googleapis.com/css?family=Marck+Script&subset=latin,latin-ext&display=swap",
+          "type": "Stylesheet",
+          "transferSize": 913,
+          "resourceSize": 1193,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://fonts.googleapis.com/css?family=Raleway:300,300i,400,400i,700,700i&subset=latin,latin-ext&display=swap",
+          "type": "Stylesheet",
+          "transferSize": 855,
+          "resourceSize": 11229,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://fonts.googleapis.com/css?family=Comfortaa:300,400,700&subset=latin,latin-ext&display=swap",
+          "type": "Stylesheet",
+          "transferSize": 768,
+          "resourceSize": 6648,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/frodo.js",
+          "type": "Script",
+          "transferSize": 0,
+          "resourceSize": 31332,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/lazysizes.min.js",
+          "type": "Script",
+          "transferSize": 0,
+          "resourceSize": 10125,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/jquery-3-6-0.min.js",
+          "type": "Script",
+          "transferSize": 0,
+          "resourceSize": 89501,
+          "wastedBytes": 0,
+          "wastedPct": null
+        }
+      ]
+    },
+    {
+      "label": "Flow B",
+      "fetchedAt": "2026-05-01T18:16:06.436Z",
+      "finalUrl": "https://go.maximummassage.ca/massage-therapy-calgary-flow-b/",
+      "metrics": {
+        "performanceScore": 44,
+        "firstContentfulPaint": "4.2 s",
+        "largestContentfulPaint": "12.1 s",
+        "speedIndex": "5.9 s",
+        "totalBlockingTime": "720 ms",
+        "cumulativeLayoutShift": "0",
+        "timeToInteractive": "12.2 s"
+      },
+      "totals": {
+        "requests": 93,
+        "transferBytes": 837167,
+        "unusedJsBytes": 114943,
+        "unusedCssBytes": 16309
+      },
+      "perAsset": [
+        {
+          "url": "https://www.googletagmanager.com/gtm.js?id=GTM-5M8LTCF8",
+          "type": "Script",
+          "transferSize": 143556,
+          "resourceSize": 403195,
+          "wastedBytes": 64648,
+          "wastedPct": 16
+        },
+        {
+          "url": "https://www.googletagmanager.com/gtag/js?id=AW-17632628958&cx=c&gtm=4e64t1",
+          "type": "Script",
+          "transferSize": 140616,
+          "resourceSize": 396660,
+          "wastedBytes": 50295,
+          "wastedPct": 13
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/css/landingi/landend-base.css",
+          "type": "Stylesheet",
+          "transferSize": 16970,
+          "resourceSize": 79686,
+          "wastedBytes": 16309,
+          "wastedPct": 20
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/css/landingi/JAwfiYhghMw3Mxgs-base.css",
+          "type": "Stylesheet",
+          "transferSize": 34815,
+          "resourceSize": 310904,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://scripts.clarity.ms/0.8.61/clarity.js",
+          "type": "Script",
+          "transferSize": 25646,
+          "resourceSize": 74158,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516",
+          "type": "Script",
+          "transferSize": 10993,
+          "resourceSize": 31169,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/js/therapist-picker.js",
+          "type": "Script",
+          "transferSize": 7295,
+          "resourceSize": 21533,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/jquery.form.min.js",
+          "type": "Script",
+          "transferSize": 7182,
+          "resourceSize": 17108,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/lightbox-render.js",
+          "type": "Script",
+          "transferSize": 6063,
+          "resourceSize": 18812,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/new_landend.js",
+          "type": "Script",
+          "transferSize": 4944,
+          "resourceSize": 11845,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/css/picker.css",
+          "type": "Stylesheet",
+          "transferSize": 3442,
+          "resourceSize": 10588,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/17632628958/?random=1777659368131&cv=11&fst=1777659368131&bg=ffffff&guid=ON&async=1&en=gtag.config&gtm=45be64t1v9236596479z89236594304za20gzb9236594304zd9236594304xec&gcd=13l3l3l3l1l1&dma=0&tag_exp=0~115616985~115938466~115938469&u_w=412&u_h=823&url=https%3A%2F%2Fgo.maximummassage.ca%2Fmassage-therapy-calgary-flow-b%2F%3Fpage_variant%3Db%26flow%3Db&rcb=1&frm=0&tiba=Maximum%20Health%20Massage%20Therapy%20Calgary&hn=www.googleadservices.com&npa=0&pscdl=noapi&auid=524320944.1777659368&uaa=&uab=64&uafvl=Google%2520Chrome%3B147.0.7727.138%7CNot.A%252FBrand%3B8.0.0.0%7CChromium%3B147.0.7727.138&uamb=1&uam=moto%20g%20power%20(2022)&uap=Android&uapv=11.0&uaw=0&data=event%3Dgtag.config&rfmt=3&fmt=4",
+          "type": "Script",
+          "transferSize": 2244,
+          "resourceSize": 5498,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext&display=swap",
+          "type": "Stylesheet",
+          "transferSize": 2232,
+          "resourceSize": 36501,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/css/overrides.css",
+          "type": "Stylesheet",
+          "transferSize": 2176,
+          "resourceSize": 4405,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://fonts.googleapis.com/css?family=Roboto:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext&display=swap",
+          "type": "Stylesheet",
+          "transferSize": 2151,
+          "resourceSize": 33885,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://scripts.assets-landingi.com/landend/071025/accordion.js",
+          "type": "Script",
+          "transferSize": 1994,
+          "resourceSize": 3713,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://fonts.googleapis.com/css?family=Raleway:300,300i,400,400i,700,700i&subset=latin,latin-ext&display=swap",
+          "type": "Stylesheet",
+          "transferSize": 1226,
+          "resourceSize": 11229,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://www.clarity.ms/tag/ufvui95pqj",
+          "type": "Script",
+          "transferSize": 1128,
+          "resourceSize": 707,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/anchors.js",
+          "type": "Script",
+          "transferSize": 962,
+          "resourceSize": 860,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/files.js",
+          "type": "Script",
+          "transferSize": 921,
+          "resourceSize": 784,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://fonts.googleapis.com/css?family=Comfortaa:300,400,700&subset=latin,latin-ext&display=swap",
+          "type": "Stylesheet",
+          "transferSize": 791,
+          "resourceSize": 6648,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/js/utm-capture.js",
+          "type": "Script",
+          "transferSize": 750,
+          "resourceSize": 376,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://fonts.googleapis.com/css?family=Marck+Script&subset=latin,latin-ext&display=swap",
+          "type": "Stylesheet",
+          "transferSize": 519,
+          "resourceSize": 1193,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/frodo.js",
+          "type": "Script",
+          "transferSize": 0,
+          "resourceSize": 31332,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/lazysizes.min.js",
+          "type": "Script",
+          "transferSize": 0,
+          "resourceSize": 10125,
+          "wastedBytes": 0,
+          "wastedPct": null
+        },
+        {
+          "url": "https://go.maximummassage.ca/assets/js/landingi/jquery-3-6-0.min.js",
+          "type": "Script",
+          "transferSize": 0,
+          "resourceSize": 89501,
+          "wastedBytes": 0,
+          "wastedPct": null
+        }
+      ]
+    }
+  ]
+}

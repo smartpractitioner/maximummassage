@@ -1,0 +1,13 @@
+=== Maximum Health perf cleanup — curl baseline (run 2026-05-01T18:17:38Z) ===
+
+--- Flow A: https://go.maximummassage.ca/massage-therapy-calgary-flow-a/ ---
+TTFB: 0.169426s
+Total: 0.190937s
+Size: 94905b
+HTTP: 200
+
+--- Flow B: https://go.maximummassage.ca/massage-therapy-calgary-flow-b/ ---
+TTFB: 0.125650s
+Total: 0.147240s
+Size: 93423b
+HTTP: 200
