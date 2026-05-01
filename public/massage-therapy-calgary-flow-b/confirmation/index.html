@@ -133,6 +133,9 @@
       flex-direction: column;
       gap: var(--space-md);
     }
+    /* The standalone `display: flex` above beats the [hidden] attribute,
+       so re-assert it. Without this, the edit form renders on first paint. */
+    .hold-spot__edit-form[hidden] { display: none; }
     .hold-spot__edit-form label {
       display: flex;
       flex-direction: column;
