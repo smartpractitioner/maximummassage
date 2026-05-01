@@ -2,6 +2,12 @@
    Keep this file minimal — each rule should have a comment explaining
    what it fixes so future edits don't regress the intent. */
 
+/* Native smooth-scroll for anchor links — replaces the jQuery-driven
+   anchors.js animation that we removed in the perf cleanup. Currently
+   no live #target on the page (the quiz section was removed), but
+   keeping this rule means any future in-page anchor will animate. */
+html { scroll-behavior: smooth; }
+
 /* Therapist credentials: push list items right so the absolutely-positioned
    icons (clock, graduation cap, ribbon, etc.) don't overlap the text. The
    original layout relied on inconsistent leading &nbsp; which shifted per
