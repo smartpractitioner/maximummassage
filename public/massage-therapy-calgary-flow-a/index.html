@@ -571,28 +571,48 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 // on the .widget-accordion makes the items behave as a single-open set.
 // data-expand-first-element="true" expands the first item on load.
 (function () {
-  // Per-element `#parent #child { display:none }` rules in the Landingi CSS
-  // hide each .accordion-desc-text by ID. Toggle inline display so the open
-  // state beats those rules without needing !important overrides.
-  function setOpen(item, open) {
+  // Smooth open/close via max-height + opacity + padding-top. Inline
+  // display:block stays set always so the per-ID `#parent #child{display:none}`
+  // rules in the Landingi CSS lose to inline style.
+  var DURATION = 280;
+  var EASE = "max-height " + DURATION + "ms ease, opacity " + DURATION +
+             "ms ease, padding-top " + DURATION + "ms ease";
+  function setOpen(item, open, instant) {
     if (open) item.classList.add("open"); else item.classList.remove("open");
     var desc = item.querySelector(".accordion-desc-text");
-    if (desc) desc.style.display = open ? "block" : "none";
+    if (!desc) return;
+    desc.style.display = "block";
+    desc.style.overflow = "hidden";
+    desc.style.transition = instant ? "none" : EASE;
+    if (open) {
+      desc.style.paddingTop = "";
+      desc.style.opacity = "1";
+      desc.style.maxHeight = instant ? "none" : desc.scrollHeight + "px";
+    } else {
+      if (!instant) {
+        // pin current height so the collapse transition has a starting value
+        desc.style.maxHeight = desc.scrollHeight + "px";
+        void desc.offsetHeight;
+      }
+      desc.style.maxHeight = "0px";
+      desc.style.opacity = "0";
+      desc.style.paddingTop = "0";
+    }
   }
   function init() {
     document.querySelectorAll(".widget-accordion").forEach(function (acc) {
       var rotate = acc.getAttribute("data-rotate-trigger") === "true";
       var expandFirst = acc.getAttribute("data-expand-first-element") === "true";
       var items = acc.querySelectorAll(".accordion-element-container");
-      items.forEach(function (i, idx) { setOpen(i, expandFirst && idx === 0); });
+      items.forEach(function (i, idx) { setOpen(i, expandFirst && idx === 0, true); });
       acc.addEventListener("click", function (e) {
         var heading = e.target.closest(".accordion-heading-container");
         if (!heading || !acc.contains(heading)) return;
         var item = heading.closest(".accordion-element-container");
         if (!item) return;
         var willOpen = !item.classList.contains("open");
-        if (rotate) items.forEach(function (i) { setOpen(i, false); });
-        if (willOpen) setOpen(item, true);
+        if (rotate) items.forEach(function (i) { if (i !== item) setOpen(i, false); });
+        setOpen(item, willOpen);
       });
     });
   }
