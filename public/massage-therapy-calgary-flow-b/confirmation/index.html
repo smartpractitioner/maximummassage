@@ -9,39 +9,107 @@
   <link rel="icon" href="/images/favicon.ico" sizes="any">
   <link rel="dns-prefetch" href="https://fonts.googleapis.com">
   <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css?family=Raleway:400,700&family=Comfortaa:400,700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=Mulish:wght@500;700;800&display=swap">
   <link rel="stylesheet" href="/css/shared.css">
   <link rel="stylesheet" href="/css/flow-b.css">
   <style>
-    /* Confirmation-specific overrides — single-CTA "hold my spot" layout
-       requested 2026-04-29. Uses an explicit sage green so the primary
-       action reads warm rather than the cool teal used elsewhere. */
+    /* Hold-spot page repainted to the Flow B v3 palette (cream page,
+       teal CTA, cream-bordered surface). Tokens mirror flow-b-v3.css so
+       the page reads as a continuation of the v3 landing flow. */
+    :root {
+      --v3-page-bg: #FAEAC9;
+      --v3-surface: #FFFFFF;
+      --v3-ink: #0E3A47;
+      --v3-ink-soft: #5A6E73;
+      --v3-ink-soft-2: #3F4F54;
+      --v3-teal: #1F8FA6;
+      --v3-teal-dark: #155F70;
+      --v3-cream-border: #E6C988;
+      --v3-rule: rgba(14, 58, 71, 0.14);
+    }
+
+    body {
+      background: var(--v3-page-bg);
+      font-family: "Manrope", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      color: var(--v3-ink);
+    }
+
+    /* Header / footer recolor (override shared.css teal control palette). */
+    .site-header {
+      background: var(--v3-page-bg);
+      color: var(--v3-ink);
+      border-bottom: 1px solid var(--v3-cream-border);
+    }
+    .site-header__logo { color: var(--v3-ink); }
+    .site-header__call {
+      background: var(--v3-teal);
+      color: #FFFFFF;
+      font-family: "Bricolage Grotesque", system-ui, sans-serif;
+      box-shadow: 0 4px 10px rgba(31, 143, 166, 0.22);
+    }
+    .site-header__call:hover { background: var(--v3-teal-dark); }
+
+    .site-footer {
+      background: #FFFFFF;
+      color: var(--v3-teal);
+    }
+    .site-footer a { color: var(--v3-teal); }
+    .site-footer__small { color: var(--v3-ink-soft); opacity: 1; }
+
+    /* Card surface override (was light-teal-tinted; now cream-bordered white). */
+    .offer-closed { background: var(--v3-page-bg); }
+    .offer-closed--success { background: var(--v3-page-bg); }
+    .offer-closed__card {
+      background: var(--v3-surface);
+      border: 1px solid var(--v3-cream-border);
+      border-radius: 22px;
+      box-shadow: 0 14px 36px rgba(14, 58, 71, 0.10);
+    }
+    .offer-closed__thanks-headline {
+      font-family: "Mulish", "Manrope", system-ui, sans-serif;
+      font-weight: 800;
+      color: var(--v3-teal-dark);
+      letter-spacing: -0.4px;
+    }
+    .offer-closed__thanks--muted .offer-closed__thanks-headline { color: var(--v3-ink); }
+    .offer-closed__thanks-body { color: var(--v3-ink-soft-2); }
+    .offer-closed__thanks-note { color: var(--v3-ink-soft); }
+
     .hold-spot__card { max-width: 560px; }
     .hold-spot__headline {
-      font-family: var(--font-heading);
+      font-family: "Mulish", "Manrope", system-ui, sans-serif;
+      font-weight: 800;
       font-size: clamp(22px, 5vw, 30px);
-      line-height: 1.25;
-      color: var(--text-dark);
+      line-height: 1.18;
+      letter-spacing: -0.5px;
+      color: var(--v3-ink);
       margin: 0 0 var(--space-md);
+      text-wrap: balance;
     }
     .hold-spot__sub {
       font-size: 16px;
       line-height: 1.55;
-      color: var(--text-body);
+      color: var(--v3-ink-soft);
       margin: 0 0 var(--space-lg);
+      font-weight: 500;
     }
     .btn--sage {
-      background: #6B8F7A;
-      color: #fff;
+      background: var(--v3-teal);
+      color: #FFFFFF;
       width: 100%;
       padding: 18px 24px;
+      font-family: "Bricolage Grotesque", system-ui, sans-serif;
       font-size: 17px;
-      font-weight: 700;
-      border-radius: var(--radius-pill);
+      font-weight: 600;
+      letter-spacing: 0.1px;
+      border-radius: 999px;
       max-width: 420px;
+      box-shadow: 0 6px 14px rgba(31, 143, 166, 0.22);
     }
-    .btn--sage:hover { background: #547564; }
-    .btn--sage:disabled { background: #6B8F7A; opacity: 0.7; cursor: not-allowed; }
+    .btn--sage:hover { background: var(--v3-teal-dark); }
+    .btn--sage:disabled { background: var(--v3-teal); opacity: 0.7; cursor: not-allowed; }
     @media (min-width: 720px) {
       .btn--sage { width: auto; min-width: 320px; }
     }
@@ -53,13 +121,12 @@
       padding: 8px 12px;
       font: inherit;
       font-size: 14px;
-      color: var(--text-muted);
+      color: var(--v3-ink-soft);
       text-decoration: underline;
       cursor: pointer;
     }
-    .hold-spot__decline:hover { color: var(--text-dark); }
+    .hold-spot__decline:hover { color: var(--v3-ink); }
 
-    /* Loading state shown after Yes click while we record + reassure. */
     .hold-spot__loading {
       display: flex;
       flex-direction: column;
@@ -71,22 +138,21 @@
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      border: 4px solid #e3ece6;
-      border-top-color: #6B8F7A;
+      border: 4px solid #D6EDED;
+      border-top-color: var(--v3-teal);
       animation: holdSpotSpin 900ms linear infinite;
     }
     @keyframes holdSpotSpin { to { transform: rotate(360deg); } }
     .hold-spot__loading-text {
       font-size: 15px;
-      color: var(--text-muted);
+      color: var(--v3-ink-soft);
       margin: 0;
     }
 
-    /* Thanks state with editable contact details. */
     .hold-spot__contact {
-      background: var(--bg-light);
-      border: 1px solid var(--brand-primary-border);
-      border-radius: var(--radius-md);
+      background: var(--v3-page-bg);
+      border: 1px solid var(--v3-cream-border);
+      border-radius: 14px;
       padding: var(--space-md);
       margin: var(--space-md) auto;
       max-width: 420px;
@@ -100,15 +166,16 @@
       padding: 4px 0;
     }
     .hold-spot__contact-label {
+      font-family: "Bricolage Grotesque", system-ui, sans-serif;
       font-size: 12px;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      color: var(--v3-teal-dark);
       font-weight: 700;
     }
     .hold-spot__contact-value {
       font-size: 15px;
-      color: var(--text-dark);
+      color: var(--v3-ink);
       font-weight: 600;
       word-break: break-all;
     }
@@ -120,11 +187,11 @@
       padding: 6px 4px;
       font: inherit;
       font-size: 14px;
-      color: var(--brand-primary-dark);
+      color: var(--v3-teal);
       text-decoration: underline;
       cursor: pointer;
     }
-    .hold-spot__edit-link:hover { color: var(--text-dark); }
+    .hold-spot__edit-link:hover { color: var(--v3-teal-dark); }
     .hold-spot__edit-form {
       max-width: 420px;
       margin: var(--space-md) auto 0;
@@ -133,15 +200,13 @@
       flex-direction: column;
       gap: var(--space-md);
     }
-    /* The standalone `display: flex` above beats the [hidden] attribute,
-       so re-assert it. Without this, the edit form renders on first paint. */
     .hold-spot__edit-form[hidden] { display: none; }
     .hold-spot__edit-form label {
       display: flex;
       flex-direction: column;
       gap: 4px;
       font-size: 13px;
-      color: var(--text-body);
+      color: var(--v3-ink-soft-2);
       font-weight: 600;
     }
     .hold-spot__edit-form input {
@@ -149,16 +214,16 @@
       font-weight: 400;
       font-size: 16px;
       padding: 10px 12px;
-      border: 1px solid var(--brand-primary-border);
-      border-radius: var(--radius-sm);
-      background: #fff;
-      color: var(--text-dark);
+      border: 1px solid var(--v3-cream-border);
+      border-radius: 10px;
+      background: #FFFFFF;
+      color: var(--v3-ink);
       -webkit-appearance: none;
     }
     .hold-spot__edit-form input:focus {
-      outline: 2px solid #6B8F7A;
+      outline: 2px solid var(--v3-teal);
       outline-offset: 1px;
-      border-color: #6B8F7A;
+      border-color: var(--v3-teal);
     }
     .hold-spot__edit-actions {
       display: flex;
@@ -172,7 +237,7 @@
       border: 0;
       font: inherit;
       font-size: 14px;
-      color: var(--text-muted);
+      color: var(--v3-ink-soft);
       text-decoration: underline;
       cursor: pointer;
       padding: 8px 12px;
