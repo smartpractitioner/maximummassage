@@ -255,10 +255,25 @@
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', 'picker-title');
+    const stepperVariant = getStepperVariant();
     overlay.innerHTML = `
       <div class="lb" role="document">
         <div class="lb__head">
-          <h2 class="lb__title" id="picker-title">Find your therapist</h2>
+          <h2 class="lb__title sr-only" id="picker-title">Find your therapist</h2>
+          <div class="lb-stepper lb-stepper--${stepperVariant}" data-stepper aria-hidden="true">
+            <div class="lb-stepper__item" data-step="1">
+              <span class="lb-stepper__num">1</span>
+              <span class="lb-stepper__label"><span class="lb-stepper__label-full">Tell us about your experience</span><span class="lb-stepper__label-short">About you</span></span>
+            </div>
+            <div class="lb-stepper__item" data-step="2">
+              <span class="lb-stepper__num">2</span>
+              <span class="lb-stepper__label">Pick therapist</span>
+            </div>
+            <div class="lb-stepper__item" data-step="3">
+              <span class="lb-stepper__num">3</span>
+              <span class="lb-stepper__label">Choose time</span>
+            </div>
+          </div>
           <button type="button" class="lb__close" data-action="close" aria-label="Close">&times;</button>
         </div>
         <div class="lb__body">
@@ -312,6 +327,28 @@
     return overlay;
   }
 
+  const VIEW_TO_STEP = { quiz: 1, grid: 2, detail: 2, 'lead-form': 3 };
+
+  function getStepperVariant() {
+    try {
+      const hash = String(window.location.hash || '');
+      if (hash.indexOf('stepper=spread') !== -1) return 'spread';
+      return 'row';
+    } catch (_) { return 'row'; }
+  }
+
+  function setStep(view) {
+    if (!overlay) return;
+    const stepper = overlay.querySelector('[data-stepper]');
+    if (!stepper) return;
+    const active = VIEW_TO_STEP[view] || 1;
+    stepper.querySelectorAll('.lb-stepper__item').forEach((el) => {
+      const n = Number(el.getAttribute('data-step'));
+      el.classList.toggle('is-active', n === active);
+      el.classList.toggle('is-inactive', n !== active);
+    });
+  }
+
   function setView(name) {
     overlay.querySelectorAll('[data-view]').forEach((el) => {
       el.hidden = el.getAttribute('data-view') !== name;
@@ -321,6 +358,7 @@
     else if (name === 'grid') title.textContent = 'Choose your therapist';
     else if (name === 'detail') title.textContent = 'Your therapist';
     else if (name === 'lead-form') title.textContent = 'Almost there';
+    setStep(name);
   }
 
   function showQuiz() {

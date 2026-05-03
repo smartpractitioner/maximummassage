@@ -2,7 +2,9 @@
 //
 // Adjust this single number to control the split. 0 = 100% Flow A (control
 // only). 50 = 50/50. 80 means 80% Flow B / 20% Flow A. Range: 0..100.
-const FLOW_B_PERCENTAGE = 0;
+// At 0 or 100, the assigned bucket overrides any stale cookie so returning
+// visitors are not stranded on the retired variant.
+const FLOW_B_PERCENTAGE = 100;
 
 const COOKIE_NAME = 'mh_flow';
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
@@ -17,7 +19,9 @@ export async function splitRequest(context) {
   const cookies = parseCookies(request.headers.get('Cookie') || '');
   let bucket = cookies[COOKIE_NAME];
 
-  if (bucket !== 'a' && bucket !== 'b') {
+  if (FLOW_B_PERCENTAGE >= 100) bucket = 'b';
+  else if (FLOW_B_PERCENTAGE <= 0) bucket = 'a';
+  else if (bucket !== 'a' && bucket !== 'b') {
     bucket = await assignBucket(request);
   }
 

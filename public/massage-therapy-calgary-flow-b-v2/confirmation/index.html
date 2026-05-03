@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maximum Health — Hold a spot for me</title>
+  <meta name="robots" content="noindex">
+  <link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/images/favicon.ico" sizes="any">
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css?family=Raleway:400,700&family=Comfortaa:400,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/shared.css">
+  <link rel="stylesheet" href="/css/flow-b.css">
+  <style>
+    /* Confirmation-specific overrides — single-CTA "hold my spot" layout
+       requested 2026-04-29. Uses an explicit sage green so the primary
+       action reads warm rather than the cool teal used elsewhere. */
+    .hold-spot__card { max-width: 560px; }
+    .hold-spot__headline {
+      font-family: var(--font-heading);
+      font-size: clamp(22px, 5vw, 30px);
+      line-height: 1.25;
+      color: var(--text-dark);
+      margin: 0 0 var(--space-md);
+    }
+    .hold-spot__sub {
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--text-body);
+      margin: 0 0 var(--space-lg);
+    }
+    .btn--sage {
+      background: #6B8F7A;
+      color: #fff;
+      width: 100%;
+      padding: 18px 24px;
+      font-size: 17px;
+      font-weight: 700;
+      border-radius: var(--radius-pill);
+      max-width: 420px;
+    }
+    .btn--sage:hover { background: #547564; }
+    .btn--sage:disabled { background: #6B8F7A; opacity: 0.7; cursor: not-allowed; }
+    @media (min-width: 720px) {
+      .btn--sage { width: auto; min-width: 320px; }
+    }
+    .hold-spot__decline {
+      display: inline-block;
+      margin-top: var(--space-md);
+      background: transparent;
+      border: 0;
+      padding: 8px 12px;
+      font: inherit;
+      font-size: 14px;
+      color: var(--text-muted);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .hold-spot__decline:hover { color: var(--text-dark); }
+
+    /* Loading state shown after Yes click while we record + reassure. */
+    .hold-spot__loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-lg) 0;
+    }
+    .hold-spot__spinner {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 4px solid #e3ece6;
+      border-top-color: #6B8F7A;
+      animation: holdSpotSpin 900ms linear infinite;
+    }
+    @keyframes holdSpotSpin { to { transform: rotate(360deg); } }
+    .hold-spot__loading-text {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* Thanks state with editable contact details. */
+    .hold-spot__contact {
+      background: var(--bg-light);
+      border: 1px solid var(--brand-primary-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      margin: var(--space-md) auto;
+      max-width: 420px;
+      text-align: left;
+    }
+    .hold-spot__contact-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-md);
+      padding: 4px 0;
+    }
+    .hold-spot__contact-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .hold-spot__contact-value {
+      font-size: 15px;
+      color: var(--text-dark);
+      font-weight: 600;
+      word-break: break-all;
+    }
+    .hold-spot__edit-link {
+      display: inline-block;
+      margin-top: var(--space-sm);
+      background: transparent;
+      border: 0;
+      padding: 6px 4px;
+      font: inherit;
+      font-size: 14px;
+      color: var(--brand-primary-dark);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .hold-spot__edit-link:hover { color: var(--text-dark); }
+    .hold-spot__edit-form {
+      max-width: 420px;
+      margin: var(--space-md) auto 0;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    /* The standalone `display: flex` above beats the [hidden] attribute,
+       so re-assert it. Without this, the edit form renders on first paint. */
+    .hold-spot__edit-form[hidden] { display: none; }
+    .hold-spot__edit-form label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+      color: var(--text-body);
+      font-weight: 600;
+    }
+    .hold-spot__edit-form input {
+      font: inherit;
+      font-weight: 400;
+      font-size: 16px;
+      padding: 10px 12px;
+      border: 1px solid var(--brand-primary-border);
+      border-radius: var(--radius-sm);
+      background: #fff;
+      color: var(--text-dark);
+      -webkit-appearance: none;
+    }
+    .hold-spot__edit-form input:focus {
+      outline: 2px solid #6B8F7A;
+      outline-offset: 1px;
+      border-color: #6B8F7A;
+    }
+    .hold-spot__edit-actions {
+      display: flex;
+      gap: var(--space-sm);
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .hold-spot__edit-cancel {
+      background: transparent;
+      border: 0;
+      font: inherit;
+      font-size: 14px;
+      color: var(--text-muted);
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 8px 12px;
+    }
+    .hold-spot__edit-err {
+      color: #b74a4a;
+      font-size: 13px;
+      margin: 0;
+      text-align: center;
+    }
+  </style>
+
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-5M8LTCF8');</script>
+  <!-- End Google Tag Manager -->
+</head>
+<body>
+
+<!-- GTM noscript -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5M8LTCF8"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+<header class="site-header">
+  <a href="/massage-therapy-calgary/" class="site-header__logo" aria-label="Maximum Health Massage Therapy Calgary">
+    <img src="/images/MaximumHealthmassagetherapycalgarycompressed.webp" alt="Maximum Health Massage Therapy Calgary" width="176" height="29">
+  </a>
+  <a href="tel:+14032830725" class="site-header__call">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .57 3.6 1 1 0 0 1-.25 1z"/></svg>
+    Call us
+  </a>
+</header>
+
+<main class="offer-closed" id="offer-closed-main">
+  <section class="offer-closed__card hold-spot__card" aria-live="polite">
+    <div data-step="ask">
+      <h1 class="hold-spot__headline">
+        Sorry<span data-firstname-prefix>, </span><span data-firstname>there</span>. There is no more availability for this offer with <span data-therapist>your therapist</span>.
+      </h1>
+      <p class="hold-spot__sub">
+        The new client rate is in high demand. Want us to text you the moment a spot with one of our therapists opens up?
+      </p>
+
+      <button type="button" class="btn btn--sage" data-notify="yes">Yes, hold a spot for me</button>
+
+      <div>
+        <button type="button" class="hold-spot__decline" data-notify="no">No thanks</button>
+      </div>
+    </div>
+
+    <div data-step="loading" hidden>
+      <div class="hold-spot__loading">
+        <div class="hold-spot__spinner" role="status" aria-label="Saving your spot"></div>
+        <p class="hold-spot__loading-text">Holding your spot&hellip;</p>
+      </div>
+    </div>
+
+    <div data-step="thanks" hidden>
+      <div class="offer-closed__thanks">
+        <p class="offer-closed__thanks-headline">You&rsquo;re on the list.</p>
+        <p class="offer-closed__thanks-body">
+          We&rsquo;ll send you a text message or email as soon as availability returns.
+        </p>
+
+        <div class="hold-spot__contact" data-contact-summary>
+          <div class="hold-spot__contact-row">
+            <span class="hold-spot__contact-label">Text</span>
+            <span class="hold-spot__contact-value" data-contact-phone>—</span>
+          </div>
+          <div class="hold-spot__contact-row">
+            <span class="hold-spot__contact-label">Email</span>
+            <span class="hold-spot__contact-value" data-contact-email>—</span>
+          </div>
+        </div>
+
+        <button type="button" class="hold-spot__edit-link" data-action="edit-contact">Not right? Edit details</button>
+
+        <p class="offer-closed__thanks-body" style="margin-top: var(--space-md);">
+          <span class="offer-closed__thanks-note">(Typically within a week, depending on demand.)</span>
+        </p>
+      </div>
+
+      <form class="hold-spot__edit-form" data-edit-form hidden novalidate>
+        <label>
+          Phone
+          <input type="tel" name="phone" autocomplete="tel" required>
+        </label>
+        <label>
+          Email
+          <input type="email" name="email" autocomplete="email" required>
+        </label>
+        <p class="hold-spot__edit-err" data-edit-err hidden></p>
+        <div class="hold-spot__edit-actions">
+          <button type="submit" class="btn btn--sage" data-edit-submit>Save changes</button>
+          <button type="button" class="hold-spot__edit-cancel" data-action="cancel-edit">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div data-step="noted" hidden>
+      <div class="offer-closed__thanks offer-closed__thanks--muted">
+        <p class="offer-closed__thanks-headline">No problem.</p>
+        <p class="offer-closed__thanks-body">Thanks for stopping by &mdash; feel free to come back anytime.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p><strong>Maximum Health Massage Therapy Calgary</strong><br>
+  Proudly serving Calgary since 1998</p>
+  <p>213 19 St NW #4, Calgary, AB T2N 2H9</p>
+  <p><a href="/privacy-policy/">Privacy Policy</a> &middot; <a href="/terms/">Terms of Use</a></p>
+  <p class="site-footer__small">&copy; 1998&ndash;2026 Maximum Health Massage Therapy</p>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  const LEAD_CAPTURE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwt0ZJ1RW8unG2Uj5vyXWC4Xn7k5fhPGpUL57ysYYoGX-i0fkacxyr-uIGhxx3Le_cKFQ/exec';
+  const MIN_LOADING_MS = 3500;
+
+  let lead = null;
+  try {
+    const raw = sessionStorage.getItem('mh_lead');
+    if (raw) lead = JSON.parse(raw);
+  } catch (_) {}
+
+  const main = document.getElementById('offer-closed-main');
+  const stepAsk = main.querySelector('[data-step="ask"]');
+  const stepLoading = main.querySelector('[data-step="loading"]');
+  const stepThanks = main.querySelector('[data-step="thanks"]');
+  const stepNoted = main.querySelector('[data-step="noted"]');
+  const editForm = main.querySelector('[data-edit-form]');
+  const contactSummary = main.querySelector('[data-contact-summary]');
+  const editErr = main.querySelector('[data-edit-err]');
+
+  // ---------- Personalize headline ----------
+  const firstNameEl = main.querySelector('[data-firstname]');
+  const firstNamePrefix = main.querySelector('[data-firstname-prefix]');
+  const therapistEl = main.querySelector('[data-therapist]');
+
+  if (lead && lead.first_name) {
+    if (firstNameEl) firstNameEl.textContent = lead.first_name;
+  } else {
+    if (firstNamePrefix) firstNamePrefix.textContent = '';
+    if (firstNameEl) firstNameEl.remove();
+  }
+  if (therapistEl) {
+    if (lead && lead.selected_therapist) {
+      therapistEl.textContent = String(lead.selected_therapist).split(' ')[0];
+    } else {
+      therapistEl.textContent = 'this therapist';
+    }
+  }
+
+  // ---------- Render contact details from sessionStorage ----------
+  function renderContact() {
+    const phoneEl = main.querySelector('[data-thanks-phone]');
+    const emailEl = main.querySelector('[data-thanks-email]');
+    const phoneSummary = main.querySelector('[data-contact-phone]');
+    const emailSummary = main.querySelector('[data-contact-email]');
+    const phone = (lead && lead.phone) || '';
+    const email = (lead && lead.email) || '';
+    if (phoneEl) phoneEl.textContent = phone || 'your phone';
+    if (emailEl) emailEl.textContent = email || 'your email';
+    if (phoneSummary) phoneSummary.textContent = phone || '—';
+    if (emailSummary) emailSummary.textContent = email || '—';
+  }
+  renderContact();
+
+  // ---------- Step transitions ----------
+  function swapTo(target) {
+    [stepAsk, stepLoading, stepThanks, stepNoted].forEach((el) => {
+      if (el) el.hidden = (el !== target);
+    });
+    target.classList.add('offer-closed__fade-in');
+    if (target === stepThanks) main.classList.add('offer-closed--success');
+  }
+
+  // ---------- CASL consent helpers ----------
+  // Free public IP echo (CORS-enabled). Used to log consent IP for CASL
+  // record-keeping when the user clicks "Yes, hold a spot for me".
+  function getClientIp() {
+    return fetch('https://api.ipify.org?format=json')
+      .then((res) => res.ok ? res.json() : { ip: '' })
+      .then((data) => (data && data.ip) || '')
+      .catch(() => '');
+  }
+
+  // The exact text the user is consenting to. Keep this in sync with the
+  // copy on screen — the row in the sheet is the legal record of what they
+  // agreed to.
+  const CONSENT_TEXT =
+    'I consent to Maximum Health contacting me by text and/or email at the ' +
+    'phone and email I provided to notify me when new-client availability ' +
+    'returns. (Confirmation page CTA: "Yes, hold a spot for me.")';
+
+  // ---------- Submit notify preference ----------
+  function recordAnswer(answer, extras) {
+    const payload = {
+      action: 'notify',
+      notify_preference: answer,
+      ...(lead || {}),
+      ...(extras || {})
+    };
+    return postJson(payload);
+  }
+
+  function postJson(payload) {
+    if (!LEAD_CAPTURE_ENDPOINT || LEAD_CAPTURE_ENDPOINT === 'REPLACE_WITH_APPS_SCRIPT_URL') {
+      return Promise.resolve();
+    }
+    return fetch(LEAD_CAPTURE_ENDPOINT, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  main.addEventListener('click', (e) => {
+    const notifyBtn = e.target.closest('[data-notify]');
+    if (notifyBtn) {
+      const answer = notifyBtn.getAttribute('data-notify');
+      stepAsk.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+
+      if (answer === 'yes') {
+        // Show loader for at least MIN_LOADING_MS so the user feels the
+        // request is processing (prevents the jarring instant flip).
+        // Also captures CASL consent: IP + timestamp + verbatim consent
+        // text so we have a defensible record of opt-in.
+        const startedAt = Date.now();
+        swapTo(stepLoading);
+        getClientIp().then((ip) => {
+          return recordAnswer('yes', {
+            consent_ip: ip,
+            consent_at: new Date().toISOString(),
+            consent_user_agent: navigator.userAgent || '',
+            consent_text: CONSENT_TEXT,
+            consent_phone: (lead && lead.phone) || '',
+            consent_email: (lead && lead.email) || ''
+          });
+        }).finally(() => {
+          const elapsed = Date.now() - startedAt;
+          const wait = Math.max(MIN_LOADING_MS - elapsed, 0);
+          setTimeout(() => swapTo(stepThanks), wait);
+        });
+      } else {
+        recordAnswer('no').finally(() => swapTo(stepNoted));
+      }
+      return;
+    }
+
+    const editBtn = e.target.closest('[data-action="edit-contact"]');
+    if (editBtn) {
+      contactSummary.hidden = true;
+      editBtn.hidden = true;
+      editForm.hidden = false;
+      editForm.phone.value = (lead && lead.phone) || '';
+      editForm.email.value = (lead && lead.email) || '';
+      editErr.hidden = true;
+      editForm.phone.focus();
+      return;
+    }
+
+    const cancelBtn = e.target.closest('[data-action="cancel-edit"]');
+    if (cancelBtn) {
+      editForm.hidden = true;
+      contactSummary.hidden = false;
+      const editLink = main.querySelector('[data-action="edit-contact"]');
+      if (editLink) editLink.hidden = false;
+      editErr.hidden = true;
+      return;
+    }
+  });
+
+  editForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const phone = (editForm.phone.value || '').trim();
+    const email = (editForm.email.value || '').trim();
+    if (!phone || !email) {
+      editErr.textContent = 'Please fill in both fields.';
+      editErr.hidden = false;
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      editErr.textContent = 'That email doesn’t look right.';
+      editErr.hidden = false;
+      return;
+    }
+    editErr.hidden = true;
+    const submitBtn = editForm.querySelector('[data-edit-submit]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving…';
+
+    const previousEmail = (lead && lead.email) || '';
+    const updatePayload = {
+      action: 'update_contact',
+      match_gclid: (lead && lead.gclid) || '',
+      match_email: previousEmail,
+      phone: phone,
+      email: email
+    };
+
+    postJson(updatePayload).finally(() => {
+      // Update local copy + sessionStorage so any future edit cycle sees the
+      // new values, then re-render.
+      lead = lead || {};
+      lead.phone = phone;
+      lead.email = email;
+      try { sessionStorage.setItem('mh_lead', JSON.stringify(lead)); } catch (_) {}
+      renderContact();
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Save changes';
+      editForm.hidden = true;
+      contactSummary.hidden = false;
+      const editLink = main.querySelector('[data-action="edit-contact"]');
+      if (editLink) editLink.hidden = false;
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
