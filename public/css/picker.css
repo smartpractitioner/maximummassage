@@ -265,6 +265,13 @@
   line-height: 1.4;
 }
 .picker-intro strong { color: var(--brand-primary-dark); }
+.picker-intro__hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  opacity: 0.85;
+}
 
 .picker-grid {
   display: grid;

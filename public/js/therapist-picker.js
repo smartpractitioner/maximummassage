@@ -155,7 +155,7 @@
 
   function buildGrid(recommendedId) {
     return `
-      ${recommendedId ? '<p class="picker-intro">Based on your answers, we recommend <strong>' + escapeHtml(findTherapist(recommendedId).name.split(" ")[0]) + '</strong> &mdash; but pick whoever feels right.</p>' : ''}
+      ${recommendedId ? '<p class="picker-intro">Based on your answers, we recommend <strong>' + escapeHtml(findTherapist(recommendedId).name.split(" ")[0]) + '</strong> &mdash; but pick whoever feels right. <span class="picker-intro__hint">Tap any therapist to learn more about them.</span></p>' : ''}
       <div class="picker-grid">
         ${therapists.map((t) => {
           const isRecommended = t.id === recommendedId;
@@ -263,7 +263,7 @@
           <div class="lb-stepper lb-stepper--${stepperVariant}" data-stepper aria-hidden="true">
             <div class="lb-stepper__item" data-step="1">
               <span class="lb-stepper__num">1</span>
-              <span class="lb-stepper__label"><span class="lb-stepper__label-full">Tell us about your experience</span><span class="lb-stepper__label-short">About you</span></span>
+              <span class="lb-stepper__label"><span class="lb-stepper__label-full">Share your history</span><span class="lb-stepper__label-short">About you</span></span>
             </div>
             <div class="lb-stepper__item" data-step="2">
               <span class="lb-stepper__num">2</span>
@@ -486,23 +486,12 @@
     });
   }
 
-  // TEMP: while polishing the Flow B page (hero copy, layout, etc.) we
-  // skip the Tally quiz so the rest of the lightbox (grid → detail →
-  // lead form → confirmation) is one click away. Flip back to showQuiz()
-  // before launch — see TODO marker in openLightbox below.
-  const SKIP_QUIZ_FOR_DESIGN_REVIEW = true;
-
   function openLightbox() {
     ensureOverlay();
     lastFocus = document.activeElement;
     overlay.setAttribute('data-open', 'true');
     document.body.style.overflow = 'hidden';
-    // TODO(restore-quiz): swap back to showQuiz() once page polish is done.
-    if (SKIP_QUIZ_FOR_DESIGN_REVIEW) {
-      showGrid(null);
-    } else {
-      showQuiz();
-    }
+    showQuiz();
   }
 
   function closeLightbox() {
