@@ -122,6 +122,41 @@ doesn't require manual sheet edits — just redeploy.
 
 These don't happen automatically when you push. Don't forget them.
 
+### GA4 server-side tracking (Cloudflare Pages Function)
+
+GA4 events are fired from the edge via [`functions/track.js`](functions/track.js)
+instead of the client-side `gtag.js` bundle. This saves ~160 KB on every
+page load. Setup is a one-time manual procedure:
+
+1. **Create a GA4 Measurement Protocol API secret.**
+   - GA4 admin → **Data Streams** → click the web stream for
+     `G-DVHL7E1D9C` → **Measurement Protocol API secrets** → **Create**.
+   - Give it a nickname like "Cloudflare edge". Copy the secret value.
+2. **Add it to Cloudflare Pages env vars.**
+   - Cloudflare dashboard → Pages → maximummassage → **Settings → Environment
+     Variables**.
+   - Add `GA4_API_SECRET` to **both** Production and Preview environments.
+   - Paste the secret value. Save.
+   - The next deploy picks it up automatically; existing deploys stay broken
+     until rebuilt (push any commit to redeploy).
+3. **Verify in GA4 Realtime.**
+   - Visit `https://go.maximummassage.ca/massage-therapy-calgary-flow-b/`.
+   - GA4 → Reports → Realtime → you should see a `page_view` event within
+     ~30 seconds, with the geo + UTM params populated server-side.
+   - Optional: temporarily set `GA4_DEBUG=1` env var to route to GA4's
+     `/debug/mp/collect` endpoint, then check **GA4 → Admin → DebugView**
+     for any payload validation errors. Remove the env var afterward.
+4. **Disable the client-side GA4 tag in GTM.**
+   - GTM container `GTM-5M8LTCF8` → find the **GA4 Configuration** /
+     **GA4 Page View** tag → set its trigger to **None** (or pause the
+     tag) → **Submit + Publish**.
+   - That stops the 160 KB `gtag.js?id=G-DVHL7E1D9C` from loading and
+     unblocks the perf score.
+
+The Google Ads conversion tag (`AW-17632628958`) is still client-side
+through GTM. Migrating it to the edge needs the Google Ads Enhanced
+Conversions API — separate work, separate API secret.
+
 ### Apps Script deployment
 
 When [`public/js/apps-script-lead-capture.gs`](public/js/apps-script-lead-capture.gs) changes:

@@ -1301,5 +1301,75 @@ Sat: 10am to 3pm</div></div>
 </script>
 <!-- End Google Tag Manager -->
 
+<!-- Server-side GA4 tracking via /track. Replaces the 160 KB
+     gtag.js?id=G-DVHL7E1D9C bundle once the GA4 page_view tag is
+     disabled in the GTM container. See functions/track.js for the
+     edge relay and required env vars. Until GA4_API_SECRET is set
+     on Cloudflare Pages, /track is a 200-OK no-op so this is safe
+     to ship in advance of the GTM tag disable. -->
+<script>
+(function () {
+  var ENDPOINT = '/track';
+  function send(events) {
+    try {
+      var blob = new Blob([JSON.stringify({ events: events })], { type: 'application/json' });
+      if (navigator.sendBeacon && navigator.sendBeacon(ENDPOINT, blob)) return;
+    } catch (_) {}
+    try {
+      fetch(ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ events: events }),
+        keepalive: true
+      }).catch(function () {});
+    } catch (_) {}
+  }
+
+  function pageView() {
+    var url;
+    try { url = new URL(location.href); } catch (_) { url = { searchParams: { get: function () { return null; } } }; }
+    var params = {
+      page_location: location.href.slice(0, 1000),
+      page_path: location.pathname,
+      page_title: (document.title || '').slice(0, 200),
+      page_referrer: (document.referrer || '').slice(0, 500),
+      screen_resolution: (screen.width || 0) + 'x' + (screen.height || 0),
+      language: navigator.language || ''
+    };
+    var attrKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'page_variant', 'flow'];
+    for (var i = 0; i < attrKeys.length; i++) {
+      var v = url.searchParams.get(attrKeys[i]);
+      if (v) params[attrKeys[i]] = String(v).slice(0, 200);
+    }
+    send([{ name: 'page_view', params: params }]);
+  }
+
+  // Public hook so therapist-picker.js (and anything else) can fire
+  // server-side events without re-implementing the transport.
+  window.mhTrack = function (name, params) { send([{ name: name, params: params || {} }]); };
+
+  // tel: clicks → call_click. Capture phase so we get there before the
+  // OS dialer pre-empts the click handler.
+  document.addEventListener('click', function (e) {
+    var link = e.target && e.target.closest && e.target.closest('a[href^="tel:"]');
+    if (!link) return;
+    send([{
+      name: 'call_click',
+      params: {
+        call_phone: (link.getAttribute('href') || '').replace('tel:', '').slice(0, 30),
+        call_location: (link.dataset && link.dataset.location) || 'unknown',
+        page_path: location.pathname
+      }
+    }]);
+  }, true);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', pageView);
+  } else {
+    pageView();
+  }
+})();
+</script>
+
 </body>
 </html>
