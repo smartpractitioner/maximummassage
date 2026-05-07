@@ -1,7 +1,45 @@
 # Maximum Health perf-cleanup — summary
 
 Tracking the work specified in `maximum-health-perf-cleanup.md`, executed
-2026-05-01.
+2026-05-01, plus the Flow B v3 follow-up round on 2026-05-06.
+
+## Flow B v3 follow-up (2026-05-06)
+
+After the v3 redesign launched, PSI on `/massage-therapy-calgary-flow-b/`
+showed 68 / LCP 7.0 s with -2,190 ms estimated savings on render-blocking
+requests. Three more changes shipped in commit `2551ea3`:
+
+- Inlined `flow-b-v3.css` into `<head>` (one fewer request, no blocking).
+- Switched the Google Fonts CSS link and `picker.css?v=v3-hint` to the
+  `rel="preload" as="style" + onload` async-load pattern with `<noscript>`
+  fallbacks.
+- Resized `sunlife.webp` from 1574×1543 px / 75 KB to 44×43 px / 2.5 KB
+  (rendered size is 22×22; we keep 2× DPR). Sharp via `npx`.
+- Added a `<main>` landmark wrapping the page sections (a11y +2).
+
+Lighthouse on live (2 consecutive runs, mobile, simulate):
+
+| Metric | PSI 2026-05-04 | LH 2026-05-06 |
+|---|---|---|
+| Performance | 68 | **96 / 97** |
+| LCP | 7.0 s | **1.8 s** |
+| FCP | 2.9 s | **1.8 s** |
+| TBT | 130 ms | 130–160 ms |
+| CLS | 0.087 | **0.054** |
+| Speed Index | 2.9 s | **1.8 s** |
+| Accessibility | 90 | 92 |
+
+Cloudflare manual toggles (Task 13) were also confirmed during this
+round — see `README.md → Cloudflare zone settings` for the current
+state. Auto Minify is deprecated and skipped; Brotli is on by default;
+Early Hints + Rocket Loader OFF + Browser Cache TTL "Respect Existing
+Headers" are confirmed.
+
+The recommendation to delete orphaned Landingi files in `public/assets/`
+turned out to be wrong — they're still consumed by the per-therapist
+subpages (`brookelyn/`, `meagan/`, `charlotte/`, `lindsey/`,
+`appointment-confirmed/`). Don't delete them; revisit if those pages
+also get a v3-style rebuild.
 
 ## Tasks completed
 

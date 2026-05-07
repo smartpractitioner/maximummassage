@@ -139,6 +139,25 @@ When [`public/js/apps-script-lead-capture.gs`](public/js/apps-script-lead-captur
 
 Pushing to `main` triggers an auto-deploy. No manual step.
 
+### Cloudflare zone settings (verified 2026-05-06)
+
+Don't change these unless you understand why. The current state is the
+result of perf tuning:
+
+- **Speed → Optimization → Auto Minify:** deprecated by Cloudflare in
+  August 2024 — the toggle no longer takes effect. Don't try to enable it.
+  If we ever need real minification, do it at build-time (terser /
+  cssnano / html-minifier).
+- **Speed → Optimization → Brotli:** ON (also deprecated as a toggle —
+  always on for non-Enterprise zones now).
+- **Speed → Optimization → Early Hints (Content Optimization tab):** ON.
+- **Speed → Optimization → Rocket Loader:** OFF. Keep it off — it
+  rewrites JS in ways that fight our explicit Tally / GTM / picker init
+  ordering.
+- **Caching → Configuration → Browser Cache TTL:** "Respect Existing
+  Headers". `public/_headers` already declares `max-age=14400` (4h) on
+  static assets so Cloudflare defers to that.
+
 ### Splitter ramp
 
 To change the Flow B traffic share, edit the rollout percentage in
