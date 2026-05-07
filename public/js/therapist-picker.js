@@ -1,12 +1,27 @@
 (function () {
   'use strict';
 
+  // Diagnostic logging — only active when ?debug=picker is in the URL or
+  // localStorage.mh_picker_debug === '1'. Used to trace the Tally → picker
+  // recommendation flow when something looks off. Remove once stable.
+  const DEBUG = (function () {
+    try {
+      if (new URLSearchParams(window.location.search).get('debug') === 'picker') return true;
+      if (localStorage.getItem('mh_picker_debug') === '1') return true;
+    } catch (_) {}
+    return false;
+  })();
+  function pickerDebug() {
+    if (!DEBUG) return;
+    try { console.log.apply(console, ['[picker]'].concat(Array.from(arguments))); } catch (_) {}
+  }
+
   const TALLY_FORM_SRC = 'https://tally.so/embed/0QPyJQ?alignLeft=1&hideTitle=1&transparentBackground=1';
   const TALLY_SCRIPT = 'https://tally.so/widgets/embed.js';
   const LEAD_CAPTURE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwt0ZJ1RW8unG2Uj5vyXWC4Xn7k5fhPGpUL57ysYYoGX-i0fkacxyr-uIGhxx3Le_cKFQ/exec';
   const CONFIRMATION_PATH = '/massage-therapy-calgary-flow-b/confirmation/';
 
-  const PRACTITIONER_PATHS = ['/brookelyn/', '/meagan/', '/charlotte/', '/lindsey/'];
+  const PRACTITIONER_PATHS = ['/brookelyn/', '/meagan/', '/charlotte/', '/lindsey/', '/tif/'];
 
   const UTM_KEYS = ['gclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'page_variant', 'flow'];
 
@@ -86,6 +101,25 @@
       price: 49,
       regularPrice: 124,
       path: '/lindsey/'
+    },
+    {
+      id: 'tif',
+      name: 'Tif Henderson',
+      shortName: 'Tif H.',
+      title: 'Personalized + perinatal specialist',
+      specialty: 'Personalized + perinatal',
+      photo: '/images/therapists/tif.webp',
+      bio: 'Tif takes a personalized approach with every client — tailoring each session to your needs, whether that’s tension relief, stress reduction, or pain management, and partnering with you on a treatment plan that helps you reach your goals.',
+      tags: ['Swedish', 'Deep tissue', 'Lymphatic drainage', 'Pre & post-natal', 'TMJ + facial'],
+      review: {
+        text: '[STUB — replace with a real Google review once available.]',
+        source: 'Google review'
+      },
+      experience: '2,200-hour Advanced Massage Therapy graduate (Professional Institute of Massage Therapy, Calgary). Member in good standing with CMMOTA.',
+      duration: '60 min',
+      price: 49,
+      regularPrice: 124,
+      path: '/tif/'
     },
     {
       id: 'kassandra',
@@ -393,20 +427,23 @@
       const href = iframe.contentWindow.location.href;
       const pathname = iframe.contentWindow.location.pathname;
       const matchedPath = PRACTITIONER_PATHS.find((p) => pathname.indexOf(p) === 0);
+      pickerDebug('onQuizIframeLoad', { href: href, pathname: pathname, matchedPath: matchedPath });
       if (matchedPath) {
         const id = matchedPath.replace(/\//g, '');
         showGrid(id);
       }
     } catch (err) {
-      /* still on tally.so — cross-origin, no action */
+      pickerDebug('onQuizIframeLoad cross-origin', String(err));
     }
   }
 
   let lastRecommendedId = null;
   function showGrid(recommendedId) {
     if (recommendedId) lastRecommendedId = recommendedId;
+    const renderId = recommendedId || lastRecommendedId;
+    pickerDebug('showGrid', { arg: recommendedId, lastRecommendedId: lastRecommendedId, renderingWith: renderId });
     const stage = overlay.querySelector('[data-view="grid"]');
-    stage.innerHTML = buildGrid(recommendedId || lastRecommendedId);
+    stage.innerHTML = buildGrid(renderId);
     setView('grid');
     stage.scrollTop = 0;
     pushView('grid');
@@ -567,14 +604,15 @@
     // Fallback: catch Tally postMessage events in case sandbox blocks redirect
     // entirely. We may not get the recommended therapist, but we still advance
     // the user into the picker rather than stranding them on the form.
+    //
+    // Path-anchored: only matches a therapist id when it appears as a URL path
+    // segment or query-param value. Naive substring match used to false-positive
+    // on Tally postMessage payloads that included all therapist names in option
+    // text and always returned 'brookelyn' (first in the list).
     function findRecommendedIn(text) {
       if (typeof text !== 'string') return null;
-      const lower = text.toLowerCase();
-      let match = null;
-      ['brookelyn', 'meagan', 'charlotte', 'lindsey'].forEach((id) => {
-        if (lower.indexOf(id) !== -1 && !match) match = id;
-      });
-      return match;
+      const m = text.match(/[\/=](brookelyn|meagan|charlotte|lindsey|tif)(?:[\/?#&"']|$)/i);
+      return m ? m[1].toLowerCase() : null;
     }
 
     function recheckIframePath(attempt) {
@@ -584,8 +622,11 @@
       try {
         const path = iframe.contentWindow.location.pathname || '';
         const id = findRecommendedIn(path);
+        pickerDebug('recheckIframePath', { attempt: attempt, path: path, match: id });
         if (id) { showGrid(id); return; }
-      } catch (_) { /* still cross-origin */ }
+      } catch (err) {
+        pickerDebug('recheckIframePath cross-origin', { attempt: attempt, err: String(err) });
+      }
       if (attempt < 8) setTimeout(() => recheckIframePath(attempt + 1), 250);
     }
 
@@ -609,16 +650,25 @@
         if (!isSubmit) return;
         if (!overlay || overlay.getAttribute('data-open') !== 'true') return;
 
-        // Aggressive recommendation extraction: search the entire stringified
-        // payload for a practitioner id. Catches redirect URLs in any shape.
+        // Search the stringified payload for a practitioner id. The matcher
+        // is path-anchored (looks for /id/ or =id) so postMessage payloads
+        // that include question text mentioning all therapist names won't
+        // false-positive on the first one in the list.
         let recommended = null;
-        try { recommended = findRecommendedIn(JSON.stringify(payload)); } catch (_) {}
+        let stringified = '';
+        try {
+          stringified = JSON.stringify(payload);
+          recommended = findRecommendedIn(stringified);
+        } catch (_) {}
+        pickerDebug('postMessage Tally submit', { rawType: typeof e.data, payload: payload, stringifiedLen: stringified.length, recommended: recommended });
 
         showGrid(recommended);
         // Belt-and-suspenders: keep checking the iframe URL for a moment in
         // case Tally navigates the iframe shortly after the message fires.
         recheckIframePath(0);
-      } catch (_) { /* swallow */ }
+      } catch (err) {
+        pickerDebug('postMessage handler error', String(err));
+      }
     });
   }
 

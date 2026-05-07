@@ -115,16 +115,20 @@ button { font-family: inherit; }
   padding: 14px 22px 50px;
   position: relative;
 }
+
+/* ---------- Site topbar (logo + Call us, sticky across whole page) ---------- */
+/* Lives outside .hero so its sticky containing block is <body>; otherwise
+   it would scroll away with the hero section. */
 .hero-topbar {
   position: sticky;
   top: 0;
   z-index: 50;
   background: var(--page-bg);
-  padding: 10px 0;
+  padding: 10px 22px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 18px;
+  box-shadow: 0 1px 0 rgba(14, 58, 71, 0.06);
 }
 .hero-logo { height: 36px; width: auto; }
 .hero-call {

@@ -140,16 +140,20 @@ button { font-family: inherit; }
   padding: 14px 22px 50px;
   position: relative;
 }
+
+/* ---------- Site topbar (logo + Call us, sticky across whole page) ---------- */
+/* Lives outside .hero so its sticky containing block is <body>; otherwise
+   it would scroll away with the hero section. */
 .hero-topbar {
   position: sticky;
   top: 0;
   z-index: 50;
   background: var(--page-bg);
-  padding: 10px 0;
+  padding: 10px 22px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 18px;
+  box-shadow: 0 1px 0 rgba(14, 58, 71, 0.06);
 }
 .hero-logo { height: 36px; width: auto; }
 .hero-call {
@@ -773,8 +777,8 @@ button { font-family: inherit; }
 }
 
 </style>
-<link rel="preload" as="style" href="/css/picker.css?v=v3-back" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="/css/picker.css?v=v3-back"></noscript>
+<link rel="preload" as="style" href="/css/picker.css?v=v3-tif" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="/css/picker.css?v=v3-tif"></noscript>
 
 <script type="application/ld+json">
 {
@@ -803,19 +807,20 @@ button { font-family: inherit; }
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5M8LTCF8" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
+<!-- ============ Site topbar (sticky across the whole page) ============ -->
+<div class="hero-topbar">
+  <img class="hero-logo" src="/images/flow-b-v3/logo.webp" alt="Maximum Health — Massage Therapy Calgary" width="140" height="36">
+  <a class="hero-call" href="tel:+14032830725" aria-label="Call us at (403) 283-0725" data-location="hero">
+    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" fill="#FFFFFF"/>
+    </svg>
+    Call us
+  </a>
+</div>
+
 <!-- ============ 1. HERO ============ -->
 <main>
 <section class="hero">
-  <div class="hero-topbar">
-    <img class="hero-logo" src="/images/flow-b-v3/logo.webp" alt="Maximum Health — Massage Therapy Calgary" width="140" height="36">
-    <a class="hero-call" href="tel:+14032830725" aria-label="Call us at (403) 283-0725" data-location="hero">
-      <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" fill="#FFFFFF"/>
-      </svg>
-      Call us
-    </a>
-  </div>
-
   <div class="hero-content">
     <div class="social-pill">
       <img src="/images/flow-b-v3/sunlife.webp" alt="Sun Life" width="22" height="22">
@@ -1288,7 +1293,7 @@ Sat: 10am to 3pm</div></div>
 </script>
 
 <script src="/js/utm-capture.js" defer></script>
-<script src="/js/therapist-picker.js?v=v3-back" defer></script>
+<script src="/js/therapist-picker.js?v=v3-tif" defer></script>
 
 <!-- Google Tag Manager — lazy-loaded.
 
