@@ -50,7 +50,15 @@
       duration: '60 min',
       price: 49,
       regularPrice: 124,
-      path: '/brookelyn/'
+      path: '/brookelyn/',
+      skills: {
+        prenatal: {
+          title: 'Postpartum + women’s health specialist',
+          specialty: 'Postpartum recovery + pelvic',
+          bio: 'Hi, I’m Brookelyn. Postpartum recovery and women’s health is the work I’m most passionate about, partly because I think it’s so often underserved. I love helping women rebuild strength, mobility, and confidence after pregnancy, without any "no pain, no gain" pressure. SI joint, hips, low back, returning to running, that’s my zone.\n\nI’m a runner, a strength trainer, and a mom of two myself, so I know the gap between "officially cleared at six weeks" and actually feeling like yourself again. We’ll figure out where you are right now and build a plan from there, together.',
+          tags: ['Postpartum recovery', 'Women’s health', 'SI joint + low back', 'Pelvic care', 'Returning to running + strength', 'Mom of two', 'Side-lying massage', 'Nervous system aware']
+        }
+      }
     },
     {
       id: 'meagan',
@@ -104,7 +112,15 @@
       duration: '90 min',
       price: 49,
       regularPrice: 124,
-      path: '/charlotte/'
+      path: '/charlotte/',
+      skills: {
+        prenatal: {
+          title: 'Pre/post-partum + recovery specialist',
+          specialty: 'C-section + chronic back pain',
+          bio: 'Hi, I’m Charlotte. I bring specialized pre/post-partum training together with myofascial, trigger-point, and lymphatic drainage work, especially for c-section recovery, scar sensitivity, and the chronic back, hip, and shoulder pain that often lingers after pregnancy. I also have a PhD in Nutritional Biochemistry and have spent over a decade teaching massage therapy, so the science behind what I’m doing matters to me.\n\nI also know what long recovery looks like personally, after fracturing two vertebrae in 2006. That experience taught me to work gently and patiently and to never push through pain to chase a quick result. If your body is in a season of change, I’d love to help.',
+          tags: ['Pre/post-partum CEU', 'C-section recovery', 'Lymphatic drainage', 'Trigger point', 'Myofascial release', 'Chronic back pain', 'Side-lying massage', 'Reiki Master']
+        }
+      }
     },
     {
       id: 'lindsey',
@@ -131,7 +147,15 @@
       duration: '60 min',
       price: 49,
       regularPrice: 124,
-      path: '/lindsey/'
+      path: '/lindsey/',
+      skills: {
+        prenatal: {
+          title: 'Prenatal & postpartum specialist',
+          specialty: 'Prenatal yoga + doula',
+          bio: 'Hi, I’m Lindsey. My whole practice has grown around supporting bodies through pregnancy and into postpartum. I work in side-lying with lots of cushions, blending fascial release with nervous-system-aware care so the session feels calming rather than jarring. I move at a pace your body can actually integrate, no matter what trimester you’re in.\n\nI’ve been teaching prenatal yoga since 2014, I’m a certified doula (birth and postpartum), a breathwork facilitator, and a mom of three. So I get it from the inside, the exhaustion, the tenderness, all of it. If you want someone who’s calm, patient, and fully present for whatever season you’re in, I’d love to take care of you.',
+          tags: ['Prenatal yoga (since 2014)', 'Doula (birth + postpartum)', 'Side-lying massage', 'Nervous system regulation', 'Breathwork', 'Mom of three', 'Postpartum recovery', 'Pregnancy anxiety + sleep']
+        }
+      }
     },
     {
       id: 'tif',
@@ -154,7 +178,15 @@
       duration: '60 min',
       price: 49,
       regularPrice: 124,
-      path: '/tif/'
+      path: '/tif/',
+      skills: {
+        prenatal: {
+          title: 'Pre & post-natal + lymphatic specialist',
+          specialty: 'Pregnancy edema + lymphatic',
+          bio: 'Hi, I’m Tif. I tailor every session to whatever you’re navigating that day, swelling, headaches, jaw tension, or just needing some calm. My training spans Swedish, deep tissue, lymphatic drainage, and pre/post-natal massage, so I can shift from gentle relaxation into focused lymphatic work in the same session if that’s what you need.\n\nOutside the clinic, I’m a musician and an artist who spends as much time outside as the weather allows, hiking, biking, and skiing with my husband and our dog. I’d love to bring that same care for what makes life feel good into your sessions.',
+          tags: ['Pre & post-natal trained', 'Lymphatic drainage (edema)', 'Side-lying Swedish', 'TMJ + jaw tension', 'Pregnancy headaches', 'Personalized approach', 'Stress reduction', 'Pain management']
+        }
+      }
     },
     {
       id: 'kassandra',
@@ -180,6 +212,53 @@
     return String(str).replace(/[&<>"']/g, (c) => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[c]));
+  }
+
+  // ---------- Page-aware profile resolution ----------
+  // currentSkill is set from the page config (window.MaximumHealth.PAGE_CONFIGS)
+  // at init time. Defaults to 'general' so Flow B + any unconfigured page
+  // continues to render the existing flat-field profile.
+  let currentSkill = 'general';
+  let currentPageConfig = null;
+
+  function hasSkill(t, skill) {
+    if (!skill || skill === 'general') return true;
+    return !!(t.skills && t.skills[skill]);
+  }
+
+  // Returns the active profile for therapist `t` under `skill`.
+  // For 'general' (or missing skill), returns the flat top-level fields.
+  // For a known skill, merges the per-skill override on top of those, so any
+  // field the override doesn't specify falls back to the general value.
+  function getProfile(t, skill) {
+    const base = {
+      title: t.title,
+      specialty: t.specialty,
+      bio: t.bio,
+      tags: t.tags,
+      experience: t.experience,
+      review: t.review
+    };
+    if (!skill || skill === 'general') return base;
+    const ovr = (t.skills && t.skills[skill]) || null;
+    if (!ovr) return base;
+    return {
+      title: ovr.title || base.title,
+      specialty: ovr.specialty || base.specialty,
+      bio: ovr.bio || base.bio,
+      tags: ovr.tags || base.tags,
+      experience: ovr.experience || base.experience,
+      review: ovr.review || base.review
+    };
+  }
+
+  // Returns the visible therapist list filtered by the current page's skill.
+  // For 'general', returns all therapists (including the disabled placeholder
+  // entries Kassandra/Tracy). For any other skill, returns only therapists
+  // who have a skills.<skill> block defined.
+  function visibleTherapists() {
+    if (!currentSkill || currentSkill === 'general') return therapists;
+    return therapists.filter((t) => hasSkill(t, currentSkill));
   }
 
   function readUtm(key) {
@@ -223,12 +302,15 @@
   }
 
   function buildGrid(recommendedId) {
+    const list = visibleTherapists();
+    const hasDisabled = list.some((t) => t.disabled);
     return `
       ${recommendedId ? '<p class="picker-intro">Based on your answers, we recommend <strong>' + escapeHtml(findTherapist(recommendedId).name.split(" ")[0]) + '</strong>, but pick whoever feels right. <span class="picker-intro__hint">Tap any therapist to learn more about them.</span></p>' : ''}
       <div class="picker-grid">
-        ${therapists.map((t) => {
+        ${list.map((t) => {
           const isRecommended = t.id === recommendedId;
           const isDisabled = !!t.disabled;
+          const profile = getProfile(t, currentSkill);
           const classes = ['picker-card'];
           if (isRecommended) classes.push('picker-card--recommended');
           if (isDisabled) classes.push('picker-card--disabled');
@@ -240,13 +322,13 @@
               ${isRecommended ? '<span class="picker-card__badge">We recommend</span>' : ''}
               <span class="picker-card__photo-wrap"><img class="picker-card__photo" src="${t.photo}" alt="${escapeHtml(t.name)}" loading="lazy"></span>
               <p class="picker-card__name">${escapeHtml(t.shortName)}</p>
-              <p class="picker-card__spec">${escapeHtml(t.specialty)}</p>
+              <p class="picker-card__spec">${escapeHtml(profile.specialty)}</p>
               ${isDisabled ? '<p class="picker-card__disabled-label">' + escapeHtml(t.disabledLabel) + '</p>' : ''}
             </button>
           `;
         }).join('')}
       </div>
-      <p class="picker-foot">Tap a therapist to see more. Two of our team are currently fully booked.</p>
+      ${hasDisabled ? '<p class="picker-foot">Tap a therapist to see more. Some of our team are currently fully booked.</p>' : '<p class="picker-foot">Tap a therapist to see more about them.</p>'}
     `;
   }
 
@@ -255,7 +337,8 @@
   }
 
   function buildReviewCard(t) {
-    const r = t.review || {};
+    const profile = getProfile(t, currentSkill);
+    const r = profile.review || {};
     // Skip the card entirely if we only have a placeholder stub.
     if (!r.text || /^\[STUB/i.test(r.text)) return '';
     const star = '<svg width="13" height="13" viewBox="0 0 24 24" fill="#F5A623" aria-hidden="true"><path d="M12 2.6l2.95 5.98 6.6.96-4.78 4.66 1.13 6.57L12 17.67l-5.9 3.1 1.13-6.57L2.45 9.54l6.6-.96L12 2.6z"/></svg>';
@@ -279,16 +362,17 @@
   }
 
   function buildDetail(t) {
-    const tagsHtml = t.tags.map((tag) => `<span class="detail-panel__tag">${escapeHtml(tag)}</span>`).join('');
+    const profile = getProfile(t, currentSkill);
+    const tagsHtml = profile.tags.map((tag) => `<span class="detail-panel__tag">${escapeHtml(tag)}</span>`).join('');
     // experience can be a string (legacy) or an array of credential lines.
     // Array form renders as a vertical bullet list, easier to scan than a
     // dense paragraph when the therapist has many credentials.
-    const expHtml = Array.isArray(t.experience)
-      ? '<ul class="detail-panel__creds">' + t.experience.map((line) => `<li>${escapeHtml(line)}</li>`).join('') + '</ul>'
-      : `<p class="detail-panel__exp">${escapeHtml(t.experience)}</p>`;
+    const expHtml = Array.isArray(profile.experience)
+      ? '<ul class="detail-panel__creds">' + profile.experience.map((line) => `<li>${escapeHtml(line)}</li>`).join('') + '</ul>'
+      : `<p class="detail-panel__exp">${escapeHtml(profile.experience)}</p>`;
     // bio is a single string with `\n\n` separators between paragraphs.
     // Render one <p> per paragraph so the detail panel reads as prose.
-    const bioHtml = String(t.bio || '')
+    const bioHtml = String(profile.bio || '')
       .split(/\n\n+/)
       .filter((p) => p.trim().length > 0)
       .map((p) => `<p class="detail-panel__bio">${escapeHtml(p.trim())}</p>`)
@@ -300,7 +384,7 @@
       <div class="detail-panel__body">
         <img class="detail-panel__photo" src="${t.photo}" alt="${escapeHtml(t.name)}">
         <h3 class="detail-panel__name">${escapeHtml(t.name)}, RMT</h3>
-        <p class="detail-panel__title">${escapeHtml(t.title)}</p>
+        <p class="detail-panel__title">${escapeHtml(profile.title)}</p>
         ${bioHtml}
         <div class="detail-panel__tags">${tagsHtml}</div>
         ${expHtml}
@@ -408,6 +492,13 @@
         return;
       }
 
+      // Native quiz option button
+      const quizOpt = target.closest('[data-quiz-option]');
+      if (quizOpt) {
+        handleNativeQuizAnswer(quizOpt.getAttribute('data-quiz-q'), quizOpt.getAttribute('data-quiz-option'));
+        return;
+      }
+
       const card = target.closest('[data-therapist]');
       if (card && card.classList.contains('picker-card') && !card.hasAttribute('disabled')) {
         showDetail(card.getAttribute('data-therapist'));
@@ -476,6 +567,15 @@
 
   function showQuiz() {
     const stage = overlay.querySelector('[data-view="quiz"]');
+    // Native quiz path: page config carries an array of weighted questions.
+    if (currentPageConfig && Array.isArray(currentPageConfig.quizQuestions) && currentPageConfig.quizQuestions.length > 0) {
+      nativeQuizState = { qIdx: 0, answers: [] };
+      stage.innerHTML = renderNativeQuestion(currentPageConfig.quizQuestions, 0);
+      setView('quiz');
+      pushView('quiz');
+      return;
+    }
+    // Fallback: Tally iframe (Flow B "general" still uses this).
     stage.innerHTML = buildQuizView();
     const iframe = stage.querySelector('[data-quiz-iframe]');
     if (iframe && !iframe.getAttribute('src')) {
@@ -485,6 +585,81 @@
     bootTallyScript();
     setView('quiz');
     pushView('quiz');
+  }
+
+  // ---------- Native quiz ----------
+  let nativeQuizState = { qIdx: 0, answers: [] };
+
+  function renderNativeQuestion(questions, qIdx) {
+    const q = questions[qIdx];
+    const total = questions.length;
+    const optionsHtml = q.options.map((opt) =>
+      `<button type="button" class="native-quiz__option" data-quiz-option="${escapeHtml(opt.id)}" data-quiz-q="${escapeHtml(q.id)}">${escapeHtml(opt.label)}</button>`
+    ).join('');
+    return `
+      <div class="native-quiz" data-view-root="quiz">
+        <p class="native-quiz__progress">Question ${qIdx + 1} of ${total}</p>
+        <h3 class="native-quiz__heading">${escapeHtml(q.text)}</h3>
+        <div class="native-quiz__options">${optionsHtml}</div>
+      </div>
+    `;
+  }
+
+  function handleNativeQuizAnswer(qId, optId) {
+    const questions = currentPageConfig && currentPageConfig.quizQuestions;
+    if (!Array.isArray(questions)) return;
+    const q = questions[nativeQuizState.qIdx];
+    if (!q || q.id !== qId) return;
+    const opt = q.options.find((o) => o.id === optId);
+    if (!opt) return;
+    nativeQuizState.answers.push({ qId: q.id, qText: q.text, optId: opt.id, optLabel: opt.label, weights: opt.weights || {} });
+    nativeQuizState.qIdx += 1;
+    if (nativeQuizState.qIdx < questions.length) {
+      const stage = overlay.querySelector('[data-view="quiz"]');
+      stage.innerHTML = renderNativeQuestion(questions, nativeQuizState.qIdx);
+    } else {
+      finishNativeQuiz();
+    }
+  }
+
+  function finishNativeQuiz() {
+    const totals = {};
+    nativeQuizState.answers.forEach((a) => {
+      Object.keys(a.weights || {}).forEach((tid) => {
+        totals[tid] = (totals[tid] || 0) + a.weights[tid];
+      });
+    });
+    // Highest-scoring therapist; tie broken by Q1 (stage) score, which the
+    // first answer's weights map will naturally bias since Q1 is loaded
+    // most heavily for stage-specific recommendations.
+    let bestId = null, bestScore = -Infinity;
+    Object.keys(totals).forEach((tid) => {
+      if (totals[tid] > bestScore) { bestScore = totals[tid]; bestId = tid; }
+    });
+    pickerDebug('native quiz complete', { totals: totals, recommended: bestId, answers: nativeQuizState.answers });
+    // Fire-and-forget quiz submission (non-blocking).
+    postQuizSubmission(nativeQuizState.answers, bestId);
+    showGrid(bestId);
+  }
+
+  function postQuizSubmission(answers, recommendedId) {
+    if (!LEAD_CAPTURE_ENDPOINT || LEAD_CAPTURE_ENDPOINT === 'REPLACE_WITH_APPS_SCRIPT_URL') return;
+    const skill = (currentPageConfig && currentPageConfig.skill) || 'general';
+    const payload = {
+      action: 'quiz_submission',
+      skill: skill,
+      recommended_therapist_id: recommendedId || '',
+      answers: answers.map((a) => ({ question: a.qText, answer: a.optLabel, qId: a.qId, optId: a.optId })),
+      ...collectUtms()
+    };
+    try {
+      fetch(LEAD_CAPTURE_ENDPOINT, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+    } catch (_) { /* swallow */ }
   }
 
   function bootTallyScript() {
@@ -564,6 +739,7 @@
       recommended_therapist: recT ? recT.name : '',
       recommended_therapist_id: lastRecommendedId || '',
       matched_recommendation: lastRecommendedId ? (lastRecommendedId === therapistId) : null,
+      skill: (currentPageConfig && currentPageConfig.skill) || 'general',
       ...collectUtms()
     };
 
@@ -629,6 +805,22 @@
   }
 
   function init() {
+    // Resolve the active page config (set by /js/picker-config.js).
+    // If no config is loaded or no entry matches, we fall back to the
+    // default 'general' skill + Tally quiz, which is the original Flow B
+    // behaviour. This makes the picker safe to use on pages that haven't
+    // adopted the config layer yet.
+    try {
+      if (window.MaximumHealth && typeof window.MaximumHealth.resolvePageConfig === 'function') {
+        const cfg = window.MaximumHealth.resolvePageConfig(window.location.pathname);
+        if (cfg) {
+          currentPageConfig = cfg;
+          currentSkill = cfg.skill || 'general';
+          pickerDebug('page config resolved', { pathname: window.location.pathname, skill: currentSkill, hasNativeQuiz: !!(cfg.quizQuestions && cfg.quizQuestions.length) });
+        }
+      }
+    } catch (_) { /* config layer unavailable; keep defaults */ }
+
     document.addEventListener('click', (e) => {
       const trigger = e.target.closest('[data-open-picker]');
       if (trigger) {

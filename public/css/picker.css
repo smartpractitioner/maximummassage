@@ -242,6 +242,65 @@
   display: block;
 }
 
+/* ---------- Native quiz (replaces Tally on skill pages) ---------- */
+.native-quiz {
+  padding: var(--space-lg);
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+}
+.native-quiz__progress {
+  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+  font-size: 12.5px;
+  letter-spacing: 1.4px;
+  font-weight: 700;
+  color: var(--brand-primary-dark);
+  text-transform: uppercase;
+  margin: 0 0 12px;
+  text-align: center;
+  opacity: 0.85;
+}
+.native-quiz__heading {
+  font-family: 'Mulish', 'Manrope', system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+  color: var(--text-dark);
+  margin: 0 0 20px;
+  text-align: center;
+  text-wrap: balance;
+}
+.native-quiz__options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.native-quiz__option {
+  display: block;
+  width: 100%;
+  background: #FFFFFF;
+  color: var(--text-dark);
+  border: 1.5px solid var(--brand-primary-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 80ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.native-quiz__option:hover {
+  background: var(--brand-primary-light);
+  border-color: var(--brand-primary);
+}
+.native-quiz__option:active {
+  transform: scale(0.99);
+}
+
 /* ---------- Therapist picker grid ---------- */
 .picker-intro {
   text-align: center;
