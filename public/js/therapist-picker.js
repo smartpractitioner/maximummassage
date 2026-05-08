@@ -55,7 +55,9 @@
       bio: 'Deeply intuitive, movement-aware therapist who takes a whole-body view of pain and recovery. Brings a calming presence and works to help your body find balance without pushing past limits.',
       tags: ['Craniosacral therapy', 'Reflexology', 'Thai massage'],
       review: {
-        text: 'Meagan has a gift for understanding what your body needs. I always feel noticeably better after every session.',
+        headline: '… she’ll hit your pain spots with soothing hands',
+        text: 'I had the best massage therapist I’ve ever had, Meagan Brown has the magic touch, soothing relaxing, her knowledge of the body is amazing and she’ll hit your pain spots with soothing hands and has a wicked personality!!',
+        reviewerName: 'Wes Woznow',
         source: 'Google review'
       },
       experience: '10,000+ hours hands-on.',
@@ -74,7 +76,7 @@
       bio: 'Results-focused therapist with a calm, clinical approach and a deep commitment to helping people move better and feel better. Advanced skills in injury recovery and chronic pain care.',
       tags: ['Dynamic cupping', 'Myofascial release', 'Trigger point', 'Lymphatic drainage', 'Pre/post-partum', 'Reiki'],
       review: {
-        text: 'Charlotte is an experienced and knowledgeable professional. Best massage therapist ever — highly recommend!',
+        text: 'Charlotte is an experienced and knowledgeable professional! [...] Best massage therapist ever! Highly recommend!!',
         source: 'Google review'
       },
       experience: '7,200+ hours hands-on.',
@@ -219,6 +221,30 @@
     return therapists.find((x) => x.id === id);
   }
 
+  function buildReviewCard(t) {
+    const r = t.review || {};
+    // Skip the card entirely if we only have a placeholder stub.
+    if (!r.text || /^\[STUB/i.test(r.text)) return '';
+    const star = '<svg width="13" height="13" viewBox="0 0 24 24" fill="#F5A623" aria-hidden="true"><path d="M12 2.6l2.95 5.98 6.6.96-4.78 4.66 1.13 6.57L12 17.67l-5.9 3.1 1.13-6.57L2.45 9.54l6.6-.96L12 2.6z"/></svg>';
+    const stars = '<span class="detail-panel__review-stars" role="img" aria-label="5 out of 5 stars">' + star.repeat(5) + '</span>';
+    const googleG = '<svg class="detail-panel__review-g" width="22" height="22" viewBox="0 0 48 48" aria-label="Google review"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18c-.44-1.32-.69-2.73-.69-4.18s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7C13.42 14.62 18.27 10.75 24 10.75z"/></svg>';
+    const headline = r.headline ? `<p class="detail-panel__review-headline">"${escapeHtml(r.headline)}"</p>` : '';
+    const nameRow = r.reviewerName
+      ? `<span class="detail-panel__review-name">${escapeHtml(r.reviewerName)}</span>`
+      : `<span class="detail-panel__review-name detail-panel__review-name--muted">${escapeHtml(r.source || 'Google review')}</span>`;
+    return `
+      <div class="detail-panel__review">
+        ${headline}
+        <p class="detail-panel__review-body">${escapeHtml(r.text)}</p>
+        <div class="detail-panel__review-foot">
+          ${stars}
+          ${nameRow}
+          ${googleG}
+        </div>
+      </div>
+    `;
+  }
+
   function buildDetail(t) {
     const tagsHtml = t.tags.map((tag) => `<span class="detail-panel__tag">${escapeHtml(tag)}</span>`).join('');
     return `
@@ -231,9 +257,8 @@
         <p class="detail-panel__title">${escapeHtml(t.title)}</p>
         <p class="detail-panel__bio">${escapeHtml(t.bio)}</p>
         <div class="detail-panel__tags">${tagsHtml}</div>
-        <blockquote class="detail-panel__quote">${escapeHtml(t.review.text)}</blockquote>
-        <p class="detail-panel__source">&mdash; ${escapeHtml(t.review.source)}</p>
         <p class="detail-panel__exp">${escapeHtml(t.experience)}</p>
+        ${buildReviewCard(t)}
         <p class="detail-panel__price">
           $${t.price}
           <span class="detail-panel__price-old">$${t.regularPrice}</span>
@@ -384,6 +409,11 @@
     else if (name === 'detail') title.textContent = 'Your therapist';
     else if (name === 'lead-form') title.textContent = 'Almost there';
     setStep(name);
+    // Always reset the lightbox scroll container to the top on view change.
+    // Otherwise switching from a scrolled-down grid into detail leaves the
+    // user staring at the bottom of the detail panel instead of the photo.
+    const body = overlay.querySelector('.lb__body');
+    if (body) body.scrollTop = 0;
   }
 
   // ---------- History stack (so phone back walks lightbox views) ----------
