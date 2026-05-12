@@ -262,6 +262,20 @@ function App() {
               *EV = Expected Value per intro slot (30% conversion × ${ANNUAL_LTV.toLocaleString()} avg annual LTV)
             </p>
           </div>
+
+          {/* Plain-language explanation of EV — sits right under the chart so the client doesn't have to interpret the footnote alone */}
+          <div style={{ marginTop:14, background:C.greenPale, borderRadius:10, padding:"16px 18px", borderLeft:`4px solid ${C.green}` }}>
+            <div style={{ fontSize:13, fontWeight:700, color:C.green, marginBottom:6, letterSpacing:"0.02em" }}>
+              How to read the ${evPerSlot} "EV per Intro" bar
+            </div>
+            <p style={{ fontSize:13, color:C.text, lineHeight:1.7, margin:0 }}>
+              A $49 intro session isn't just a $49 transaction — it's the start of a relationship. Industry data and your own retention pattern suggest roughly <strong>3 out of every 10 intro clients</strong> become regulars. A converted regular books about twice a month at ${RATE} (${RATE*2}/mo, or <strong>${ANNUAL_LTV.toLocaleString()}/yr</strong>).
+            </p>
+            <p style={{ fontSize:13, color:C.text, lineHeight:1.7, margin:"10px 0 0" }}>
+              So the <em>expected</em> long-term value of every intro you sell is <strong>30% × ${ANNUAL_LTV.toLocaleString()} = ${evPerSlot}</strong>, on top of the $49 the client pays that day. The other 70% don't convert and contribute $0 to the tail — but averaged across all intros, every empty slot you fill with a $49 offer is worth nearly <strong>${(evPerSlot + INTRO).toLocaleString()}</strong> in combined immediate + future revenue. That's why a discounted intro outperforms both leaving the slot empty <em>and</em> filling it with a single ${RATE} walk-in regular.
+            </p>
+          </div>
+
           <div style={{ display:"flex", gap:10, marginTop:12, flexWrap:"wrap" }}>
             {[[C.empty,"Empty slot","Status quo. $0."],[C.gold,"$49 intro","Immediate upside."],[C.greenLight,"$124 regular","Your standard rate."],[C.green,`$${evPerSlot} EV`,"True value with LTV."]].map(([col,lbl,note]) => (
               <div key={lbl} style={{ display:"flex", alignItems:"center", gap:8, flex:1, minWidth:130, background:C.card, borderRadius:8, padding:"8px 12px", boxShadow:"0 1px 6px rgba(0,0,0,0.05)" }}>
