@@ -63,6 +63,12 @@
           specialty: 'Targeted deep work + recovery',
           bio: 'Hi, I’m Brookelyn. If you’ve been carrying tension that won’t release no matter how many times you’ve stretched it out, I want to work with you. My specialty is Kinetic massage focused on the SI joint, low back, and cervical spine, areas where deep, targeted work makes the biggest difference. I have a soft spot for runners and strength athletes whose bodies hold tension from training, but really anyone with chronic knots is welcome.\n\nI work deep but not punishing. My approach is about helping your body adapt rather than overpowering it, so the relief actually lasts past the session. We’ll talk through what’s going on and what you’ve already tried, then build a plan together.',
           tags: ['Kinetic massage', 'SI joint + low back', 'Cervical spine', 'Sports + training tension', 'Postpartum recovery', 'Side-lying or table', 'Nervous system aware', 'Plan-based approach']
+        },
+        sports: {
+          title: 'Sports + return-to-training specialist',
+          specialty: 'Running + strength rehab',
+          bio: 'Hi, I’m Brookelyn. I work most often with active people who want to keep training while addressing what their body needs. My specialty is Kinetic massage focused on the SI joint, low back, and cervical spine, the spots that take the most beating from running, lifting, and high-volume sport. I’ve got a soft spot for runners and strength athletes who want to keep going without breaking down.\n\nI’m a runner and strength trainer myself, so I know the gap between "your scan looks fine" and actually feeling ready to train again. We’ll figure out where you are and build a plan that respects both the injury and the goal.',
+          tags: ['Kinetic massage', 'SI joint + low back', 'Cervical spine', 'Runner-focused', 'Strength + longevity', 'Return-to-training', 'Postpartum recovery', 'Nervous system aware']
         }
       }
     },
@@ -91,7 +97,15 @@
       duration: '60 min',
       price: 49,
       regularPrice: 124,
-      path: '/meagan/'
+      path: '/meagan/',
+      skills: {
+        sports: {
+          title: 'Whole-body + athletic recovery specialist',
+          specialty: 'Whole-body + sport recovery',
+          bio: 'Hi, I’m Meagan. I came up as a competitive athlete, so I think a lot about how the body works as one integrated system, not separate parts. My approach combines therapeutic massage with craniosacral and reflexology training, which helps with the recovery side: better sleep, calmer nervous system, faster bounce-back between sessions.\n\nI keep moving myself, yoga, fitness, ongoing CE courses, so I know what it feels like to live in a working body. If you want recovery work that respects both the muscles you’re training and the system supporting them, let’s chat.',
+          tags: ['Craniosacral therapy', 'Reflexology', 'Whole-body approach', 'Athletic recovery', 'Sleep + nervous system', 'Therapeutic massage', 'Thai massage', 'Ongoing CE']
+        }
+      }
     },
     {
       id: 'charlotte',
@@ -131,6 +145,24 @@
           specialty: 'Chronic knots + clinical deep work',
           bio: 'Hi, I’m Charlotte. Deep clinical work for chronic pain is what I do, myofascial release, trigger point therapy, and lymphatic drainage when there’s inflammation involved. My background is twofold: a PhD in Nutritional Biochemistry and over a decade teaching massage therapy at the college level, so I think a lot about what’s actually happening in the tissue I’m working on.\n\nI also know chronic pain personally. I fractured two vertebrae in 2006 and went through a long rehab, so I work patiently and gently, even when the pressure is firm. The technique is never about pushing through pain for show. We’ll find what works for your body without setting you back.',
           tags: ['Myofascial release', 'Trigger point', 'Chronic pain', 'Back + shoulder', 'Lymphatic drainage', 'Client education', 'PhD biochemistry', 'Reiki Master']
+        },
+        sports: {
+          title: 'Injury recovery + myofascial specialist',
+          specialty: 'Sports injury + chronic rehab',
+          bio: 'Hi, I’m Charlotte. I work with people whose injuries didn’t quite resolve the way they were supposed to. Old strains, areas of chronic tightness that limit your movement, post-surgical bodies that need patient, science-backed rehab. I bring myofascial release, trigger point therapy, and lymphatic drainage when there’s lingering inflammation.\n\nI also know what real rehab looks like personally, after fracturing two vertebrae in 2006, I went through a long recovery. That experience taught me to work patiently, to never push through pain for show, and to find what actually moves the needle for each body. If your body needs more than a flush massage to get back, I’d love to help.',
+          tags: ['Myofascial release', 'Trigger point', 'Sports injury recovery', 'Chronic strain', 'Post-surgical', 'Lymphatic drainage', 'Client education', 'PhD biochemistry']
+        },
+        tmj: {
+          title: 'Trigger point + jaw tension specialist',
+          specialty: 'Jaw + chronic headaches',
+          bio: 'Hi, I’m Charlotte. Jaw tension and tension headaches often live in tissue patterns that involve a lot more than just the jaw, neck, shoulders, even the upper back. My specialty is trigger point and myofascial work, which is the kind of targeted, methodical work these areas tend to respond to. I’ll find the contributing patterns, not just the loudest spot.\n\nI also bring perspective from my PhD in Nutritional Biochemistry and a decade teaching massage, so I think a lot about why your tissue is doing what it’s doing. If your TMJ or headaches haven’t responded to surface-level work, let’s go deeper together.',
+          tags: ['Trigger point', 'Myofascial release', 'Jaw + neck patterns', 'Tension headaches', 'Chronic pain', 'PhD biochemistry', 'Client education', 'Reiki Master']
+        },
+        lymphatic: {
+          title: 'Lymphatic drainage + post-surgical specialist',
+          specialty: 'Post-op + chronic inflammation',
+          bio: 'Hi, I’m Charlotte. Lymphatic drainage is one of my favourite areas to work in, because it’s both technically interesting and deeply helpful. For post-surgical bodies, chronic inflammation, autoimmune conditions, and lymphedema, the right kind of gentle, rhythmic work can make a real difference. I have a CEU specifically in lymphatic drainage and a decade of experience applying it.\n\nMy background also includes a PhD in Nutritional Biochemistry, which means I think about your tissue and what’s happening in it at a fairly granular level. If your body is dealing with persistent swelling or recovering from something significant, I’d love to help.',
+          tags: ['Lymphatic drainage (CEU)', 'Post-surgical', 'Chronic inflammation', 'Autoimmune support', 'Lymphedema', 'Myofascial release', 'PhD biochemistry', 'Patient + adaptive']
         }
       }
     },
@@ -203,6 +235,18 @@
           specialty: 'Adaptable pressure + targeted spots',
           bio: 'Hi, I’m Tif. I tailor every session, and that includes the pressure. Some days you need firm targeted work on a specific spot, other days you need lymphatic flow on swollen tissue, and sometimes you need a bit of both in the same hour. I read what your body is asking for and adjust as we go.\n\nOutside the clinic I’m a musician and an artist who spends as much time outside as possible. I love bringing that same attention and care to your sessions, helping you feel like the version of yourself that isn’t carrying around three months of accumulated tension.',
           tags: ['Deep tissue', 'Targeted relief', 'Lymphatic drainage', 'TMJ + jaw tension', 'Adaptive pressure', 'Personalized approach', 'Swedish', 'Pain management']
+        },
+        tmj: {
+          title: 'TMJ + jaw tension specialist',
+          specialty: 'TMJ + facial work',
+          bio: 'Hi, I’m Tif. Jaw tension, TMJ, headaches that start at the temples, this is one of the areas I love working on most. My training spans Swedish, deep tissue, lymphatic drainage, and specialized facial and TMJ massage, which means I can work both the obvious spots (jaw, temples, neck) and the often-missed connections that contribute to it.\n\nOutside the clinic I’m a musician and an artist who spends as much time outside as possible. I bring that same attentiveness to your session: what’s tight, what’s compensating, what your jaw is trying to tell us.',
+          tags: ['TMJ + facial massage', 'Jaw tension', 'Tension headaches', 'Neck + cervical', 'Lymphatic drainage', 'Personalized pressure', 'Swedish', 'Stress reduction']
+        },
+        lymphatic: {
+          title: 'Lymphatic + edema relief specialist',
+          specialty: 'Edema + pregnancy swelling',
+          bio: 'Hi, I’m Tif. Lymphatic drainage is one of the modalities I trained in specifically because it does something so specific, it actually moves stuck fluid out of swollen tissue, gently, without forcing anything. I work with pregnancy swelling, post-workout edema, lingering inflammation, and anyone whose body is holding more fluid than it should.\n\nOutside the clinic I’m a musician and an artist who spends as much time outside as possible. I love bringing the same attentive, gentle care to lymphatic sessions, they’re meant to be calming, not clinical-feeling.',
+          tags: ['Lymphatic drainage', 'Pregnancy edema', 'Post-workout swelling', 'Gentle + adaptive', 'Swedish', 'Personalized', 'Pre & post-natal', 'Stress reduction']
         }
       }
     },

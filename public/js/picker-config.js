@@ -168,6 +168,191 @@
     }
   ];
 
+  const SPORTS_QUIZ = [
+    {
+      id: 'activity',
+      text: 'What brings you in today?',
+      options: [
+        { id: 'training', label: 'Training hard, I need recovery between sessions',
+          weights: { brookelyn: 2, meagan: 2 } },
+        { id: 'return', label: 'Returning to my sport after an injury',
+          weights: { brookelyn: 3, charlotte: 2 } },
+        { id: 'chronic', label: 'Chronic pain or tension from years of training',
+          weights: { charlotte: 3, brookelyn: 1 } },
+        { id: 'preventive', label: 'I just want to keep moving without breaking down',
+          weights: { brookelyn: 2, meagan: 1 } },
+        { id: 'post_surgery', label: 'Recovering from surgery',
+          weights: { charlotte: 3, meagan: 1 } }
+      ]
+    },
+    {
+      id: 'where',
+      text: 'Where’s the focus?',
+      options: [
+        { id: 'lower', label: 'SI joint, low back, hips',
+          weights: { brookelyn: 3 } },
+        { id: 'upper', label: 'Neck, shoulders, cervical spine',
+          weights: { brookelyn: 2, charlotte: 2 } },
+        { id: 'lower_extremities', label: 'Knees, ankles, feet',
+          weights: { meagan: 2, brookelyn: 1 } },
+        { id: 'whole_body', label: 'Whole-body overload, hard to point to one spot',
+          weights: { meagan: 3 } },
+        { id: 'specific_injury', label: 'A specific injury from an acute event',
+          weights: { charlotte: 3, brookelyn: 1 } }
+      ]
+    },
+    {
+      id: 'style',
+      text: 'What style of work suits you best right now?',
+      options: [
+        { id: 'rehab', label: 'Active rehab focused on getting back to my sport',
+          weights: { brookelyn: 3 } },
+        { id: 'clinical', label: 'Targeted clinical work on what’s actually hurting',
+          weights: { charlotte: 3 } },
+        { id: 'recovery', label: 'Whole-body recovery, lots of nervous-system work',
+          weights: { meagan: 3 } },
+        { id: 'open', label: 'Open to whatever works',
+          weights: { brookelyn: 1, charlotte: 1, meagan: 1 } }
+      ]
+    },
+    {
+      id: 'preference',
+      text: 'Anything that matters about who you’re matched with?',
+      options: [
+        { id: 'athlete', label: 'An athlete themselves who gets training',
+          weights: { brookelyn: 2, meagan: 2 } },
+        { id: 'clinical_pref', label: 'Deep clinical background and a clear plan',
+          weights: { charlotte: 3 } },
+        { id: 'gentle', label: 'Slow and gentle, even though it’s "sports"',
+          weights: { meagan: 2, charlotte: 1 } },
+        { id: 'none', label: 'No strong preference',
+          weights: {} }
+      ]
+    }
+  ];
+
+  const TMJ_QUIZ = [
+    {
+      id: 'symptom',
+      text: 'What’s bothering you most right now?',
+      options: [
+        { id: 'jaw', label: 'Jaw clicking, popping, or aching',
+          weights: { tif: 3, charlotte: 1 } },
+        { id: 'headaches', label: 'Tension headaches',
+          weights: { charlotte: 2, tif: 2 } },
+        { id: 'clenching', label: 'Clenching or grinding (especially at night)',
+          weights: { tif: 2, charlotte: 2 } },
+        { id: 'neck_jaw', label: 'Neck and jaw both feel locked',
+          weights: { charlotte: 2, tif: 2 } },
+        { id: 'face_tension', label: 'Face tension I can’t quite pin down',
+          weights: { tif: 3 } }
+      ]
+    },
+    {
+      id: 'duration',
+      text: 'How long has this been going on?',
+      options: [
+        { id: 'days_weeks', label: 'Days to weeks',
+          weights: { tif: 2, charlotte: 1 } },
+        { id: 'months', label: 'A few months',
+          weights: { tif: 2, charlotte: 2 } },
+        { id: 'years', label: 'Years',
+          weights: { charlotte: 3 } },
+        { id: 'with_stress', label: 'It comes and goes with stress',
+          weights: { tif: 2, charlotte: 1 } }
+      ]
+    },
+    {
+      id: 'style',
+      text: 'What kind of work feels right?',
+      options: [
+        { id: 'gentle', label: 'Gentle and adaptive, especially around the jaw',
+          weights: { tif: 3 } },
+        { id: 'targeted', label: 'Targeted clinical work on neck and jaw patterns',
+          weights: { charlotte: 3 } },
+        { id: 'mix', label: 'A mix, see what my body needs that day',
+          weights: { tif: 1, charlotte: 1 } },
+        { id: 'unsure', label: 'I don’t know, you tell me',
+          weights: {} }
+      ]
+    },
+    {
+      id: 'preference',
+      text: 'Anything matter about who you’re matched with?',
+      options: [
+        { id: 'tmj_specialist', label: 'Someone who specializes in facial and jaw work',
+          weights: { tif: 3 } },
+        { id: 'clinical', label: 'Someone with deep clinical depth',
+          weights: { charlotte: 3 } },
+        { id: 'careful', label: 'Someone gentle who calibrates carefully',
+          weights: { tif: 2 } },
+        { id: 'none', label: 'No strong preference',
+          weights: {} }
+      ]
+    }
+  ];
+
+  const LYMPHATIC_QUIZ = [
+    {
+      id: 'reason',
+      text: 'What’s bringing you in today?',
+      options: [
+        { id: 'post_surgical', label: 'Post-surgical recovery',
+          weights: { charlotte: 3, tif: 1 } },
+        { id: 'pregnancy', label: 'Pregnancy-related swelling',
+          weights: { tif: 3, charlotte: 1 } },
+        { id: 'chronic_swelling', label: 'Chronic swelling in legs, ankles, or hands',
+          weights: { charlotte: 2, tif: 2 } },
+        { id: 'inflammation', label: 'Autoimmune or chronic inflammation',
+          weights: { charlotte: 3 } },
+        { id: 'curious', label: 'General curiosity, never tried it',
+          weights: { tif: 2, charlotte: 1 } }
+      ]
+    },
+    {
+      id: 'duration',
+      text: 'How long has this been a thing?',
+      options: [
+        { id: 'days_weeks', label: 'Days to weeks',
+          weights: { charlotte: 1, tif: 1 } },
+        { id: 'months', label: 'A few months',
+          weights: { charlotte: 1, tif: 1 } },
+        { id: 'chronic', label: 'Ongoing or chronic',
+          weights: { charlotte: 2 } },
+        { id: 'cycles', label: 'It comes with cycles (pregnancy, menstrual, stress)',
+          weights: { tif: 2 } }
+      ]
+    },
+    {
+      id: 'style',
+      text: 'What sounds best for your session?',
+      options: [
+        { id: 'post_op', label: 'Slow and methodical, post-surgical focus',
+          weights: { charlotte: 3 } },
+        { id: 'calming', label: 'Gentle and calming, more like a relaxation session with intent',
+          weights: { tif: 3 } },
+        { id: 'combined', label: 'Lymphatic combined with some other targeted work',
+          weights: { charlotte: 1, tif: 1 } },
+        { id: 'exploring', label: 'I’m just exploring',
+          weights: {} }
+      ]
+    },
+    {
+      id: 'preference',
+      text: 'Anything matter about who you’re matched with?',
+      options: [
+        { id: 'clinical', label: 'Someone with deep clinical background',
+          weights: { charlotte: 3 } },
+        { id: 'warm', label: 'Someone gentle and warm, not clinical-feeling',
+          weights: { tif: 2 } },
+        { id: 'either', label: 'Either works for me',
+          weights: {} },
+        { id: 'none', label: 'No preference',
+          weights: {} }
+      ]
+    }
+  ];
+
   window.MaximumHealth.PAGE_CONFIGS = {
     '/massage-therapy-calgary-flow-b/': {
       skill: 'general',
@@ -183,6 +368,21 @@
       skill: 'deep_tissue',
       sheetTab: 'leads_deep_tissue',
       quizQuestions: DEEP_TISSUE_QUIZ
+    },
+    '/sports-massage-calgary/': {
+      skill: 'sports',
+      sheetTab: 'leads_sports',
+      quizQuestions: SPORTS_QUIZ
+    },
+    '/tmj-massage-calgary/': {
+      skill: 'tmj',
+      sheetTab: 'leads_tmj',
+      quizQuestions: TMJ_QUIZ
+    },
+    '/lymphatic-drainage-massage-calgary/': {
+      skill: 'lymphatic',
+      sheetTab: 'leads_lymphatic',
+      quizQuestions: LYMPHATIC_QUIZ
     }
   };
 
