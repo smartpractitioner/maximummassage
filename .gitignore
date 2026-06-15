@@ -22,4 +22,11 @@ reports-workspace/
 node_modules/
 .DS_Store
 Thumbs.db
-.claude/
+# Ignore everything under .claude/ EXCEPT project-scoped skills, which
+# ship with the repo (their SKILL.md is part of the project's source
+# of truth for adding new skill-specific landing pages). Note: the
+# `.claude/*` pattern (not `.claude/`) is required so that the negation
+# below can re-include subdirectories — git can't re-include files
+# under a directory that was excluded as a whole.
+.claude/*
+!.claude/skills/
