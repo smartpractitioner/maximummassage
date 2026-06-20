@@ -479,7 +479,7 @@ The webhook payload shape is identical across clients (it's Cal.com's, not ours)
 ## Open discovery items / build decisions
 
 - **Hidden fields to add to each Cal event type:** `skill`, `recommended_therapist_id`, and (if we want all five UTMs) `utm_term` + `utm_content`. Without these, the webhook can't route to `bookings_<skill>` or carry full attribution.
-- **`/booking-confirmed/` "what happens next" copy:** the captured booking has attendee self-reschedule/cancel **disabled** (`disableRescheduling`/`disableCancelling` = true). So the page must say "contact us to change your appointment," not "reschedule via Cal.com" — unless we change the Cal config first.
+- **`/booking-confirmed/` "what happens next" copy (decided 2026-06-20):** offer **no** self-service reschedule/cancel — not via Cal (stays disabled) and **nowhere on our pages**. Patients get an email from **Jane** with their account details and reschedule/cancel **from within their Jane account**. The page sets that expectation (watch for the Jane email; manage your appointment there). Overrides the plan brief's "cancellation/reschedule link via Cal.com" item.
 - **Phase 1.7 GTM spec** — data-layer variables → `booking_confirmed` custom-event trigger → re-target `AW-17632628958` (count-only) → new GA4 event tag. Drafted; folds into this skill so future clients reuse the pattern.
 
 ## How we record decisions going forward (the cadence)
