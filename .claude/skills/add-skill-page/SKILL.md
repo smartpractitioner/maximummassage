@@ -465,11 +465,22 @@ A therapist without a provisioned Cal.com handle (currently Tif) keeps an `activ
 
 There are currently **two** post-booking thank-you pages doing the same job: the legacy **`/appointment-confirmed/`** that the standalone therapist pages (`/brookelyn/` etc.) already redirect to after a Cal.com booking, and the new branded **`/booking-confirmed/`** the plan builds for the lightbox funnel (Phase 1.1). **There is no meaningful semantic difference between "appointment" and "booking" here** — the two URLs are incidental, born at different times in different parts of the funnel, not a deliberate distinction. **Decision (2026-06-19): standardize on `/booking-confirmed/` as the single canonical page**, and repoint the standalone pages' `bookingSuccessfulV2` redirect at it (forwarding the same context params), retiring `/appointment-confirmed/`. **Why `/booking-confirmed/` wins:** it matches the rest of the new instrumentation vocabulary — the GTM custom event is `booking_confirmed` and the Cal event is `bookingSuccessfulV2`, so "booking" is already the term of art; aligning the page name keeps event→page naming consistent. **Treated as core Phase 1.1, not a Phase 7 polish item** (the user pulled it out of the Phase 7 backlog 2026-06-19) — the consolidation ships with the booking flow, not at the end, so we never run two divergent confirmation pages in production.
 
-## Open discovery items (before/within the build)
+## Channel B — `BOOKING_CREATED` webhook field map + design (captured 2026-06-20)
 
-- **`BOOKING_CREATED` webhook payload shape** — capture the real field names (name/email/phone/booking-ref) via webhook.site before building the Channel B handler.
-- **UTM/skill passthrough** — verify that values prefilled into the Cal embed actually surface in both the webhook payload *and* the appointment note Jane reads. Can't be confirmed until the embed prefill is wired.
-- **Phase 1.7 GTM spec** — data-layer variables → `booking_confirmed` custom-event trigger → re-target `AW-17632628958` (count-only) → new GA4 event tag. Drafted from the known client-event shape; folds into this skill so future clients reuse the pattern.
+The webhook payload shape is identical across clients (it's Cal.com's, not ours), so this map is factory-reusable. Everything lives under `payload`:
+- **Join key to Channel A:** `payload.uid` (same uid the browser event reports as `data.uid`); `payload.bookingId` is the numeric internal id.
+- **Patient:** `payload.attendees[0].{firstName,lastName,name,email,phoneNumber}` — the contact fields the browser event lacked.
+- **Therapist (organizer):** `payload.organizer.{username,name,email}` (e.g. `username: "bbrolly"`).
+- **When/what:** `payload.startTime`/`endTime`, `payload.length` (minutes, session+buffer), `payload.eventTypeId`, `payload.status`, `payload.location`.
+- **Attribution:** `payload.responses.{utm_source,utm_medium,utm_campaign,gclid}` (+ `payload.userFieldsResponses`). The Cal event type **already carries hidden `utm_source/medium/campaign/gclid` fields** — empty unless the embed prefills them — so UTM passthrough into the webhook + Jane note works once we prefill. `utm_term`/`utm_content` are NOT defined yet.
+
+**Design (Channel B is the single writer of the booking record):** add hidden **`skill`** and **`recommended_therapist_id`** fields to each Cal event type (same pattern as the existing UTM fields) and prefill them — plus the UTMs — via the embed. The webhook then carries contact + attribution + skill + therapist, so the backend writes `bookings_<skill>` and increments `bookings_count` from the webhook alone; Channel A stays conversion+redirect only. Identify the therapist from `organizer.username` or the prefilled `recommended_therapist_id`.
+
+## Open discovery items / build decisions
+
+- **Hidden fields to add to each Cal event type:** `skill`, `recommended_therapist_id`, and (if we want all five UTMs) `utm_term` + `utm_content`. Without these, the webhook can't route to `bookings_<skill>` or carry full attribution.
+- **`/booking-confirmed/` "what happens next" copy:** the captured booking has attendee self-reschedule/cancel **disabled** (`disableRescheduling`/`disableCancelling` = true). So the page must say "contact us to change your appointment," not "reschedule via Cal.com" — unless we change the Cal config first.
+- **Phase 1.7 GTM spec** — data-layer variables → `booking_confirmed` custom-event trigger → re-target `AW-17632628958` (count-only) → new GA4 event tag. Drafted; folds into this skill so future clients reuse the pattern.
 
 ## How we record decisions going forward (the cadence)
 

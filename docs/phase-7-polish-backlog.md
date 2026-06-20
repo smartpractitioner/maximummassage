@@ -166,14 +166,22 @@ Identified 2026-06-20. Jane appointment types include **buffer time** (e.g., Bro
 - **Sync correctness:** Cal.com's blocked time must equal Jane's blocked time (session + buffer) or the two systems disagree on availability and risk mismatches/double-books.
 - **Booking-page UX / conversion:** if the duration field is the fixed 80 min, the Cal.com calendar shows **"1 hr 20 min"** for what's marketed and understood as a *60-minute* appointment — potentially confusing or off-putting at the exact conversion moment. A 60-min event type with a hidden buffer would display "60 min" while still reserving 80. Conversion-relevant, but non-core to the booking mechanism working — hence parked.
 
-### Hard dependency — confirm with Justin before locking
+### Justin's reply — must be tested empirically
 
 Victor's question out to Justin (PatientSync / Jane-sync owner), as sent:
 
 > In Cal.com we need the duration to match Jane including buffer time — so a 60-minute appointment with a 20-minute buffer (like Brookelyn) is 80 minutes total. In Cal, is it possible to select 60 minutes and **add a buffer time** and have that still work, or does it have to be a fixed 80 minutes set in the duration field? Our project-brief SOP says fixed 80, but have we tested it? The reason: in the calendar booking it says "1 hr 20 min," which might confuse someone booking a "60-min" appointment.
 
-- **If Justin confirms 60 + buffer syncs correctly** → switch event types to 60-min session + Cal.com buffer (cleaner "60 min" display).
-- **If it must be fixed 80** → keep the SOP's fixed duration; consider relabeling the event type / display so the shown time doesn't confuse a 60-min expectation.
+**Justin's reply (2026-06-20): no guaranteed answer — we have to test it.** So this item is gated on running the test below, not on further confirmation.
+
+### Test procedure (run when this item is picked up)
+
+1. Take **one** therapist's Cal.com event type to start — **Brookelyn**. Set the **duration to 60 minutes**, **turn off "select multiple durations,"** and **add a 20-minute buffer** (before/after) so the total blocked time is still **80 minutes**.
+2. Make a test booking and verify whether the **80-minute block syncs through to Jane and matches** (same blocked time, correct appointment), while the Cal calendar shows **"60 min"** to the visitor (not "1 hr 20 min").
+3. **If it passes through and matches Jane** → adopt 60-min + 20-min buffer across all event types (cleaner "60 min" display, removes the confusion).
+4. **If it does NOT sync/match correctly** → revert and **stick with the existing fixed-80-minute path** (the current SOP). Accept the "1 hr 20 min" label, or consider relabeling the event-type name so it doesn't confuse a 60-min expectation.
+
+Note: the captured `BOOKING_CREATED` webhook from a current (fixed-80) booking reports `payload.length: 80` — useful baseline to compare against when testing the 60+buffer config.
 
 ### Open questions
 
