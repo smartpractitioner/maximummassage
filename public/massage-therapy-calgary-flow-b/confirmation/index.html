@@ -371,11 +371,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p class="site-footer__small">&copy; 1998&ndash;2026 Maximum Health Massage Therapy</p>
 </footer>
 
+<script src="/js/mh-backend.js?v=v3-bios2"></script>
 <script>
 (function () {
   'use strict';
 
-  const LEAD_CAPTURE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwt0ZJ1RW8unG2Uj5vyXWC4Xn7k5fhPGpUL57ysYYoGX-i0fkacxyr-uIGhxx3Le_cKFQ/exec';
+  // Backend calls route through window.mhBackend (see /js/mh-backend.js) --
+  // single swap point for the endpoint (window.MH_BACKEND_URL).
   const MIN_LOADING_MS = 3500;
 
   let lead = null;
@@ -466,15 +468,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   function postJson(payload) {
-    if (!LEAD_CAPTURE_ENDPOINT || LEAD_CAPTURE_ENDPOINT === 'REPLACE_WITH_APPS_SCRIPT_URL') {
-      return Promise.resolve();
-    }
-    return fetch(LEAD_CAPTURE_ENDPOINT, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
+    if (!window.mhBackend) return Promise.resolve();
+    const { action, ...rest } = payload;
+    return window.mhBackend.post(action, rest);
   }
 
   main.addEventListener('click', (e) => {

@@ -18,7 +18,8 @@
 
   const TALLY_FORM_SRC = 'https://tally.so/embed/0QPyJQ?alignLeft=1&hideTitle=1&transparentBackground=1';
   const TALLY_SCRIPT = 'https://tally.so/widgets/embed.js';
-  const LEAD_CAPTURE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwt0ZJ1RW8unG2Uj5vyXWC4Xn7k5fhPGpUL57ysYYoGX-i0fkacxyr-uIGhxx3Le_cKFQ/exec';
+  // Backend calls route through window.mhBackend (see public/js/mh-backend.js).
+  // The endpoint URL lives there (window.MH_BACKEND_URL) -- single swap point.
   const CONFIRMATION_PATH = '/massage-therapy-calgary-flow-b/confirmation/';
 
   const PRACTITIONER_PATHS = ['/brookelyn/', '/meagan/', '/charlotte/', '/lindsey/', '/tif/'];
@@ -705,23 +706,14 @@
   }
 
   function postQuizSubmission(answers, recommendedId) {
-    if (!LEAD_CAPTURE_ENDPOINT || LEAD_CAPTURE_ENDPOINT === 'REPLACE_WITH_APPS_SCRIPT_URL') return;
+    if (!window.mhBackend) return;
     const skill = (currentPageConfig && currentPageConfig.skill) || 'general';
-    const payload = {
-      action: 'quiz_submission',
+    window.mhBackend.post('quiz_submission', {
       skill: skill,
       recommended_therapist_id: recommendedId || '',
       answers: answers.map((a) => ({ question: a.qText, answer: a.optLabel, qId: a.qId, optId: a.optId })),
       ...collectUtms()
-    };
-    try {
-      fetch(LEAD_CAPTURE_ENDPOINT, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      });
-    } catch (_) { /* swallow */ }
+    });
   }
 
   function bootTallyScript() {
@@ -833,15 +825,7 @@
   }
 
   function postLead(data) {
-    if (!LEAD_CAPTURE_ENDPOINT || LEAD_CAPTURE_ENDPOINT === 'REPLACE_WITH_APPS_SCRIPT_URL') {
-      return Promise.resolve();
-    }
-    return fetch(LEAD_CAPTURE_ENDPOINT, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'lead', ...data })
-    });
+    return window.mhBackend ? window.mhBackend.post('lead', data) : Promise.resolve();
   }
 
   function openLightbox() {
@@ -1029,5 +1013,5 @@
   window.MaximumHealth.closePicker = closeLightbox;
   window.MaximumHealth.therapists = therapists;
   window.MaximumHealth.collectUtms = collectUtms;
-  window.MaximumHealth.__endpoint = () => LEAD_CAPTURE_ENDPOINT;
+  window.MaximumHealth.__endpoint = () => window.MH_BACKEND_URL;
 })();
