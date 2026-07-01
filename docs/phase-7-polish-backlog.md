@@ -208,8 +208,11 @@ The user wants to **own the calendar layer** — replace the third-party Cal.com
 ### Why it matters (user's stated reasons, 2026-06-20)
 
 - **Eliminate laborious per-practitioner setup (the primary driver):** Cal.com takes "way too many laborious clicks inside the account," and you have to set up a **separate account/config for each practitioner** — repeated for every client. That doesn't scale as a factory. The goal: **the factory pumps out the calendar script and integrates it completely** per client/practitioner — no manual Cal.com account provisioning each time.
+- **Control the emailing — let Jane do it all:** Cal.com sends too many notification emails we can't control. We want the client's **Jane EHR to own all patient emailing** (confirmations, reminders, etc.). An owned calendar would send **no patient email of its own** and defer entirely to Jane.
 - **Remove the Cal.com branding** in the booking step (a secondary annoyance; overlaps 7.2 theming).
 - *(Follow-on benefits, inferred — confirm at planning time):* we'd own the **complete booking payload** directly (no lean-event + webhook workaround), drop the **per-seat SaaS cost** at factory scale, and make **7.2 (theming)** and **7.3 (buffer/duration)** moot while removing Cal UI-drift risk from our SOPs.
+
+> **Near-term implication (flag for the Phase 1 build, don't wait for 7.4):** while we're still on Cal.com, its own confirmation/reminder emails will fire on live bookings **on top of** Jane's. Decide during the build whether to **mute Cal.com's notifications** (turn off its email workflows so only Jane emails the patient) so we don't ship a double-emailing flow. This is a Cal.com settings change, separate from the full 7.4 replacement.
 
 ### Dependencies / open questions
 
