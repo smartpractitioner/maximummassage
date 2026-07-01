@@ -13,7 +13,7 @@
       "name": "Maximum Health",
       "publicId": "GTM-5M8LTCF8",
       "usageContext": [
-        "web"
+        "WEB"
       ],
       "fingerprint": "0",
       "tagManagerUrl": ""
