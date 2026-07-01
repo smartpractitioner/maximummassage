@@ -200,6 +200,8 @@ Note: the captured `BOOKING_CREATED` webhook from a current (fixed-80) booking r
 ## 7.4 — Replace Cal.com with our own internal calendar/booking script
 
 > **Scope caveat:** this is **not** a nice-to-have polish item — it's a major architectural build (a whole booking engine). It's parked here per the user's request (2026-06-20), but flagged as a **gate before the factory is considered "complete,"** and it should likely be promoted into its own design pass / phase when picked up rather than treated as an end-of-list polish. Re-evaluate its priority at backlog-sweep time.
+>
+> **Does NOT block the current client.** Maximum Health launches on **Cal.com now** — speed to launch is the priority. The Cal.com embeds get swapped for the owned calendar later, which stays cheap because the booking step routes through the `mhBackend` abstraction (repoint the booking step + endpoint, not a funnel rebuild).
 
 ### Context — why this item exists
 
