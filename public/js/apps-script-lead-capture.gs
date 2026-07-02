@@ -473,18 +473,29 @@ function currentYearMonth() {
   return Utilities.formatDate(new Date(), tz, 'yyyy-MM');
 }
 
+// A Year-Month cell may read back as text ("2026-07") or, if Sheets coerced
+// it, as a Date — normalize both to "yyyy-MM" so matching is reliable.
+function cellYearMonth(v) {
+  if (v instanceof Date) {
+    return Utilities.formatDate(v, Session.getScriptTimeZone() || 'America/Edmonton', 'yyyy-MM');
+  }
+  return String(v);
+}
+
 function incrementBookingCount(therapistId, yearMonth) {
   const sheet = getOrCreateSheet(BOOKINGS_COUNT_TAB, BOOKINGS_COUNT_HEADERS);
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]) === therapistId && String(data[i][1]) === yearMonth) {
+    if (String(data[i][0]) === therapistId && cellYearMonth(data[i][1]) === yearMonth) {
       const n = Number(data[i][2] || 0) + 1;
       sheet.getRange(i + 1, 3).setValue(n);
       sheet.getRange(i + 1, 4).setValue(new Date());
       return n;
     }
   }
-  sheet.appendRow([therapistId, yearMonth, 1, new Date()]);
+  sheet.appendRow([therapistId, '', 1, new Date()]);
+  // Force Year-Month to plain text so Sheets doesn't coerce "2026-07" to a date.
+  sheet.getRange(sheet.getLastRow(), 2).setNumberFormat('@').setValue(yearMonth);
   return 1;
 }
 
@@ -492,7 +503,7 @@ function getBookingCount(therapistId, yearMonth) {
   const sheet = getOrCreateSheet(BOOKINGS_COUNT_TAB, BOOKINGS_COUNT_HEADERS);
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]) === therapistId && String(data[i][1]) === yearMonth) {
+    if (String(data[i][0]) === therapistId && cellYearMonth(data[i][1]) === yearMonth) {
       return Number(data[i][2] || 0);
     }
   }
