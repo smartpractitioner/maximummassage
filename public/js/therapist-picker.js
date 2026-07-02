@@ -872,7 +872,9 @@
       </button>
       <div class="lb-calendar">
         <h3 class="lb-calendar__title">Pick a time with ${escapeHtml(t.name.split(' ')[0])}</h3>
-        <div class="lb-calendar__embed" data-cal-inline></div>
+        <div class="lb-calendar__embed" data-cal-inline>
+          <p class="lb-calendar__loading">Loading available times&hellip;</p>
+        </div>
       </div>
     `;
   }
@@ -951,6 +953,12 @@
     overlay.setAttribute('data-open', 'true');
     document.body.style.overflow = 'hidden';
     showQuiz();
+    // Pre-warm Cal.com on calcom pages: load embed.js + open the connection
+    // while the visitor works through the quiz, so the calendar step feels
+    // fast when they reach it (Cal's iframe is the heavy part).
+    if (currentPageConfig && currentPageConfig.bookingMode === 'calcom') {
+      try { ensureCalInit(); } catch (_) {}
+    }
   }
 
   function closeLightbox() {

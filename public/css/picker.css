@@ -721,3 +721,10 @@
   height: 68vh;
   overflow: auto;
 }
+.lb-calendar__loading {
+  text-align: center;
+  color: #5A6E73;
+  font-size: 15px;
+  padding: 40px 0;
+  margin: 0;
+}

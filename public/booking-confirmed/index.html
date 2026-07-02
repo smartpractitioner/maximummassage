@@ -160,7 +160,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <p class="bc-detail"><strong>Where</strong> 213 19 St NW #4, Calgary, AB T2N 2H9</p>
       </div>
 
-      <a class="btn btn--sage bc-cal" data-bc-cal href="#" target="_blank" rel="noopener">Add to calendar</a>
+      <a class="btn btn--sage bc-cal" data-bc-cal download="maximum-health-appointment.ics" href="#">Add to calendar</a>
 
       <div class="bc-block">
         <h2 class="bc-h2">Before your visit</h2>
@@ -214,7 +214,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var lead = null;
   try { var raw = sessionStorage.getItem('mh_lead'); if (raw) lead = JSON.parse(raw); } catch (_) {}
 
-  var THERAPIST_NAMES = { brookelyn: 'Brookelyn', meagan: 'Meagan', charlotte: 'Charlotte', lindsey: 'Lindsey', tif: 'Tif' };
+  var THERAPIST_NAMES = { brookelyn: 'Brookelyn Brolly', meagan: 'Meagan Brown', charlotte: 'Charlotte Tooth', lindsey: 'Lindsey Stauffer', tif: 'Tif Henderson' };
 
   var main = document.getElementById('bc-main');
   var booked = main.querySelector('[data-bc="booked"]');
@@ -253,7 +253,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var calEl = booked.querySelector('[data-bc-cal]');
   if (startIso) {
     var title = (therapistName ? 'Massage with ' + therapistName : 'Massage') + ' — Maximum Health';
-    calEl.href = gcalLink(title, startIso, endIso, '213 19 St NW #4, Calgary, AB T2N 2H9');
+    calEl.href = icsHref(title, startIso, endIso, '213 19 St NW #4, Calgary, AB T2N 2H9', bid);
   } else {
     calEl.hidden = true;
   }
@@ -302,11 +302,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     } catch (_) { return d.toLocaleString(); }
   }
 
-  function gcalLink(text, s, e, loc) {
+  // Universal .ics (data URI) so it opens the visitor's default calendar app
+  // (Apple / Outlook / Google) rather than assuming Google. We can't detect
+  // their app, so we hand off a standard .ics and let the OS route it.
+  function icsHref(text, s, e, loc, uid) {
     function z(iso) { return new Date(iso).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); }
-    var dates = z(s) + '/' + (e ? z(e) : z(s));
-    var p = new URLSearchParams({ action: 'TEMPLATE', text: text, dates: dates, location: loc });
-    return 'https://calendar.google.com/calendar/render?' + p.toString();
+    function esc(v) { return String(v).replace(/([,;\\])/g, '\\$1'); }
+    var lines = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Maximum Health//Booking//EN',
+      'BEGIN:VEVENT',
+      'UID:' + (uid || z(s)) + '@maximumhealth',
+      'DTSTAMP:' + z(s),
+      'DTSTART:' + z(s),
+      'DTEND:' + (e ? z(e) : z(s)),
+      'SUMMARY:' + esc(text),
+      'LOCATION:' + esc(loc),
+      'END:VEVENT', 'END:VCALENDAR'
+    ];
+    return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(lines.join('\r\n'));
   }
 })();
 </script>
