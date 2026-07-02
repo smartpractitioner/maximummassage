@@ -9,11 +9,22 @@
  *   public/js/therapist-picker.js       (LEAD_CAPTURE_ENDPOINT)
  *   public/massage-therapy-calgary-flow-b/confirmation/index.html  (LEAD_CAPTURE_ENDPOINT)
  *
- * The script handles four actions:
+ * POST actions (front-end, via window.mhBackend):
  *   - action: "lead"             → appends a new row with the form data
  *   - action: "notify"           → updates that row with notify_preference (yes/no)
  *   - action: "update_contact"   → updates phone + email on the existing row
  *   - action: "quiz_submission"  → appends a quiz answer row (no contact info yet)
+ *
+ * POST — Cal.com webhook (Phase 1.5, Channel B, no `action`):
+ *   - body.triggerEvent === "BOOKING_CREATED" → writes bookings_<skill>,
+ *     increments bookings_count for the therapist's year-month, posts to Slack.
+ *     Point Cal.com's Booking-Created webhook subscriber URL at this Web App
+ *     (account-level). Slack URL comes from Script Property
+ *     SLACK_BOOKINGS_WEBHOOK_URL.
+ *
+ * GET:
+ *   - ?action=available_therapists[&callback=fn] → JSON (or JSONP) of
+ *     { therapistId: { available, reason? } } for the picker gray-out (1.2).
  *
  * Per-skill routing (added 2026-05):
  * Each payload carries a `skill` field. Lead/notify/update_contact rows are
@@ -75,10 +86,48 @@ const QUIZ_HEADERS = [
   'flow'
 ];
 
+const BOOKINGS_COUNT_TAB = 'bookings_count';
+
+const BOOKING_HEADERS = [
+  'Timestamp', 'Booking UID', 'Booking ID', 'Status',
+  'Skill', 'Booked Therapist', 'Booked Handle', 'Recommended Therapist ID', 'Matched Recommendation',
+  'First Name', 'Last Name', 'Email', 'Phone',
+  'Start Time', 'End Time', 'Event Type ID', 'Location',
+  'GCLID', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'
+];
+
+const BOOKINGS_COUNT_HEADERS = ['Therapist ID', 'Year-Month', 'Count', 'Updated At'];
+
+// Per-therapist monthly cap + active flag (global across all skill pages).
+// cap === null means unlimited. Counts bucket by year-month, so caps reset
+// naturally on the 1st of each month. PER-CLIENT CONFIG.
+const THERAPIST_CONFIG = {
+  brookelyn: { cap: 15,   active: true },
+  meagan:    { cap: 10,   active: true },
+  charlotte: { cap: null, active: true },
+  lindsey:   { cap: null, active: true },
+  tif:       { cap: 15,   active: false }
+};
+
+// Cal.com organizer.username -> our therapist id. PER-CLIENT CONFIG.
+const HANDLE_TO_ID = {
+  bbrolly: 'brookelyn',
+  meaganb: 'meagan',
+  ctooth: 'charlotte',
+  lstauffer: 'lindsey',
+  thenderson: 'tif'
+};
+
 function doPost(e) {
   try {
     const body = JSON.parse(e.postData.contents);
     const action = body.action;
+
+    // Cal.com BOOKING_CREATED webhook (Channel B) — server-to-server, no `action`.
+    if (body.triggerEvent === 'BOOKING_CREATED' && body.payload) {
+      handleCalBooking(body.payload);
+      return jsonOk();
+    }
 
     if (action === 'lead') {
       const sheet = getOrCreateLeadsSheet(body.skill);
@@ -106,7 +155,22 @@ function doPost(e) {
   }
 }
 
-function doGet() {
+function doGet(e) {
+  const action = e && e.parameter ? e.parameter.action : '';
+  if (action === 'available_therapists') {
+    const data = availableTherapists();
+    const cb = e.parameter.callback;
+    // JSONP when a callback is given (lets the browser read the result
+    // cross-origin without CORS headaches on Apps Script GET responses).
+    if (cb) {
+      return ContentService
+        .createTextOutput(cb + '(' + JSON.stringify(data) + ')')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return ContentService
+      .createTextOutput(JSON.stringify(data))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   return ContentService
     .createTextOutput('Maximum Health lead capture endpoint is live.')
     .setMimeType(ContentService.MimeType.TEXT);
@@ -338,4 +402,140 @@ function jsonErr(msg) {
   return ContentService
     .createTextOutput(JSON.stringify({ ok: false, error: msg }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+/* =====================================================================
+ * Phase 1.5 — Cal.com BOOKING_CREATED webhook (Channel B)
+ * Cal.com POSTs the booking here (set the webhook subscriber URL to this
+ * Web App URL, account-level, trigger = Booking Created). We write the full
+ * record to bookings_<skill>, bump the therapist's monthly count, and post
+ * to Slack. Attribution (skill/recommended/UTMs) rides the hidden Cal fields
+ * we prefill on the embed; contact rides attendees[0].
+ * ===================================================================== */
+
+function handleCalBooking(payload) {
+  const attendee = (payload.attendees && payload.attendees[0]) || {};
+  const organizer = payload.organizer || {};
+  const skill = resp(payload, 'skill') || 'general';
+  const bookedId = HANDLE_TO_ID[organizer.username] || organizer.username || '';
+  const recommendedId = resp(payload, 'recommended_therapist_id') || '';
+  const matched = recommendedId ? (recommendedId === bookedId ? 'TRUE' : 'FALSE') : '';
+
+  const r = {
+    uid: payload.uid || '',
+    bookingId: payload.bookingId || '',
+    status: payload.status || '',
+    skill: skill,
+    bookedId: bookedId,
+    handle: organizer.username || '',
+    recommendedId: recommendedId,
+    matched: matched,
+    firstName: attendee.firstName || '',
+    lastName: attendee.lastName || '',
+    email: attendee.email || '',
+    phone: attendee.phoneNumber || '',
+    start: payload.startTime || '',
+    end: payload.endTime || '',
+    eventTypeId: payload.eventTypeId || '',
+    location: payload.location || '',
+    gclid: resp(payload, 'gclid'),
+    utm_source: resp(payload, 'utm_source'),
+    utm_medium: resp(payload, 'utm_medium'),
+    utm_campaign: resp(payload, 'utm_campaign'),
+    utm_term: resp(payload, 'utm_term'),
+    utm_content: resp(payload, 'utm_content')
+  };
+
+  const sheet = getOrCreateSheet('bookings_' + sanitizeSkillForTab(skill), BOOKING_HEADERS);
+  sheet.appendRow([
+    new Date(), r.uid, r.bookingId, r.status,
+    r.skill, r.bookedId, r.handle, r.recommendedId, r.matched,
+    r.firstName, r.lastName, r.email, r.phone,
+    r.start, r.end, r.eventTypeId, r.location,
+    r.gclid, r.utm_source, r.utm_medium, r.utm_campaign, r.utm_term, r.utm_content
+  ]);
+
+  if (bookedId) incrementBookingCount(bookedId, currentYearMonth());
+  notifySlack(r);
+}
+
+// Read a hidden/custom field value out of Cal's responses object.
+function resp(payload, key) {
+  const a = payload.responses && payload.responses[key];
+  if (a && typeof a.value === 'string') return a.value;
+  const b = payload.userFieldsResponses && payload.userFieldsResponses[key];
+  if (b && typeof b.value === 'string') return b.value;
+  return '';
+}
+
+function currentYearMonth() {
+  const tz = Session.getScriptTimeZone() || 'America/Edmonton';
+  return Utilities.formatDate(new Date(), tz, 'yyyy-MM');
+}
+
+function incrementBookingCount(therapistId, yearMonth) {
+  const sheet = getOrCreateSheet(BOOKINGS_COUNT_TAB, BOOKINGS_COUNT_HEADERS);
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === therapistId && String(data[i][1]) === yearMonth) {
+      const n = Number(data[i][2] || 0) + 1;
+      sheet.getRange(i + 1, 3).setValue(n);
+      sheet.getRange(i + 1, 4).setValue(new Date());
+      return n;
+    }
+  }
+  sheet.appendRow([therapistId, yearMonth, 1, new Date()]);
+  return 1;
+}
+
+function getBookingCount(therapistId, yearMonth) {
+  const sheet = getOrCreateSheet(BOOKINGS_COUNT_TAB, BOOKINGS_COUNT_HEADERS);
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === therapistId && String(data[i][1]) === yearMonth) {
+      return Number(data[i][2] || 0);
+    }
+  }
+  return 0;
+}
+
+// { therapistId: { available: bool, reason?: 'fully_booked' | 'inactive' } }
+function availableTherapists() {
+  const ym = currentYearMonth();
+  const out = {};
+  Object.keys(THERAPIST_CONFIG).forEach(function (id) {
+    const cfg = THERAPIST_CONFIG[id];
+    if (!cfg.active) { out[id] = { available: false, reason: 'inactive' }; return; }
+    if (cfg.cap == null) { out[id] = { available: true }; return; }
+    const count = getBookingCount(id, ym);
+    out[id] = count >= cfg.cap ? { available: false, reason: 'fully_booked' } : { available: true };
+  });
+  return out;
+}
+
+/* ---------- Slack booking notification (Decision 7) ----------
+ * Configure the webhook URL once via Project Settings -> Script Properties:
+ *   SLACK_BOOKINGS_WEBHOOK_URL = https://hooks.slack.com/services/...
+ * If unset, we skip silently (never breaks the booking write).
+ */
+function notifySlack(r) {
+  const url = PropertiesService.getScriptProperties().getProperty('SLACK_BOOKINGS_WEBHOOK_URL');
+  if (!url) return;
+  const who = ((r.firstName + ' ' + r.lastName).trim()) || r.email || 'A patient';
+  const via = [r.utm_source, r.utm_campaign].filter(String).join(' / ') || 'direct';
+  const text = [
+    ':calendar: *New booking* — ' + who,
+    '*Therapist:* ' + (r.bookedId || r.handle) + '    *Skill:* ' + r.skill,
+    '*When:* ' + r.start,
+    '*Contact:* ' + ([r.email, r.phone].filter(String).join('  ·  ') || 'n/a'),
+    '*Source:* ' + via + (r.gclid ? '   (gclid ✓)' : '')
+  ].join('\n');
+  try {
+    UrlFetchApp.fetch(url, {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({ text: text }),
+      muteHttpExceptions: true
+    });
+  } catch (err) { /* never let a Slack failure break the booking write */ }
 }
