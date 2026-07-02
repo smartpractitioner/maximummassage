@@ -364,16 +364,127 @@
     `;
   }
 
+  // ---------- Availability gray-out (Phase 1.2) ----------
+  // availabilityMap: { therapistId: { available: bool, reason?: 'inactive' |
+  //   'fully_booked' } } from the backend's `available_therapists` endpoint.
+  // Stays null until the JSONP call resolves; null => treat everyone as
+  // available (fail-open, so a backend hiccup never blocks the grid or a
+  // booking). Only fetched/applied on bookingMode:'calcom' pages — the monthly
+  // cap protects real Cal.com calendars; demand-test pages have no live
+  // calendar to overbook, so they keep every card interactive.
+  let availabilityMap = null;
+  let availabilityLoading = false;
+  let availabilityJsonpSeq = 0;
+  // Full-roster quiz ranking (score desc). Lets the "We recommend" badge fall
+  // back to the next-highest AVAILABLE therapist when the top pick is dimmed.
+  let lastQuizRanking = null;
+
+  function appliesAvailability() {
+    return !!(currentPageConfig && currentPageConfig.bookingMode === 'calcom' && availabilityMap);
+  }
+
+  function availabilityFor(id) {
+    if (!availabilityMap) return { available: true };
+    return availabilityMap[id] || { available: true };
+  }
+
+  // We only gray out the CAPPED case (monthly cap hit — protects the real
+  // Cal.com calendar from overbooking). Inactive therapists (e.g. Tif, who has
+  // no live calendar yet) are deliberately NOT dimmed: they stay clickable and
+  // route to the demand-test "notify me" flow via the usesCalcom() gate, just
+  // as before 1.2. So the only reason that dims a card here is 'fully_booked'.
+  function isCapped(id) {
+    if (!appliesAvailability()) return false;
+    const a = availabilityFor(id);
+    return !!(a && a.available === false && a.reason === 'fully_booked');
+  }
+
+  // JSONP fetch — Apps Script GET responses don't carry CORS headers, so a
+  // plain cross-origin fetch() can't read the body. The backend returns
+  // `callback({...})` when a &callback= is present (see doGet).
+  function loadAvailability() {
+    if (!currentPageConfig || currentPageConfig.bookingMode !== 'calcom') return;
+    if (availabilityMap || availabilityLoading) return;
+    const url = window.MH_BACKEND_URL;
+    if (!url || url === 'REPLACE_WITH_APPS_SCRIPT_URL') return;
+    availabilityLoading = true;
+    const cbName = '__mhAvail' + (++availabilityJsonpSeq);
+    const script = document.createElement('script');
+    let done = false;
+    function cleanup() {
+      try { delete window[cbName]; } catch (_) { window[cbName] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+    window[cbName] = function (data) {
+      done = true;
+      availabilityLoading = false;
+      availabilityMap = data || {};
+      pickerDebug('availability loaded', availabilityMap);
+      cleanup();
+      onAvailabilityResolved();
+    };
+    script.onerror = function () {
+      // Fail-open: leave availabilityMap null so the grid stays fully bookable.
+      availabilityLoading = false;
+      pickerDebug('availability JSONP failed');
+      cleanup();
+    };
+    const sep = url.indexOf('?') === -1 ? '?' : '&';
+    script.src = url + sep + 'action=available_therapists&callback=' + cbName;
+    document.body.appendChild(script);
+    // Safety timeout so a hung request doesn't wedge the loading flag forever.
+    setTimeout(function () { if (!done) { availabilityLoading = false; cleanup(); } }, 8000);
+  }
+
+  // If the grid is on screen when availability lands, re-render it so the dim
+  // state + badge fallback apply immediately (the quiz's 4 questions usually
+  // give the fetch enough time to land before the grid shows, but this covers
+  // the race where it doesn't).
+  function onAvailabilityResolved() {
+    if (!overlay || overlay.getAttribute('data-open') !== 'true') return;
+    const gridStage = overlay.querySelector('[data-view="grid"]');
+    if (gridStage && !gridStage.hidden) {
+      gridStage.innerHTML = buildGrid(lastRecommendedId);
+    }
+  }
+
+  // The quiz scores the full roster; only the badge presentation falls back.
+  // Walk the ranking (highest score first) and return the first therapist who
+  // is visible, not statically disabled, and available. null => badge nobody.
+  function resolveRecommendedId(preferredId, list) {
+    const inList = (id) => !!id && list.some((t) => t.id === id);
+    function bookable(id) {
+      if (!inList(id)) return false;
+      const t = findTherapist(id);
+      if (t && t.disabled) return false;
+      // Capped => can't be the badge (move to next available). Inactive is
+      // fine — Tif can still be recommended and routes to the demand-test flow.
+      return !isCapped(id);
+    }
+    if (bookable(preferredId)) return preferredId;
+    if (Array.isArray(lastQuizRanking)) {
+      for (const id of lastQuizRanking) { if (bookable(id)) return id; }
+    }
+    return null;
+  }
+
   function buildGrid(recommendedId) {
     const list = visibleTherapists();
-    const hasDisabled = list.some((t) => t.disabled);
+    const badgeId = resolveRecommendedId(recommendedId, list);
+    const hasCapped = list.some((t) => isCapped(t.id));
+    const hasDisabled = list.some((t) => t.disabled) || hasCapped;
     return `
-      ${recommendedId ? '<p class="picker-intro">Based on your answers, we recommend <strong>' + escapeHtml(findTherapist(recommendedId).name.split(" ")[0]) + '</strong>, but pick whoever feels right. <span class="picker-intro__hint">Tap any therapist to learn more about them.</span></p>' : ''}
+      ${badgeId ? '<p class="picker-intro">Based on your answers, we recommend <strong>' + escapeHtml(findTherapist(badgeId).name.split(" ")[0]) + '</strong>, but pick whoever feels right. <span class="picker-intro__hint">Tap any therapist to learn more about them.</span></p>' : ''}
       <div class="picker-grid">
         ${list.map((t) => {
-          const isRecommended = t.id === recommendedId;
-          const isDisabled = !!t.disabled;
+          const capped = isCapped(t.id);
+          const isRecommended = t.id === badgeId;
+          const isDisabled = !!t.disabled || capped;
           const profile = getProfile(t, currentSkill);
+          // Static placeholder (Kassandra/Tracy) keeps its own label; a capped
+          // therapist shows the monthly-cap label. Inactive isn't dimmed here.
+          const label = t.disabled ? t.disabledLabel
+            : (capped ? 'Fully booked this month' : '');
           const classes = ['picker-card'];
           if (isRecommended) classes.push('picker-card--recommended');
           if (isDisabled) classes.push('picker-card--disabled');
@@ -386,12 +497,12 @@
               <span class="picker-card__photo-wrap"><img class="picker-card__photo" src="${t.photo}" alt="${escapeHtml(t.name)}" loading="lazy"></span>
               <p class="picker-card__name">${escapeHtml(t.shortName)}</p>
               <p class="picker-card__spec">${escapeHtml(profile.specialty)}</p>
-              ${isDisabled ? '<p class="picker-card__disabled-label">' + escapeHtml(t.disabledLabel) + '</p>' : ''}
+              ${isDisabled && label ? '<p class="picker-card__disabled-label">' + escapeHtml(label) + '</p>' : ''}
             </button>
           `;
         }).join('')}
       </div>
-      ${hasDisabled ? '<p class="picker-foot">Tap a therapist to see more. Some of our team are currently fully booked.</p>' : '<p class="picker-foot">Tap a therapist to see more about them.</p>'}
+      ${hasDisabled ? '<p class="picker-foot">Tap a therapist to see more. Some of the team aren’t open for new bookings right now.</p>' : '<p class="picker-foot">Tap a therapist to see more about them.</p>'}
     `;
   }
 
@@ -705,7 +816,11 @@
     Object.keys(totals).forEach((tid) => {
       if (totals[tid] > bestScore) { bestScore = totals[tid]; bestId = tid; }
     });
-    pickerDebug('native quiz complete', { totals: totals, recommended: bestId, answers: nativeQuizState.answers });
+    // Ranked ids (score desc) so the grid badge can fall back to the next
+    // available therapist when the top pick is dimmed (1.2). The recorded
+    // recommendation (bestId) still reflects the full-roster score.
+    lastQuizRanking = Object.keys(totals).sort((a, b) => totals[b] - totals[a]);
+    pickerDebug('native quiz complete', { totals: totals, recommended: bestId, ranking: lastQuizRanking, answers: nativeQuizState.answers });
     // Fire-and-forget quiz submission (non-blocking).
     postQuizSubmission(nativeQuizState.answers, bestId);
     showGrid(bestId);
@@ -955,9 +1070,11 @@
     showQuiz();
     // Pre-warm Cal.com on calcom pages: load embed.js + open the connection
     // while the visitor works through the quiz, so the calendar step feels
-    // fast when they reach it (Cal's iframe is the heavy part).
+    // fast when they reach it (Cal's iframe is the heavy part). Fetch live
+    // availability in parallel so the grid can dim inactive/capped therapists.
     if (currentPageConfig && currentPageConfig.bookingMode === 'calcom') {
       try { ensureCalInit(); } catch (_) {}
+      try { loadAvailability(); } catch (_) {}
     }
   }
 
