@@ -16,11 +16,11 @@
  *   - action: "quiz_submission"  → appends a quiz answer row (no contact info yet)
  *
  * POST — Cal.com webhook (Phase 1.5, Channel B, no `action`):
- *   - body.triggerEvent === "BOOKING_CREATED" → writes bookings_<skill>,
- *     increments bookings_count for the therapist's year-month, posts to Slack.
- *     Point Cal.com's Booking-Created webhook subscriber URL at this Web App
- *     (account-level). Slack URL comes from Script Property
- *     SLACK_BOOKINGS_WEBHOOK_URL.
+ *   - body.triggerEvent === "BOOKING_CREATED" → writes bookings_<skill> and
+ *     posts to Slack. Set the Cal Booking-Created webhook subscriber URL to
+ *     this Web App (per Cal account). Slack URL comes from Script Property
+ *     SLACK_BOOKINGS_WEBHOOK_URL. The monthly cap count is derived live from
+ *     the booking rows (no counter tab).
  *
  * GET:
  *   - ?action=available_therapists[&callback=fn] → JSON (or JSONP) of
@@ -86,8 +86,6 @@ const QUIZ_HEADERS = [
   'flow'
 ];
 
-const BOOKINGS_COUNT_TAB = 'bookings_count';
-
 const BOOKING_HEADERS = [
   'Timestamp', 'Booking UID', 'Booking ID', 'Status',
   'Skill', 'Booked Therapist', 'Booked Handle', 'Recommended Therapist ID', 'Matched Recommendation',
@@ -96,11 +94,10 @@ const BOOKING_HEADERS = [
   'GCLID', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'
 ];
 
-const BOOKINGS_COUNT_HEADERS = ['Therapist ID', 'Year-Month', 'Count', 'Updated At'];
-
 // Per-therapist monthly cap + active flag (global across all skill pages).
-// cap === null means unlimited. Counts bucket by year-month, so caps reset
-// naturally on the 1st of each month. PER-CLIENT CONFIG.
+// cap === null means unlimited. The month count is DERIVED live from the
+// booking rows (see bookingCountForMonth) — no counter tab — so caps reset on
+// the 1st with nothing to maintain. PER-CLIENT CONFIG.
 const THERAPIST_CONFIG = {
   brookelyn: { cap: 15,   active: true },
   meagan:    { cap: 10,   active: true },
@@ -408,9 +405,10 @@ function jsonErr(msg) {
  * Phase 1.5 — Cal.com BOOKING_CREATED webhook (Channel B)
  * Cal.com POSTs the booking here (set the webhook subscriber URL to this
  * Web App URL, account-level, trigger = Booking Created). We write the full
- * record to bookings_<skill>, bump the therapist's monthly count, and post
- * to Slack. Attribution (skill/recommended/UTMs) rides the hidden Cal fields
- * we prefill on the embed; contact rides attendees[0].
+ * record to bookings_<skill> and post to Slack (the monthly cap count is
+ * derived from these rows in availableTherapists). Attribution
+ * (skill/recommended/UTMs) rides the hidden Cal fields we prefill on the
+ * embed; contact rides attendees[0].
  * ===================================================================== */
 
 function handleCalBooking(payload) {
@@ -455,7 +453,6 @@ function handleCalBooking(payload) {
     r.gclid, r.utm_source, r.utm_medium, r.utm_campaign, r.utm_term, r.utm_content
   ]);
 
-  if (bookedId) incrementBookingCount(bookedId, currentYearMonth());
   notifySlack(r);
 }
 
@@ -473,41 +470,41 @@ function currentYearMonth() {
   return Utilities.formatDate(new Date(), tz, 'yyyy-MM');
 }
 
-// A Year-Month cell may read back as text ("2026-07") or, if Sheets coerced
-// it, as a Date — normalize both to "yyyy-MM" so matching is reliable.
-function cellYearMonth(v) {
-  if (v instanceof Date) {
-    return Utilities.formatDate(v, Session.getScriptTimeZone() || 'America/Edmonton', 'yyyy-MM');
-  }
-  return String(v);
+// Monthly cap count — DERIVED live from the booking rows (single source of
+// truth; no counter tab to drift). Counts a therapist's bookings BOOKED in the
+// given year-month (by the row's Timestamp = booked-on date), across ALL
+// bookings_<skill> tabs, since caps are global across skills. Resets by month
+// automatically. Skips non-ACCEPTED rows (for when we handle cancellations).
+function bookingCountForMonth(therapistId, yearMonth) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const tz = Session.getScriptTimeZone() || 'America/Edmonton';
+  let count = 0;
+  ss.getSheets().forEach(function (sheet) {
+    if (sheet.getName().indexOf('bookings_') !== 0) return;  // only bookings_<skill> tabs
+    const data = sheet.getDataRange().getValues();
+    if (data.length < 2) return;
+    const hdr = data[0];
+    const therapistCol = hdr.indexOf('Booked Therapist');
+    const tsCol = hdr.indexOf('Timestamp');
+    const statusCol = hdr.indexOf('Status');
+    if (therapistCol === -1 || tsCol === -1) return;
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][therapistCol]).toLowerCase().trim() !== therapistId) continue;
+      if (statusCol !== -1) {
+        const st = String(data[i][statusCol]).toUpperCase().trim();
+        if (st && st !== 'ACCEPTED') continue;
+      }
+      if (monthOf(data[i][tsCol], tz) === yearMonth) count++;
+    }
+  });
+  return count;
 }
 
-function incrementBookingCount(therapistId, yearMonth) {
-  const sheet = getOrCreateSheet(BOOKINGS_COUNT_TAB, BOOKINGS_COUNT_HEADERS);
-  const data = sheet.getDataRange().getValues();
-  for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]) === therapistId && cellYearMonth(data[i][1]) === yearMonth) {
-      const n = Number(data[i][2] || 0) + 1;
-      sheet.getRange(i + 1, 3).setValue(n);
-      sheet.getRange(i + 1, 4).setValue(new Date());
-      return n;
-    }
-  }
-  sheet.appendRow([therapistId, '', 1, new Date()]);
-  // Force Year-Month to plain text so Sheets doesn't coerce "2026-07" to a date.
-  sheet.getRange(sheet.getLastRow(), 2).setNumberFormat('@').setValue(yearMonth);
-  return 1;
-}
-
-function getBookingCount(therapistId, yearMonth) {
-  const sheet = getOrCreateSheet(BOOKINGS_COUNT_TAB, BOOKINGS_COUNT_HEADERS);
-  const data = sheet.getDataRange().getValues();
-  for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]) === therapistId && cellYearMonth(data[i][1]) === yearMonth) {
-      return Number(data[i][2] || 0);
-    }
-  }
-  return 0;
+// A Timestamp cell is normally a Date; return its year-month in `tz`.
+function monthOf(v, tz) {
+  const d = (v instanceof Date) ? v : new Date(v);
+  if (isNaN(d.getTime())) return '';
+  return Utilities.formatDate(d, tz, 'yyyy-MM');
 }
 
 // { therapistId: { available: bool, reason?: 'fully_booked' | 'inactive' } }
@@ -518,7 +515,7 @@ function availableTherapists() {
     const cfg = THERAPIST_CONFIG[id];
     if (!cfg.active) { out[id] = { available: false, reason: 'inactive' }; return; }
     if (cfg.cap == null) { out[id] = { available: true }; return; }
-    const count = getBookingCount(id, ym);
+    const count = bookingCountForMonth(id, ym);
     out[id] = count >= cfg.cap ? { available: false, reason: 'fully_booked' } : { available: true };
   });
   return out;
