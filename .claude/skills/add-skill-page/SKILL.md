@@ -478,6 +478,14 @@ Instead of per-therapist Cal.com Slack workflows / Zapier zaps (tedious to set u
 
 **One-time manual step per client** (do it with the AI session): create the Slack channel + an incoming webhook, paste the URL into config. **For Maximum Health now:** create `#maximumhealth-google-ads-bookings` + incoming webhook, wire the Phase 1.5 handler to post there, then **disable the existing Cal/Zap Slack notification** (the one currently firing for Brookelyn) so we don't double-notify.
 
+## Decision 8 — monthly cap = intake count (booked-on date), derived live from the booking rows (decided 2026-07-02)
+
+The per-therapist monthly cap counts a therapist's bookings **made this calendar month** (by the row's Timestamp / booked-on date), **derived live** from the `bookings_<skill>` rows across all skills — **no `bookings_count` counter tab** (retired).
+
+**Why booked-on date, not appointment date:** the gray-out is a *single on/off switch per therapist, decided before the visitor picks a date.* An appointment-date ("capacity") cap is per-target-month and a visitor can book any month, so it both over-blocks (grays her when *this* month is full even if next month is open) and under-blocks (misses a future month that's already full). Our cap isn't calendar capacity anyway — **Cal.com already enforces her real open slots**; our cap is a **monthly promo-intake limit** ("take up to N new $49 patients per month"). Booked-on-date maps cleanly to the one gray-out boolean and resets on the 1st.
+
+**Why derived, not a counter tab:** single source of truth = the booking rows; self-correcting; no drift; no pre-populating therapists; and it fixed a real off-by-one (a maintained counter had drifted). `>= cap` grays at exactly the cap. Skips non-`ACCEPTED` rows so cancellation handling can drop them later. Perf: scans `bookings_<skill>` tabs per availability call — fine at clinic volume; becomes a trivial query on Cloudflare D1 (Phase 6).
+
 ## Per-therapist QA pass (required per skill page)
 
 After wiring a skill page to `bookingMode: 'calcom'`, QA **each active therapist** on that page before calling it done:
