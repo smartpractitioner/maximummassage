@@ -99,11 +99,11 @@ const BOOKING_HEADERS = [
 // booking rows (see bookingCountForMonth) — no counter tab — so caps reset on
 // the 1st with nothing to maintain. PER-CLIENT CONFIG.
 const THERAPIST_CONFIG = {
-  brookelyn: { cap: 15,   active: true },
-  meagan:    { cap: 10,   active: true },
-  charlotte: { cap: null, active: true },
-  lindsey:   { cap: null, active: true },
-  tif:       { cap: 15,   active: false }
+  brookelyn: { name: 'Brookelyn Brolly', cap: 15,   active: true },
+  meagan:    { name: 'Meagan Brown',     cap: 10,   active: true },
+  charlotte: { name: 'Charlotte Tooth',  cap: null, active: true },
+  lindsey:   { name: 'Lindsey Stauffer', cap: null, active: true },
+  tif:       { name: 'Tif Henderson',    cap: 15,   active: false }
 };
 
 // Cal.com organizer.username -> our therapist id. PER-CLIENT CONFIG.
@@ -539,12 +539,13 @@ function notifySlack(r) {
   // line. Available fields on `r`: firstName, lastName, email, phone, skill,
   // bookedId, handle, recommendedId, matched, start, end, eventTypeId,
   // location, gclid, utm_source/medium/campaign/term/content, uid.
+  const cfg = THERAPIST_CONFIG[r.bookedId];
+  const therapist = (cfg && cfg.name) || r.bookedId || r.handle;
   const text = [
     ':calendar: *New booking* — ' + who,
-    '*Therapist:* ' + (r.bookedId || r.handle),
+    '*Therapist:* ' + therapist,
     '*Skill:* ' + r.skill,
     '*When:* ' + when,
-    '*Contact:* ' + ([r.email, r.phone].filter(String).join('  ·  ') || 'n/a'),
     '*Source:* ' + via + (r.gclid ? '   (gclid ✓)' : '')
   ].join('\n');
   // =================================================================
