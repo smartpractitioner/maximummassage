@@ -16,4 +16,4 @@ How to collaborate on this repo (the Maximum Health funnel + the factory it beco
 - **Everything is a factory in the making.** We're building Maximum Health *and* the reusable engine for future clients. Keep engine logic generic and per-client specifics in config; write docs/SOPs client-agnostic with Maximum Health as the worked example.
 
 ## Orientation
-Start from `docs/handoff-resume-state.md` (current state + next steps), then `.claude/skills/add-skill-page/SKILL.md` (all decisions + the "why"), `docs/plan-bookings-and-qs-handoff.md` (6-phase plan), `docs/phase-7-polish-backlog.md`.
+Start from `.claude/skills/add-skill-page/SKILL.md` (all decisions + the "why" — the source of truth), then `docs/plan-bookings-and-qs-handoff.md` (6-phase plan) and `docs/phase-7-polish-backlog.md` (parking lot). Current phase state lives in those decision records + git history, not a handoff doc — **do not maintain a handoff/resume-state doc; generate one only when Victor explicitly asks.**
