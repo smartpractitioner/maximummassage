@@ -486,6 +486,17 @@ The per-therapist monthly cap counts a therapist's bookings **made this calendar
 
 **Why derived, not a counter tab:** single source of truth = the booking rows; self-correcting; no drift; no pre-populating therapists; and it fixed a real off-by-one (a maintained counter had drifted). `>= cap` grays at exactly the cap. Skips non-`ACCEPTED` rows so cancellation handling can drop them later. Perf: scans `bookings_<skill>` tabs per availability call — fine at clinic volume; becomes a trivial query on Cloudflare D1 (Phase 6).
 
+## Decision 9 — quiz and booking data stay UNLINKED (health-privacy firewall) (decided early, recorded 2026-07-03)
+
+`quiz_<skill>` and `bookings_<skill>` are **deliberately kept as separate tabs with no shared per-person key.** This is a **health-privacy compliance requirement**, not just data hygiene: a named person must never be joinable to *what they are seeking treatment for*. The quiz answers — and the skill/condition intent behind a booking — are **health information**; associating a name with them reveals what care that individual is receiving. So the two datasets are firewalled.
+
+**What this forbids (do not "helpfully" add later):**
+- No unique client/visitor ID (e.g. an `mh_cid`) stamped onto **both** the quiz submission and the booking to join them per person. We explicitly considered and **rejected** this.
+- The `_mh_cid` GA cookie ([functions/track.js](../../../functions/track.js)) is `HttpOnly` and stays that way — it must not be surfaced to front-end JS to bridge quiz↔booking.
+- No merging the tabs; no joining quiz rows to a named booking on `gclid`/timestamp/anything.
+
+**What is still allowed:** *aggregate* funnel analytics (quiz→booking conversion *rate*, not per-person tracing), and cohort attribution on the **booking side only** (booking ↔ Jane patient export on email — that's the patient's own care record, already inside the clinic's PHI boundary). The quiz stays anonymous interest data on its own side of the wall.
+
 ## Per-therapist QA pass (required per skill page)
 
 After wiring a skill page to `bookingMode: 'calcom'`, QA **each active therapist** on that page before calling it done:
