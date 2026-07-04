@@ -115,7 +115,7 @@ Reuse without edits (these don't change per page):
 - Stats section (1,749+ / 28 / 91% / 100%)
 - Why Work With Us — 6 cards (Deeply In-tune, Nervous System, Detectives First, Whole Body, Personalized Plans, Pain ≠ gain)
 - Healing isn't just the hour
-- Testimonials (one card carried over from general for now; we'll prune to modality-specific reviews once we have them)
+- Testimonials (one card carried over from general for now; scoped for pruning to modality-specific reviews in **Phase 3.2 — Social proof review + alignment** per `docs/plan-bookings-and-qs-handoff.md`, following `docs/sop-social-proof-sourcing.md`)
 - Footer
 
 The Why Work With Us **subhead** gets a per-page rewrite leading into the matching-focused close. Same for the Healing section subhead — both retune around the modality without changing the cards.
