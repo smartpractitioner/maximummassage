@@ -1,6 +1,13 @@
-# Phase 7 — Post-launch polish + nice-to-haves backlog
+# Phase 8 — Post-launch polish + nice-to-haves backlog
 
-> **Companion to** `docs/plan-bookings-and-qs-handoff.md`. Add this as the final phase of that project. Do not start any 7.X item until Phases 0-6 are complete.
+> **Companion to** `docs/plan-bookings-and-qs-handoff.md`. Add this as the final phase of that project. Do not start any 8.X item until Phase 7 (Portability + multi-agent factory staffing) is complete.
+>
+> **Restructured 2026-07-03 (two moves same day — read carefully).** This file was originally Phase 7 with items labeled 7.1 through 7.8. First move: renumbered to Phase 8 (items to 8.1-8.8) when BI + Reporting was inserted as the new Phase 7 to sit ahead of polish. Second move (same day): BI was then promoted ahead of factory-buildout, so BI is now Phase 6 (`docs/phase-6-bi-reporting-design.md`) and factory-buildout (portability + multi-agent factory staffing) is now Phase 7. This polish file stays as Phase 8. Historical references anywhere in the repo:
+>
+> - "Phase 7 = polish" pre-2026-07-03 → now Phase 8
+> - "Phase 6 = portability" pre-2026-07-03 → now Phase 7
+> - "Phase 7 = BI" from earlier in 2026-07-03 (intermediate state) → now Phase 6
+> - "7.1 = PractiCal" pre-2026-07-03 → now 8.1
 
 ---
 
@@ -12,12 +19,77 @@ This phase is a **parking lot** for everything that isn't core to the booking fu
 
 - **Don't fix nice-to-haves inline during the main build.** If something is non-core and surfaces mid-Phase, add an entry here and keep moving.
 - **Each subsection includes:** what the item is, why it matters, any dependencies or open questions, and (if known) an implementation sketch. Even a one-line stub is fine — better to capture imperfectly than to forget.
-- **Order is loose.** Don't treat the numbering as strict priority. Re-prioritize at backlog-review time once Phase 6 is done and the real picture of what's left is clearer.
+- **Order is loose.** Don't treat the numbering as strict priority — except for 8.1, which IS the highest-priority item and was promoted deliberately.
 - **Add items as you go.** This file should grow during the project, not be authored once and frozen.
 
 ---
 
-## 7.1 — Direct-booker enforcement automation
+## 8.1 — Replace Cal.com with our own internal calendar/booking script (PractiCal), unified with in-house calendar provisioning
+
+> **PROMOTED to 8.1 on 2026-07-02 (was 8.4).** Elevated because so much of the factory story depends on this — per-practitioner Cal.com account setup is the primary manual bottleneck that kills factory-scale. Owning the calendar layer removes it.
+>
+> **Unified with old 8.8 on 2026-07-03.** The former 8.8 ("Bring PatientSync calendar provisioning in-house to the factory") is now folded into this item — see the "In-house calendar provisioning" section below. Reason: they're one architectural evolution, not two. Once we own the calendar layer (PractiCal), PatientSync's Cal.com-provisioning role either disappears entirely (if PractiCal replaces Cal.com fully) or evolves into direct PractiCal integration (if PractiCal ships alongside Cal.com during transition). Treating them as separate items fragments the design conversation. **Coordinate directly with Justin** — this is one integrated design pass, not two.
+>
+> **Scope caveat:** this is **not** a nice-to-have polish item — it's a major architectural build (a whole booking engine + PatientSync integration). Given its factory-blocker status, **consider promoting it to its own dedicated phase (Phase 9 or similar)** rather than treating it as end-of-list polish work when picked up. Re-evaluate at backlog-sweep time.
+>
+> **Does NOT block the current client.** Maximum Health launches on **Cal.com now** — speed to launch is the priority. The Cal.com embeds get swapped for the owned calendar later, which stays cheap because the booking step routes through the `mhBackend` abstraction (repoint the booking step + endpoint, not a funnel rebuild).
+
+### Context — why this item exists
+
+The user wants to **own the calendar layer** — replace the third-party Cal.com dependency with our own internal calendar/booking script — before the factory buildout is finished. Right now Cal.com is the booking engine (inline embed → `bookingSuccessfulV2` → `/booking-confirmed/`, and a `BOOKING_CREATED` webhook feeds Jane via ICS/ClinicSync).
+
+### Why it matters (user's stated reasons, 2026-06-20)
+
+- **Eliminate laborious per-practitioner setup (the primary driver):** Cal.com takes "way too many laborious clicks inside the account," and you have to set up a **separate account/config for each practitioner** — repeated for every client. That doesn't scale as a factory. The goal: **the factory pumps out the calendar script and integrates it completely** per client/practitioner — no manual Cal.com account provisioning each time.
+- **Control the emailing — let Jane do it all:** Cal.com sends too many notification emails we can't control. We want the client's **Jane EHR to own all patient emailing** (confirmations, reminders, etc.). An owned calendar would send **no patient email of its own** and defer entirely to Jane.
+- **Remove the Cal.com branding** in the booking step (a secondary annoyance; overlaps 8.3 theming — which becomes moot once this ships).
+- *(Follow-on benefits, inferred — confirm at planning time):* we'd own the **complete booking payload** directly (no lean-event + webhook workaround), drop the **per-seat SaaS cost** at factory scale, and make **8.3 (theming)** and **8.4 (buffer/duration)** moot while removing Cal UI-drift risk from our SOPs.
+
+> **Near-term implication (flag for the Phase 1 build, don't wait for 8.1):** while we're still on Cal.com, its own confirmation/reminder emails will fire on live bookings **on top of** Jane's. Decide during the build whether to **mute Cal.com's notifications** (turn off its email workflows so only Jane emails the patient) so we don't ship a double-emailing flow. This is a Cal.com settings change, separate from the full 8.1 replacement.
+
+### Dependencies / open questions
+
+- **Big scope:** availability management, slot selection, timezone handling, double-booking prevention, confirmation + reminder emails/texts, cancellation/reschedule (routed to Jane per current policy), and a **Jane / ClinicSync / PatientSync sync adapter** to replace the ICS feed. Needs Justin's input on the sync side.
+- **Natural home:** Cloudflare Workers + KV/D1 (aligns with the Phase 6.3 Apps Script → Workers migration). Build the calendar as a Worker service.
+- **Front-end swap is cheap if we plan for it:** if the booking step goes through the `mhBackend` abstraction (Phase 1.6), swapping Cal.com for the internal calendar is mostly repointing the booking step + endpoint, not a rewrite of the funnel.
+- **Migration:** how to cut existing/live Cal.com bookings over without disruption.
+
+### Implementation sketch (stub — expand at planning time)
+
+Worker-based booking service: availability rules per therapist → public slot API → booking write (with our own full payload incl. skill/therapist/UTMs, no hidden-field workaround) → confirmation page + reminders → sync adapter to Jane. Front-end booking step calls it via `mhBackend`.
+
+**Build vs. adopt open-source (evaluate first):** before building a scheduler from scratch, look at self-hosting/forking an existing open-source one — e.g. **[cal.diy](https://www.cal.diy/)** or the **Cal.com open-source GitHub repo** (Cal.com is AGPL and self-hostable). A self-hosted fork could hand us the calendar engine to fully theme + control emails + script per-practitioner setup + drop per-seat SaaS cost, without writing availability/booking logic ourselves. Weigh the maintenance burden of a self-hosted fork (upgrades, infra) vs. lean custom Worker endpoints — either path still delivers the branding/email-control/setup-automation wins.
+
+### Files / systems this touches (eventual)
+
+- New `workers/` calendar service; `public/js/therapist-picker.js` booking step; `public/js/mh-backend.js`; the Jane/ClinicSync sync layer (Justin); per-client config (availability, therapist calendars).
+
+### In-house calendar provisioning (was 8.8, now folded here)
+
+Today, when we onboard a new client, someone (Justin or ops) has to **log into the PatientSync dashboard and manually add the calendar** as one of the client-setup steps. It's a per-client manual step that:
+
+- Requires PatientSync-specific dashboard knowledge
+- Creates a hard dependency on Justin's availability
+- Doesn't fit the factory model — the goal is "any team member can hand the factory the client inputs and reproduce the outcome," not "any team member plus Justin doing a dashboard configuration."
+
+Victor's framing to Justin (2026-07-02), captured verbatim as the seed for this piece:
+
+> "As I've been building out her new infrastructure I've been having Claude build a factory so that we can basically have any team member hand it the inputs from the client and reproduce the outcome. I think there will be a time when we join PatientSync with that factory. Think of it like instead of the factory having to order a part from across the country it brings in-house the making of that part. I think it would be a lot easier to deploy a new calendar in PatientSync that way versus having to log into the dashboard and manually add the calendar."
+
+**How this folds into PractiCal (why the merger makes sense):**
+
+- **If PractiCal fully replaces Cal.com** → the calendar-provisioning step disappears entirely. The factory creates the calendar directly by writing config into PractiCal's own D1 tables at client-setup time. No PatientSync dashboard step, no external system to provision. Single build path.
+- **If PractiCal ships alongside Cal.com during transition** → PatientSync needs API/scripting hooks the factory can call for calendar provisioning (whether the target is Cal.com or PractiCal). Same PatientSync integration work, but pointed at whichever calendar backend is active for that client. Justin's cooperation still gates it, but the design conversation is one unified pass.
+
+**Either way, this is one architectural decision, not two.** Do NOT design "in-house calendar provisioning for PatientSync" as a separate item — coordinate with Justin as part of the PractiCal design conversation.
+
+**Data contract to define with Justin:** what the factory sends when it triggers calendar provisioning (therapist metadata, event-type mapping, buffer times, availability rules, sync-target Jane appointment-type names). Auth model (service account, API token, per-client scoped tokens matching the Cloudflare pattern). Failure handling + idempotency. Where the step slots in relative to Cloudflare zone creation, Worker deploy, Jane appointment-type setup, and ad-campaign wiring.
+
+---
+
+## 8.2 — Direct-booker enforcement automation
+
+> **Was 8.1 before the 2026-07-02 reorder — moved down one slot when Cal.com replacement was promoted.**
 
 ### Context — why this item exists
 
@@ -139,7 +211,9 @@ Before designing the email cadence or any escalation logic, **collect 30+ days o
 
 ---
 
-## 7.2 — Cal.com embed theming to match the landing page brand
+## 8.3 — Cal.com embed theming to match the landing page brand
+
+> **Moot if 8.1 (Cal.com replacement) ships** — the owned calendar layer removes Cal.com's embed entirely, which means there's no third-party UI to theme. Keep this section only as a fallback if we decide NOT to build 8.1 and stay on Cal.com long-term. Was 8.2 before the 2026-07-02 reorder.
 
 ### Context — why this item exists
 
@@ -193,7 +267,9 @@ Match brand tokens from `public/css/flow-b-v3.css` (or wherever the design token
 
 ---
 
-## 7.3 — Cal.com appointment duration vs. Jane buffer time
+## 8.4 — Cal.com appointment duration vs. Jane buffer time
+
+> **Moot if 8.1 (Cal.com replacement) ships** — the owned calendar layer defines its own duration/buffer model without Cal.com's constraints. Keep this section only as a fallback if we stay on Cal.com long-term. Was 8.3 before the 2026-07-02 reorder.
 
 ### Context — why this item exists
 
@@ -235,45 +311,7 @@ Note: the captured `BOOKING_CREATED` webhook from a current (fixed-80) booking r
 
 ---
 
-## 7.4 — Replace Cal.com with our own internal calendar/booking script
-
-> **Scope caveat:** this is **not** a nice-to-have polish item — it's a major architectural build (a whole booking engine). It's parked here per the user's request (2026-06-20), but flagged as a **gate before the factory is considered "complete,"** and it should likely be promoted into its own design pass / phase when picked up rather than treated as an end-of-list polish. Re-evaluate its priority at backlog-sweep time.
->
-> **Does NOT block the current client.** Maximum Health launches on **Cal.com now** — speed to launch is the priority. The Cal.com embeds get swapped for the owned calendar later, which stays cheap because the booking step routes through the `mhBackend` abstraction (repoint the booking step + endpoint, not a funnel rebuild).
-
-### Context — why this item exists
-
-The user wants to **own the calendar layer** — replace the third-party Cal.com dependency with our own internal calendar/booking script — before the factory buildout is finished. Right now Cal.com is the booking engine (inline embed → `bookingSuccessfulV2` → `/booking-confirmed/`, and a `BOOKING_CREATED` webhook feeds Jane via ICS/ClinicSync).
-
-### Why it matters (user's stated reasons, 2026-06-20)
-
-- **Eliminate laborious per-practitioner setup (the primary driver):** Cal.com takes "way too many laborious clicks inside the account," and you have to set up a **separate account/config for each practitioner** — repeated for every client. That doesn't scale as a factory. The goal: **the factory pumps out the calendar script and integrates it completely** per client/practitioner — no manual Cal.com account provisioning each time.
-- **Control the emailing — let Jane do it all:** Cal.com sends too many notification emails we can't control. We want the client's **Jane EHR to own all patient emailing** (confirmations, reminders, etc.). An owned calendar would send **no patient email of its own** and defer entirely to Jane.
-- **Remove the Cal.com branding** in the booking step (a secondary annoyance; overlaps 7.2 theming).
-- *(Follow-on benefits, inferred — confirm at planning time):* we'd own the **complete booking payload** directly (no lean-event + webhook workaround), drop the **per-seat SaaS cost** at factory scale, and make **7.2 (theming)** and **7.3 (buffer/duration)** moot while removing Cal UI-drift risk from our SOPs.
-
-> **Near-term implication (flag for the Phase 1 build, don't wait for 7.4):** while we're still on Cal.com, its own confirmation/reminder emails will fire on live bookings **on top of** Jane's. Decide during the build whether to **mute Cal.com's notifications** (turn off its email workflows so only Jane emails the patient) so we don't ship a double-emailing flow. This is a Cal.com settings change, separate from the full 7.4 replacement.
-
-### Dependencies / open questions
-
-- **Big scope:** availability management, slot selection, timezone handling, double-booking prevention, confirmation + reminder emails/texts, cancellation/reschedule (routed to Jane per current policy), and a **Jane / ClinicSync / PatientSync sync adapter** to replace the ICS feed. Needs Justin's input on the sync side.
-- **Natural home:** Cloudflare Workers + KV/D1 (aligns with the Phase 6.3 Apps Script → Workers migration). Build the calendar as a Worker service.
-- **Front-end swap is cheap if we plan for it:** if the booking step goes through the `mhBackend` abstraction (Phase 1.6), swapping Cal.com for the internal calendar is mostly repointing the booking step + endpoint, not a rewrite of the funnel.
-- **Migration:** how to cut existing/live Cal.com bookings over without disruption.
-
-### Implementation sketch (stub — expand at planning time)
-
-Worker-based booking service: availability rules per therapist → public slot API → booking write (with our own full payload incl. skill/therapist/UTMs, no hidden-field workaround) → confirmation page + reminders → sync adapter to Jane. Front-end booking step calls it via `mhBackend`.
-
-**Build vs. adopt open-source (evaluate first):** before building a scheduler from scratch, look at self-hosting/forking an existing open-source one — e.g. **[cal.diy](https://www.cal.diy/)** or the **Cal.com open-source GitHub repo** (Cal.com is AGPL and self-hostable). A self-hosted fork could hand us the calendar engine to fully theme + control emails + script per-practitioner setup + drop per-seat SaaS cost, without writing availability/booking logic ourselves. Weigh the maintenance burden of a self-hosted fork (upgrades, infra) vs. lean custom Worker endpoints — either path still delivers the branding/email-control/setup-automation wins.
-
-### Files / systems this touches (eventual)
-
-- New `workers/` calendar service; `public/js/therapist-picker.js` booking step; `public/js/mh-backend.js`; the Jane/ClinicSync sync layer (Justin); per-client config (availability, therapist calendars).
-
----
-
-## 7.5 — Automated QA pass for the per-therapist / per-skill booking flow
+## 8.5 — Automated QA pass for the per-therapist / per-skill booking flow
 
 ### Context — why this item exists
 
@@ -283,32 +321,43 @@ Every skill page needs a QA pass **per active therapist** (see the "Per-therapis
 
 Factory scale. Manual-only doesn't scale; but fully hands-off automation misses human judgment (does the calendar *feel* right, is the copy off, is the embed janky). Hybrid is the goal.
 
+**Belongs in factory documentation.** When picked up, this item should also produce a new SOP (e.g. `docs/sop-automated-qa-pass.md`) capturing how to configure and run the test suite per client, AND get folded into the `/onboard-new-client` skill as a required per-client onboarding step. The Playwright suite is a factory deliverable, not a Maximum Health-only tool.
+
 ### Sketch / earmark
 
 Automate the repetitive funnel walk with **Playwright** (or similar): a team member launches the tool and it drives quiz → grid → detail → Book → calendar → asserts the `booking_confirmed` dataLayer push + redirect for each therapist. **Hard rule: the team member must still do at least 2 manual runs themselves** to catch concerns a script won't. Open questions: how to avoid spamming real Cal bookings (test event type / auto-cancel via Cal API); GTM tag-firing + Jane sync likely stay semi-manual (Tag Assistant / EHR aren't easily scriptable).
 
 ---
 
-## 7.6 — Internal front-end / UI for the factory (team-facing)
+## 8.6 — Internal front-end / UI for the factory (team-facing) — genuine "might or might not build"
 
 ### Context — why this item exists
 
-Today the factory runs via Claude Code + config files + SOPs. A GUI could let less-technical team members spin up a client / skill page by filling a form (business info, roster, keyword themes) → generate config → deploy, making the whole thing much easier to operate.
+Today the factory runs via Claude Code + config files + SOPs. A GUI could let less-technical team members spin up a client / skill page by filling a form (business info, roster, keyword themes) → generate config → deploy, making the whole thing easier to operate.
+
+### Scope note (2026-07-03) — this might or might not ever happen
+
+Explicit non-commitment: **the GUI might never get built**, might get built partially (staff just deposit specific config items via GUI, everything else stays in Claude Code), or might get built end-to-end. All three outcomes are on the table. When this item is picked up:
+
+1. **Gather implementation ideas from the session working on it** — not a preordained scope. Have the agent propose what would meaningfully speed things up vs. what's overkill.
+2. **Then determine whether it's useful, helpful, and speeds things up** — vs. just running Claude Code end-to-end without a GUI layer.
+3. **Decide the outcome from there.** Abandon, build partial, or build end-to-end. Each is a valid answer depending on what the implementation ideas surface.
 
 ### Consideration pass FIRST (before building anything)
 
-This one gets a deliberate think before we act. Questions to answer:
+This one gets a deliberate think before we act. Questions to answer at pickup time:
 - **Does a GUI in any way break our process or the quality of outputs?** The Claude-Code-guided workflow is reasoning-rich (the SKILL.md "why", copy/QS judgment, per-therapist tuning). If a form-driven GUI bypasses that, do pages get worse? What must stay human/Claude-judged vs. what's safe to formify?
-- What does the GUI own (config entry, deploy triggers) vs. what stays in Claude Code (copywriting, keyword theming, QS judgment)?
+- What could the GUI own (config entry, deploy triggers) vs. what stays in Claude Code (copywriting, keyword theming, QS judgment)?
 - Build vs. buy; who maintains it; who actually uses it; does it earn its keep vs. just running the SOPs?
+- **Partial-GUI option:** would a narrow GUI covering only client-config entry (business info, credentials, brand tokens) — while all creative work stays in Claude Code — be the right compromise? Faster team onboarding without eroding output quality.
 
 ### Why it matters
 
-Ease of team use at factory scale — but only if it doesn't erode the output quality that's the whole point. Decide the consideration pass before committing.
+Ease of team use at factory scale — but only if it doesn't erode the output quality that's the whole point. And only if it's actually needed vs. Claude Code being fine end-to-end. Decide the consideration pass before committing.
 
 ---
 
-## 7.7 — GTM housekeeping: site-wide tags double-firing per page
+## 8.7 — GTM housekeeping: site-wide tags double-firing per page
 
 ### Context — why this item exists
 
@@ -324,8 +373,16 @@ Audit the trigger config on those tags; ensure each fires **once** per page (a s
 
 ---
 
+## 8.8 — [MERGED into 8.1 on 2026-07-03]
+
+The former 8.8 ("Bring PatientSync calendar provisioning in-house to the factory") was merged into 8.1 (PractiCal) on 2026-07-03. Reason: they're one architectural evolution, not two separate items — see the "In-house calendar provisioning" section within 8.1 above for the folded content, including Victor's verbatim framing to Justin and the design questions.
+
+**Do not treat these as separate builds.** Coordinate directly with Justin as part of the PractiCal design conversation.
+
+---
+
 ## Future items (add as they come up)
 
-> Drop new subsections here as `7.8`, `7.9`, etc. when polish items surface during Phases 0-6. Keep each entry brief — what it is, why it matters, any sketch or dependency. Format follows 7.1 and 7.2 above.
+> Drop new subsections here as `7.9`, `8.10`, etc. when polish items surface during Phases 0-6. Keep each entry brief — what it is, why it matters, any sketch or dependency. Format follows the sections above.
 >
 > *(Note: the confirmation-page reconciliation that briefly lived here was promoted to core Phase 1.1 on 2026-06-19 — see the "single canonical confirmation page" decision in `.claude/skills/add-skill-page/SKILL.md`. Not a parking-lot item.)*

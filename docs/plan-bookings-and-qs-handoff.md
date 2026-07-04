@@ -18,7 +18,7 @@ The five skill-specific landing pages (`/prenatal-massage-calgary/`, `/deep-tiss
 
 The 80% already built (page architecture, picker filtering, per-skill bios + tags + quizzes, weighted recommendations, UTM passthrough through to the lead form, lead capture to `leads_<skill>` sheet tabs) is solid and isn't being rebuilt. This plan adds the bookings layer on top, polishes the prenatal page as the canonical template, captures the polish reasoning into the `/add-skill-page` skill so the same procedure applies cleanly to the next pages, and rolls them out in priority order driven by the keyword/ROI workbook.
 
-**Ultimate goal beyond Maximum Health:** the same engine + workflow gets packaged and dropped onto another client (different city, different clinic, different therapists, different skills, different brand) with as little rework as possible. That means engine code stays generic; per-client stuff (therapist data, brand assets, Cal.com handles, monthly caps, voice rules, ad-group keyword themes) lives in swappable configuration. Phase 6 below addresses this explicitly.
+**Ultimate goal beyond Maximum Health:** the same engine + workflow gets packaged and dropped onto another client (different city, different clinic, different therapists, different skills, different brand) with as little rework as possible. That means engine code stays generic; per-client stuff (therapist data, brand assets, Cal.com handles, monthly caps, voice rules, ad-group keyword themes) lives in swappable configuration. Phase 7 below addresses this explicitly (was Phase 6 pre-2026-07-03 restructure).
 
 **Quality Score framework now in scope.** Resource files in `I:\Shared drives\...\Landing Pages\Flow B - AI Instructions and Resources\resources\`:
 - `ad-group-landing-page-quality-score-briefing.md` (the "one LP per ad group" strategy with weave-not-stuff keyword theming and hero-first effort allocation)
@@ -156,7 +156,7 @@ window.mhBackend = {
 
 All existing call sites (`submitLeadForm`, `postQuizSubmission`, confirmation-page `notify` / `update_contact`, plus the new Phase 1 `booking_confirmed` and `available_therapists`) route through `mhBackend`. The Apps Script Web App URL is the value of `MH_BACKEND_URL` for now.
 
-**Why this matters:** when we migrate Apps Script → Cloudflare Workers in Phase 6, we point `MH_BACKEND_URL` at the Worker, and the action contracts stay identical. Zero front-end rework on migration day. This is the same pattern the picker-config layer already uses for page → skill resolution — single-config-knob portability.
+**Why this matters:** when we migrate Apps Script → Cloudflare Workers in Phase 7 (was Phase 6 pre-2026-07-03), we point `MH_BACKEND_URL` at the Worker, and the action contracts stay identical. Zero front-end rework on migration day. This is the same pattern the picker-config layer already uses for page → skill resolution — single-config-knob portability.
 
 ### 1.7 GTM spec for the user to implement (pre-requisite for conversion firing)
 
@@ -183,27 +183,102 @@ Apply the **copy-side** of the QS framework to the prenatal page. From the QS-fo
 
 **The strategic principle from the briefing:** weave the ad group's keywords as a **theme**, never stuff them. The reader should feel the relevance without seeing a keyword pile. For our case (modality intent): page leads with the modality's vocabulary across H1, subhead, first paragraph, benefit titles, "what a session looks like" copy, FAQ questions. Hayahay's `[Modality] for [Benefit]` H1 pattern is exactly this. Variations of the keyword (e.g. for prenatal: "pregnancy massage," "prenatal massage," "postpartum massage," "perinatal massage") naturally rotate through different sections.
 
-**Hero H1 carries the central / highest-volume ad-group keyword (the user's emphasis).** This is the single highest-leverage QS move. For each ad group, the H1 — and the subhead immediately under it — must contain the most-searched term from that ad group's Active keyword list in the workbook, verbatim phrasing rather than a variation. Variations rotate through later sections; the hero anchors to the focal term. The H1 still has to read naturally for a human; if the focal term is awkward as-written, pair it with a brief connecting phrase (e.g. `<Focal term> in <city> | <benefit pair>`).
+**Hero H1 delivers close semantic match to the focal ad-group keyword (updated 2026-07-03).** The H1 and subhead must unmistakably deliver what the search query promised — but "match" here means **semantic match**, not verbatim string match. Google's Quality Score doesn't reward literal H1-equals-search-term matching; landing page experience is scored on semantic relevance + usability, not string matching. What lifts conversions is message match — a visitor recognizing "this is the right place" the way you'd recognize a friend across a room. You don't need identical outfits, you recognize the face. "RMT in Calgary" and "registered massage therapist Calgary" read as the same face.
+
+The real target: **a headline that reads naturally AND obviously delivers what they searched for.** Close semantic match preferred over awkward verbatim insertion. Example: if the focal keyword is "prenatal massage calgary," an H1 like "Prenatal Massage in Calgary — Pregnancy Relief Where You Need It" is a stronger message-match win than a wooden verbatim insertion, because it reads naturally to a human AND unmistakably matches the intent.
+
+Variations rotate through later sections; the hero anchors to the focal intent. **Prefer close match. Reserve verbatim only when it reads naturally on its own.**
 
 **The hero-effort principle:** ~70%+ of visitors don't scroll below the fold. Hero gets premium attention. Restate the ad's promise, present the primary CTA, make the message-match feel like a continuation of the ad — not a fresh pitch.
 
-**Audit task for prenatal:**
+**Phase 2 is an editorial pass, not an audit.** If your deliverable is a checklist of keyword matches per section, the process ran wrong. If your deliverable is a warmer page that also happens to hit the focal keyword in the H1 and weave the theme naturally through body copy, the process ran right. The lens through every step below is **the visitor's eyes** — anxious, curious, looking for warmth and relief. Not the keyword checker's eyes.
 
-1. Pull the prenatal ad-group keyword list from the Drive workbook (`@ Maximum Massage Keyword Buckets.xlsx`, Prenatal tab — 40 keywords as of last build). See memory `project_keyword_workbook_system.md` for the workbook location and edit rules.
-2. Inventory where each high-volume Active keyword appears on the current prenatal page: H1, meta title, meta description, first paragraph, benefit titles, modality intro, "what a session looks like" copy, FAQ questions, final CTA. Build a coverage map (keyword → first appearance section, count).
-3. For high-volume Active keywords NOT yet woven in: identify the closest section where they fit naturally and reword. Never add new sections to hit a keyword; never repeat a keyword into a sentence where it sounds forced.
-4. For keyword **variations** (singular/plural, "pregnancy" vs "prenatal" vs "perinatal", "postpartum" vs "postnatal"): rotate them naturally across sections so the page reads with vocabulary variety while still hitting the search-term universe.
-5. Re-check that body text still flows for a real human reader. If a sentence sounds like SEO copy, undo it.
+**Prerequisite reading before you touch a single word:**
+
+- `.claude/skills/add-skill-page/SKILL.md` Step 4 (Draft page copy) — in full
+- `feedback_skill_page_structure_reference.md` — Hayahay benchmark, voice reference
+- The QS briefing + transcripts in the resources folder — the framework being applied
+- This entire Phase 2 section, especially the Voice priority + Hero H1 rules above
+
+**Editorial steps (not a checklist — a sequenced editorial process):**
+
+**Note on scope:** Phase 2 is an editorial pass on **already-written pages**. The copy was produced beforehand by a copywriter following the 6-step process in [`.claude/skills/add-skill-page/SKILL.md`](.claude/skills/add-skill-page/SKILL.md) Step 4. Phase 2 does NOT rewrite from scratch; it polishes and QS-tunes what's already there.
+
+**Step A — Ground yourself in voice.** Before touching the page, complete the prerequisite reading above. You're not here to run a keyword audit; you're here to make the page read better for a real person.
+
+**Step B — Understand the ad group's vocabulary.** Read the prenatal ad-group keyword list from the Drive workbook (`@ Maximum Massage Keyword Buckets.xlsx`, Prenatal tab — 40 keywords as of last build; see memory `project_keyword_workbook_system.md`). Identify the focal keyword (highest volume) and the natural vocabulary well — variations, related terms, phrases the modality is discussed with. **This is a vocabulary source, not a checklist to match against.**
+
+**Step C — The H1/subhead close-semantic-match check.** Does the H1 deliver close semantic match to the focal keyword? Does the subhead echo the same focal intent? Close match, not verbatim — see the H1 rule above for the full rationale. If the current H1 clearly delivers the focal intent, move on. If it's off-target or wooden, rewrite the hero.
+
+**Step D — Read the page aloud, section by section.** For each section (modality intro, benefits, session steps, why-us, FAQ, final CTA):
+- Does it feel warm, human, addressing anxiety?
+- Does the modality vocabulary feel naturally present, or absent, or FORCED?
+- If natural or absent → move on or add gently
+- **If FORCED → rewrite back to natural voice. Even if it costs a keyword hit.**
+
+**Step E — Coverage flag for top-5 (flag for review, don't force-fit).** Skim once and note which theme keywords appeared naturally. **For the top-5 highest-volume keywords specifically, if any are genuinely missing or only weakly represented, flag them for manual review** — surface the gap to the user with a note like "the top-5 keyword X isn't represented anywhere on the page; possible options: [section Y could take a natural rewording, section Z could be extended, or leave as-is]." The user decides whether to intervene. **Do not force a keyword into a sentence where it sounds unnatural. Do not invent sections to fit keywords.**
+
+**Step F — The final human-reader test (mandatory end-of-phase gate).** Read the page top-to-bottom aloud one more time. Any sentence that grates or reads like SEO copy? Rewrite. Iterate until you can read the page without cringing. This gate must be passed before Phase 2 is declared complete.
+
+**Red flags that mean you're doing this wrong:**
+- You're checking whether keyword X appears verbatim in section Y (outside the H1/subhead) — even in the H1, close semantic match is the goal, not verbatim
+- You're forcing keyword insertions that break sentence flow
+- Your deliverable is a keyword-coverage table rather than an edited page
+- You skipped Step A (prerequisite reading) or Step F (aloud test)
+
+**Failure mode captured 2026-07-03:** worker session ran Phase 2 as a naive literal-match audit ("does keyword X appear verbatim in section Y?") across every section, inverting the priority. This process framing is the corrective. If the current worker on Phase 2 is exhibiting these red flags, restart Phase 2 from Step A.
+
+**Scope note (2026-07-03):** This Phase 2 process is MH-project-specific — an editorial pass on already-written MH pages. It is NOT a factory template. When we get to Phase 7 (factory buildout with multi-agent staffing), the factory copywriter agent's process will be the 6-step COPYWRITING process (SKILL.md Step 4), not this editorial pass. Whether the factory needs a separate editor agent that resembles this Phase 2 process — vs. baking quality gates into the copywriter's own self-checks — is a factory design decision to be made in Phase 7 from first principles. This Phase 2 experience becomes a REFERENCE / ARTIFACT for that later design, not the design itself.
 
 **Update `/add-skill-page` skill MD** to encode this copy-theming framework as a required step for every page (existing and future). Include: the four-factor QS breakdown with weights (~65/25/10), the "weave not stuff" principle, the hero-effort ratio (70%+ don't scroll), the keyword-coverage-map exercise, and the "human reader test" failsafe. Cross-reference the QS briefing + intro + LP transcripts in the resources folder.
 
 ---
 
-## Phase 3 — Iterate prenatal page with user feedback
+## Phase 3 — Visual + social proof alignment, then user iteration (expanded 2026-07-03)
 
-User reviews the prenatal page post-Phase 2 and provides adjustments (copy, design, function). Each adjustment gets implemented **and** the rationale gets recorded into the `/add-skill-page` skill MD under a new "Lessons learned from prenatal" section, framed as principles applicable to other skill pages (e.g. "When a benefit reads as too clinical, soften the framing — visitors are anxious, not informed").
+Phase 2 handled copy. Phase 3 aligns the **non-copy elements** that need to match audience/intent — specifically images and social proof — then opens the door to user-driven iteration on the whole page.
 
-Repeat until user is satisfied.
+Four sequential steps:
+
+### 3.1 — Image review + alignment (invoke image-sourcing SOP)
+
+Worker reviews the page's imagery through the audience-match lens: does each image support what the copy says and match the visitor's context? A prenatal page showing hot-stones-on-back is a hard fail; a lymphatic page showing sports recovery is a hard fail. Same principle as Phase 2 Step E — flag mismatches for user review, don't force-replace.
+
+Process:
+1. Worker skims the page's images against modality intent + audience
+2. Any flagged mismatches → invoke [`docs/sop-image-sourcing.md`](sop-image-sourcing.md) to surface 3-5 candidates
+3. User picks + downloads + worker runs the ffmpeg webp conversion
+
+### 3.2 — Social proof review + alignment
+
+Two social-proof layers on every skill page, both need modality-alignment:
+
+**Page testimonial section** — the page currently uses a shared testimonial "carried over from general" (see SKILL.md line 118 pending item). Per skill page, the testimonial should be:
+- **Modality-appropriate** — a prenatal page testimonial should be from a pregnant/postpartum client; a lymphatic page from a post-op/edema client; etc.
+- **Audience-matching** — if the primary audience is women (prenatal), showing a male reviewer creates cognitive friction even if the content is accurate
+- **Sourced from client's designated review sources** — Google Business Profile, Yelp, other review sites the client uses (varies per client)
+
+Process for pulling testimonials: see [`docs/sop-social-proof-sourcing.md`](sop-social-proof-sourcing.md).
+
+**Therapist detail-panel reviews** — currently `public/js/therapist-picker.js` has one `review` field per therapist at the top level. This means Brookelyn's Google review shows the same regardless of which skill page. Same failure mode as the shared testimonial. Fix requires:
+- **Implementation change:** add a `skills.<skillId>.review` override pattern in `public/js/therapist-picker.js` mirroring the existing pattern for `bio`, `tags`, `specialty`. Update the `getProfile(t, skill)` resolver to merge the review the same way.
+- **Content sourcing per (therapist × skill):** worker sources modality-appropriate review per combo from the client's review sources, following the same SOP.
+
+### 3.3 — User review + additional feedback iteration
+
+You review the page (all elements — copy, images, social proof, layout, brand feel) and provide adjustments. Worker implements each. Loops until you're satisfied.
+
+Full UX review (color/brand, whitespace, mobile rendering, hero fold, element-copy tension) intentionally lives here as user-driven judgment rather than worker-driven audit. Those elements are mostly client-specific look-and-feel calls that a worker running an audit would false-positive-nitpick. Better surfaced by your review than by worker patrols.
+
+### 3.4 — Record rationale as "Lessons learned from prenatal"
+
+Each Phase 3 adjustment (from 3.1, 3.2, or 3.3) gets recorded into `.claude/skills/add-skill-page/SKILL.md` under a new "Lessons learned from prenatal" section, framed as **portable principles**, not client-specific content. Examples:
+
+- ✅ **Portable principle:** "When a benefit reads as too clinical for the audience, soften the framing — anxious visitors need warmth, not clinical accuracy."
+- ✅ **Portable principle:** "Testimonial gender/context should match the primary audience of the skill page — men reviewing prenatal creates cognitive friction even if the content is accurate."
+- ❌ **NOT portable (client-specific content):** "Prenatal hero should use teal on off-white." (Colors are client-config, not lessons.)
+
+The 80% factory pattern is what gets captured as lessons. The 20% client-specific content lives in client-config (Phase 7).
 
 ---
 
@@ -233,6 +308,8 @@ Once prenatal is solid, run a full test pass before moving to other pages.
 **Cross-flow:**
 - UTM passthrough end-to-end (ad URL → page → quiz → grid → detail → Cal.com prefill → booking record in `bookings_<skill>` → Jane note)
 - Pixel firing only on `booking_confirmed`, not on quiz or detail or Book-click
+
+**Post-launch conversion verification (once real ad traffic is live):** confirm a real gclid-attributed booking records in Google Ads → Conversions (not just GA4). Manual/test bookings won't count — needs a genuine ad click. Check within 24–48h of go-live; if still 0 after real converting clicks, debug the Ads tag / Conversion Linker.
 
 Script as much of this as possible with Playwright and surface a checklist for the parts that need a human (Jane sync, GTM DebugView, Google Ads UI).
 
@@ -276,15 +353,27 @@ If any of these come back as an actual problem (LCP > 2.5s, transparency missing
 
 ### Image sourcing per page
 
-User picked "I drive (search + ffmpeg local convert)". So per page Claude searches Pexels/Pixabay, surfaces 3-5 candidates with thumbnails, user picks one, user downloads to a known path, Claude runs `ffmpeg -i input.jpg -c:v libwebp -quality 80 -resize 800:0 output.webp` locally.
+Per-page image sourcing follows [`docs/sop-image-sourcing.md`](sop-image-sourcing.md). Same SOP that Phase 3.1 invokes for image alignment on already-built pages — factory-general process, per-client-repeatable.
 
 ---
 
-## Phase 6 — Portability: package this engine to drop onto other clients
+## Phase 6 — BI + Reporting design stage
 
-The plumbing built in Phases 1-5 is currently entangled with Maximum Health specifics. Phase 6 separates the **engine** (reusable across any service-business + ad-group account) from the **configuration** (per-client knobs). Goal: a new client (different city, different clinic, different therapists, different skills, different brand) becomes a configuration drop + asset swap, not a code rewrite.
+> **See `docs/phase-6-bi-reporting-design.md` for the full phase content.** This section is a placeholder in the main plan doc pointing at the standalone companion file. Elevated to Phase 6 on 2026-07-03 because knowing what the reporting layer needs to output shapes what "stations" the factory needs — design BI first, then design the factory around delivering it.
 
-### 6.1 Identify the swap surface
+**Sequencing:** Phase 5 (rollout) → **Phase 6 (BI + Reporting)** → Phase 7 (Portability + multi-agent factory staffing) → Phase 8 (polish backlog).
+
+**Do not start Phase 6 execution before consulting Victor.** Victor has additional documentation about laying out this reporting that must be gathered before the design conversation begins. See the companion file's "Execution workflow" section.
+
+---
+
+## Phase 7 — Portability: package this engine to drop onto other clients (+ multi-agent factory staffing)
+
+> **Renumbered from Phase 6 on 2026-07-03** when BI + Reporting was promoted to sit ahead of factory buildout. Also expanded to include the multi-agent factory staffing design (7.6 below).
+
+The plumbing built in Phases 1-5 is currently entangled with Maximum Health specifics. Phase 7 separates the **engine** (reusable across any service-business + ad-group account) from the **configuration** (per-client knobs). Goal: a new client (different city, different clinic, different therapists, different skills, different brand) becomes a configuration drop + asset swap, not a code rewrite. Also introduces the **multi-agent factory staffing model** so each specialist role in the factory has its own scoped skill, knowledge base, and quality bar.
+
+### 7.1 Identify the swap surface
 
 Three categories of content live in the project today; only one of them should change per client.
 
@@ -294,7 +383,7 @@ Three categories of content live in the project today; only one of them should c
 | **Per-client configuration** — practitioner roster + bios + photos, modality list, Cal.com handles, monthly caps, brand colors + fonts + logo, voice/tone rules, ad-group keyword themes, geographic terms | Currently scattered across `picker.js` (therapist data), `flow-b-v3.css` (brand), Maximum Health source compilation docs, the SKILL.md voice rules | **Yes** — every value is client-specific |
 | **Per-page content** — hero copy, benefits, FAQ, "what a session looks like," final CTA copy | Hard-coded in each `<slug>/index.html` | **Yes** — written per page per client following the SKILL.md procedure |
 
-### 6.2 Extract per-client configuration into a single config surface
+### 7.2 Extract per-client configuration into a single config surface
 
 Refactor:
 - A new top-level `client-config.js` (or `.json`) per client that holds: brand colors / fonts / logo path, business name + address + phone, default offer + guarantee terms, social proof reference (Lumino / Google count), GTM container id, Google Ads conversion id, GA4 property id, Cal.com event default duration, backend endpoint URL, list of practitioners with their per-skill profiles, per-skill quiz definitions, list of skill pages with URL slugs and keyword themes.
@@ -302,7 +391,7 @@ Refactor:
 - Theme tokens (colors, fonts, brand teal) move from `flow-b-v3.css` into CSS custom properties driven from `client-config.css`. Engine CSS uses the tokens; client CSS sets them.
 - The SKILL.md becomes a **client-agnostic** template: the voice/tone rules are stated as "first-person, mobile-text-message tone, no em dashes" — the specific source of those rules (Maximum Health user feedback) gets cross-referenced in a Maximum Health-specific addendum.
 
-### 6.3 Migrate Apps Script → Cloudflare Workers
+### 7.3 Migrate Apps Script → Cloudflare Workers
 
 The backend abstraction layer (Phase 1.6) makes this a low-risk change for the front-end — only the endpoint URL changes. The actual migration:
 - Port the Apps Script `.gs` to a Cloudflare Worker (`workers/backend/src/index.js` or similar). Same action contracts (`lead`, `notify`, `update_contact`, `quiz_submission`, `booking_confirmed`, `available_therapists`).
@@ -310,7 +399,7 @@ The backend abstraction layer (Phase 1.6) makes this a low-risk change for the f
 - Cal.com webhooks land on a Worker endpoint instead of an Apps Script Web App — more reliable, no manual redeploy ritual.
 - Wrangler-deploy from CI. Per-client deployments are one Worker per client with the client-config bound at deploy time.
 
-### 6.4 New client onboarding playbook
+### 7.4 New client onboarding playbook
 
 Document the "drop this engine onto a new client" procedure in a new `/onboard-new-client` skill MD as a numbered checklist. Roughly:
 
@@ -323,9 +412,34 @@ Document the "drop this engine onto a new client" procedure in a new `/onboard-n
 
 The new client should be live with their first skill page in days, not weeks. That's the bar.
 
-### 6.5 Test the portability claim
+### 7.5 Test the portability claim
 
-Once Phase 6.1-6.4 land, **prove the engine is generic** by booting a stub second client (could be a throwaway "test clinic" with one fake practitioner and one fake skill page) and running the onboarding playbook. Any engine code that breaks when the second client's config is loaded is a leak that needs fixing before we go live with a real second client. Measure success in time-to-first-page.
+Once Phase 7.1-7.4 land, **prove the engine is generic** by booting a stub second client (could be a throwaway "test clinic" with one fake practitioner and one fake skill page) and running the onboarding playbook. Any engine code that breaks when the second client's config is loaded is a leak that needs fixing before we go live with a real second client. Measure success in time-to-first-page.
+
+### 7.6 Multi-agent factory staffing (design + build the specialist agents that run the factory)
+
+Portability + config extraction is only half of "the factory." The other half is **staffing the factory with specialists** — Claude Code agents each scoped to one station of the pipeline, each with their own skills, memory, and quality bar. A single generalist worker session applied to every phase over-generalizes rules and misfires on domain-specific ones (proven failure mode: Phase 2 over-literal keyword matching, 2026-07-03).
+
+**Why this belongs in Phase 7, not later:** the multi-agent architecture IS how the factory scales from one team member running the whole thing to any team member handing the factory client inputs and reproducing the outcome. Without specialist staffing, portability is just cheap infrastructure that still requires a single expert to operate correctly.
+
+**Stations to design (initial cut — expand at planning time):**
+
+- **Copywriter agent** — reads SKILL.md Step 4 + `feedback_skill_page_structure_reference.md` + QS briefing + memory files on voice. Identity: "human-first voice; keyword theme, not stuffing." Refuses SEO-copy output. Has WebSearch + WebFetch for competitive research.
+- **Keyword strategist agent** — reads `project_keyword_workbook_system.md`, ROI model, keyword workbook. Owns "which keywords matter and how they map to sections." Outputs a keyword-theme brief that the copywriter consumes. Never touches copy directly.
+- **Page builder agent** — mechanical HTML assembly from copywriter drafts + designer's tokens. Narrow scope, deterministic.
+- **QA agent** — runs the Playwright suite from Phase 8.5 + a "human reader test" pass against copywriter output ("does any sentence read like SEO copy?").
+- **Deployment engineer agent** — Cloudflare + wrangler + per-client config wiring.
+- **Reporting agent** — runs Phase 6 monthly report generation per client.
+- **Foreman/orchestrator agent** — coordinates specialists for new-client onboarding runs; enforces sequencing (e.g., copywriter can't be invoked until keyword strategist has produced the brief).
+
+**Handoffs are contract-defined** — each station's output is a structured brief the next station consumes. That way each specialist's reasoning happens in its own scoped context, and cross-station coordination doesn't leak assumptions from one role into another.
+
+**Implementation surface:**
+- New `.claude/skills/copywriter/SKILL.md`, `.claude/skills/keyword-strategist/SKILL.md`, etc. per station
+- Curated resource sets per skill (which memory files, which SOPs, which tool access)
+- Foreman skill file that orchestrates the sequence
+- Per-station output contracts documented as JSON-ish shapes so handoffs are machine-checkable
+- Update the `/onboard-new-client` playbook to invoke the foreman rather than a generalist worker
 
 ---
 
@@ -357,7 +471,7 @@ Once Phase 6.1-6.4 land, **prove the engine is generic** by booting a stub secon
 - `public/lymphatic-drainage-massage-calgary/index.html`, `public/deep-tissue-massage-calgary/index.html` — Phase 1 booking retrofit + Phase 2 QS pass + Phase 3 polish loop per page, dual-track build
 - New: `public/therapeutic-massage-calgary/index.html` (or similar) — replaces general `/massage-therapy-calgary-flow-b/`; splitter routing change at cutover
 
-### Phase 6 (portability + Workers migration)
+### Phase 7 (portability + Workers migration + multi-agent factory staffing)
 - New file: `public/js/client-config.js` (or `.json`) — single per-client configuration surface (practitioners, skills, brand, business info, backend URL, ad-group keyword themes)
 - New file: `public/css/client-config.css` — per-client design tokens (brand colors, fonts, logo path); replaces hardcoded values in `flow-b-v3.css`
 - Refactor: `public/js/therapist-picker.js`, `public/js/picker-config.js`, `public/css/flow-b-v3.css` — remove Maximum Health hardcodes, read from `client-config` instead
