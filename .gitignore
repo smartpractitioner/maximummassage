@@ -1,6 +1,10 @@
 # Private reporting workspace — never commit client data
 reports-workspace/
 
+# Live lead/booking/quiz exports — real client PII + quiz PHI (Decision 9). Never commit.
+landing pageplanning/*.xlsx
+*Lead Capture*.xlsx
+
 # Ad-hoc migration scripts (keep local, don't track)
 /apply_rewrites.js
 /apply_uploadcare.js

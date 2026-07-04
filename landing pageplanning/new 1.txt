@@ -1,0 +1,62 @@
+==============ADVISORY FOR MAXIMUM ========================
+
+Is it safe to say that you are acting as the architect helping plan and map that plan and build out so that we've got the right output for our client Tracy at Knox Mom and her massage therapist and to create the factory while we're doing this work so that the work informs the build out of the factory is that accurate? 
+
+What's 7.1 to do with the fact that we wanted some sort of automation that would check and see if someone came from the website or from the paid ad and that if they book through the website on this particular appointment type that we would then surface this to someone to cancel it or even Have it fully automated to cancel that appointment type? Was that the idea.
+
+Also are you writing into the plan right now with the phases and is that something that the other Claude worker session building this out would be able to see?
+
+For 7.1 do we have something logged regarding why this is the way it is? For example I would very much like to have some sort of knowledge base that we can reflect back on to for when the factory is online and so we always know why we took the decisions that we took So when we go to the next client we're not asking ourselves for example "why does it need have an appointment type in Jane named this particular way" and other similar things. If not lets start somethng like this, and log all those types of points, then log the following regarding the jane setup "We have to change the name in order to deter people on the website from booking
+We're updating it to "Starter Session - By Invite Only"" and then add what we discussed about the deflection concept from the main site booking page. Note that I have asked the worker session to log certain things and so it might already have created some sort of file or folder or some sort of structure to accomplish this so please check with it first - whether this is an sop or otherwise is up to you, you are the architect here... I do like the idea of a build plan and a spec though, and the analogy of it
+
+
+I had a short convo with Justin asking another question: "Victor Pidkowich  [11:23 AM]
+Heres a simple question for you - in cal.com We need to have the duration match that of what's in Jane including the buffer time so if it's a 60 minute appointment with a 20 minute buffer like in the case of Brooklyn then it's 80 minutes total. Button Cal is it possible for us to select 60 minutes and add a buffer time and would that still work or does it have to be a fixed 80 minutes that we sat in the duration field?
+[11:25 AM]In our project brief SOP we specifically say it has to be that fixed 80 minutes but have we tested it?
+[11:27 AM]The reson being that in the calendar booking it says 1hr 20min and it might confuse someont when it says its for a 60min appt.
+Justin Marshall  [11:28 AM]
+I believe it behaves better when we use the time + buffer as the total duration in cal.com however its been a while since I tested. I think there is a setting in cal.com that allows for buffers. Justin Marshall  [11:29 AM]
+We could test it as indont recall 100% why I opted to not use it. Justin Marshall  [11:29 AM]
+Maybe I just thought it would be less config but if its necessary then worth testing!
+Victor Pidkowich  [11:29 AM]
+OK I put it as like a nice to have item on my project list of items here I'll get the core of things built out and then circle back to this once everything else is done
+[11:29 AM]This way we can get a proper test run through
+Justin Marshall  [11:30 AM]
+Ok! Ya I cant think of any reasons why it wouldnt work so I'm thinking I skipped it for simplicity" So we need to add this to our phases as an item we need to test out at the end.
+
+OK it doesn't look like Justin has met answered the question for 7.1 so I just sent the message that you told me to send over to him and I'll wait his response and get back when I receive it. 
+
+
+Do we have The before booking description, after booking description, the naming protocol and anytihng else we discussed in you item 2 recorded somewhere so The factory has this to draw on for future clients ? ie the why and how? 
+
+This is what I currently have on the therapist before and after booking event treatment type descriptions can you confirm Are they the same as what you have in record And if not please update our internal one in this repo to the ones I just shared with you because these are the most up to date and recent. 
+
+Before Booking Description:
+"Do Not Choose - If you book this without going through the right channels, your appointment will be canceled and you will be asked to rebook at the standard session rate. To book a standard session right now, please review the other treatments in this list and select a regular massage option."
+
+After Booking Description:
+"Thank you for booking your Starter Session. I'm excited to get to know you and help you reach your goals. 
+
+Here's everything you need to make your first visit a success:
+
+Arrival: 
+Please arrive about 5 minutes before your scheduled time. 
+
+What to wear: 
+Comfortable, loose clothing. Your therapist will walk you through anything that needs to come off for the session.
+
+What to bring: 
+Just yourself. If you have any past injuries, current medications, or specific concerns you'd like to mention before we begin, your therapist will ask about them when you arrive.
+
+Cancellation: 
+Please give us at least 24 hours' notice if you need to cancel or reschedule. Use the link in this email to manage your appointment.
+
+Excited to meet you! See you soon!"
+
+
+
+
+*In this blueprint or spec or SOP or whatever we're calling this the knowledge base whatever it might be I think that your item number three (3. In-depth refresh — Path A, cohort attribution, leakage acceptance) also needs to be added in there for more detailed reference To further back up how we set up a client's Jane account and their appointment types . 
+
+"Attribution story: patient-level cohort via bookings_<skill> UTMs joined against Jane revenue monthly. Price-as-signal dropped." does the worker session know this?
+

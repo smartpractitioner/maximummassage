@@ -1,0 +1,269 @@
+==============ADVISORY FOR MAXIMUM ========================
+
+Is it safe to say that you are acting as the architect helping plan and map that plan and build out so that we've got the right output for our client Tracy at Knox Mom and her massage therapist and to create the factory while we're doing this work so that the work informs the build out of the factory is that accurate? 
+
+What's 7.1 to do with the fact that we wanted some sort of automation that would check and see if someone came from the website or from the paid ad and that if they book through the website on this particular appointment type that we would then surface this to someone to cancel it or even Have it fully automated to cancel that appointment type? Was that the idea.
+
+Also are you writing into the plan right now with the phases and is that something that the other Claude worker session building this out would be able to see?
+
+For 7.1 do we have something logged regarding why this is the way it is? For example I would very much like to have some sort of knowledge base that we can reflect back on to for when the factory is online and so we always know why we took the decisions that we took So when we go to the next client we're not asking ourselves for example "why does it need have an appointment type in Jane named this particular way" and other similar things. If not lets start somethng like this, and log all those types of points, then log the following regarding the jane setup "We have to change the name in order to deter people on the website from booking
+We're updating it to "Starter Session - By Invite Only"" and then add what we discussed about the deflection concept from the main site booking page. Note that I have asked the worker session to log certain things and so it might already have created some sort of file or folder or some sort of structure to accomplish this so please check with it first - whether this is an sop or otherwise is up to you, you are the architect here... I do like the idea of a build plan and a spec though, and the analogy of it
+
+
+I had a short convo with Justin asking another question: "Victor Pidkowich  [11:23 AM]
+Heres a simple question for you - in cal.com We need to have the duration match that of what's in Jane including the buffer time so if it's a 60 minute appointment with a 20 minute buffer like in the case of Brooklyn then it's 80 minutes total. Button Cal is it possible for us to select 60 minutes and add a buffer time and would that still work or does it have to be a fixed 80 minutes that we sat in the duration field?
+[11:25 AM]In our project brief SOP we specifically say it has to be that fixed 80 minutes but have we tested it?
+[11:27 AM]The reson being that in the calendar booking it says 1hr 20min and it might confuse someont when it says its for a 60min appt.
+Justin Marshall  [11:28 AM]
+I believe it behaves better when we use the time + buffer as the total duration in cal.com however its been a while since I tested. I think there is a setting in cal.com that allows for buffers. Justin Marshall  [11:29 AM]
+We could test it as indont recall 100% why I opted to not use it. Justin Marshall  [11:29 AM]
+Maybe I just thought it would be less config but if its necessary then worth testing!
+Victor Pidkowich  [11:29 AM]
+OK I put it as like a nice to have item on my project list of items here I'll get the core of things built out and then circle back to this once everything else is done
+[11:29 AM]This way we can get a proper test run through
+Justin Marshall  [11:30 AM]
+Ok! Ya I cant think of any reasons why it wouldnt work so I'm thinking I skipped it for simplicity" So we need to add this to our phases as an item we need to test out at the end.
+
+OK it doesn't look like Justin has met answered the question for 7.1 so I just sent the message that you told me to send over to him and I'll wait his response and get back when I receive it. 
+
+
+Do we have The before booking description, after booking description, the naming protocol and anytihng else we discussed in you item 2 recorded somewhere so The factory has this to draw on for future clients ? ie the why and how? 
+
+This is what I currently have on the therapist before and after booking event treatment type descriptions can you confirm Are they the same as what you have in record And if not please update our internal one in this repo to the ones I just shared with you because these are the most up to date and recent. 
+
+Before Booking Description:
+"Do Not Choose - If you book this without going through the right channels, your appointment will be canceled and you will be asked to rebook at the standard session rate. To book a standard session right now, please review the other treatments in this list and select a regular massage option."
+
+After Booking Description:
+"Thank you for booking your Starter Session. I'm excited to get to know you and help you reach your goals. 
+
+Here's everything you need to make your first visit a success:
+
+Arrival: 
+Please arrive about 5 minutes before your scheduled time. 
+
+What to wear: 
+Comfortable, loose clothing. Your therapist will walk you through anything that needs to come off for the session.
+
+What to bring: 
+Just yourself. If you have any past injuries, current medications, or specific concerns you'd like to mention before we begin, your therapist will ask about them when you arrive.
+
+Cancellation: 
+Please give us at least 24 hours' notice if you need to cancel or reschedule. Use the link in this email to manage your appointment.
+
+Excited to meet you! See you soon!"
+
+
+
+
+*In this blueprint or spec or SOP or whatever we're calling this the knowledge base whatever it might be I think that your item number three (3. In-depth refresh — Path A, cohort attribution, leakage acceptance) also needs to be added in there for more detailed reference To further back up how we set up a client's Jane account and their appointment types . 
+
+"Attribution story: patient-level cohort via bookings_<skill> UTMs joined against Jane revenue monthly. Price-as-signal dropped." does the worker session know this?
+
+
+
+--------REPLY 2--------------------------------------
+Can you act as architect and modify plan files or is it best to let the worker keep going?
+
+"Yes, exactly. The current 7.1 in the polish backlog captures it precisely: bidirectional PatientSync ↔ Jane check → if $49 booking has no matching landing-page lead in the last 48-72 hours, email the assigned therapist with cancel-or-honor options. Not fully automated cancellation because the false-positive risk (bad matches, edge cases) makes a human decision safer for customer experience. The template is already drafted." ok weneedto make sure this is also recorded for use in the facotry.
+
+
+-------------REPLY 3 -----------------------------
+
+
+I think 7.4 needs to go to the front of the line and become 7.1 simply because so much relies on this. Also can you confirm 7.5 is something that would be written into the factory documents as well?
+
+In your analogy for the factory with the brackets and saying that br good also means you can swap alternators in different directions per client some clients might stay on the app script and some might stay and go to the workers alternator but I think we need to have a hard rule The app script is basically just for a pilot project and that once we switch to workers it's always going to be the Cloudflare workers. 
+
+Is there any real advantage to staying on Google Sheets versus switching to Cloudflare KV and D1?
+
+"Cloudflare is the cheapest by a wide margin for our workload. The reason isn't "Cloudflare is cheap for everyone" — it's that our workload (many small clients, edge-served, low per-client volume) is exactly what Workers pricing is designed to reward." Perfect that's good to know. Is it going to be the case that we set up one Cloudflare account per client or how does that work do we have just one central account that we can work from and have each client listed on ? 
+
+"Want me to add a cost-analysis section to that handoff file so the worker folds it into the SKILL.md alongside the platform-choice decision? Future factory operators will want to know "at what point does Cloudflare start costing real money?" before they commit to scaling clients on it. That answer belongs in the durable knowledge base." yes.
+
+	
+	
+	----------------REPLY 4 --------------------------
+	
+"Pragmatic path: Sheets for the pilot (Maximum Health + first few clients), migrate row data to D1 with an admin UI or Sheets-mirror export around 5+ clients when the sheet-only approach starts breaking (per-client sheet management, cross-client reporting friction, API rate limits pile up)." I would actually rather do it right from the start so that we're ready to go. 5CLIENTS isn't a lot of clients and I'd like to launch knowing that we can handle volume . We're going to go and do client acquisition and I expect to have multiple people signing up I don't want to be having to jump back in to retooling the factory while also trying to manage everyone and then even going back to old clients and trying to retool their system I'd rather have everything uniform from the start. 
+
+I actually don't like the idea of us being delegates for their Cloudflare accounts because this is infrastructure that they see is proprietary and unique to us. I do like the isolated blast radius kind of concept but is there another way where we have that segregation kind of approach but we keep everything under our rich or our use is it just simply that we just set up the client Cloudflare account but we own that account or we are technically the owners of that account Or if we go that road should we just simply just putting it under one central Cloudflare account? The other items like billing separation doesn't really matter because like you said we're not ever going to be hitting those quotas and certainly not on a Cloudflare account level and you even said it's going to be many many clients before we even hit any quotas where we actually have to start paying that $5 a month. And then on transferability that's not really a big deal because we are the exclusive owners of this infrastructure and they're essentially paying us to access that they aren't paying us in a model at least we don't have it set up that way nor do I think that they would want it that way whereby they pay us a large upfront fee for the infrastructure build out but rather many or most are just going to simply want to pay a recurring amount to have access to this infrastructure. I do like the idea of the compliance or audit though so there's bits and pieces of what you listed for your whys That I like but most of them I take a different stance on . What do you suggest from here.? 
+
+7.6 is a very loose item and so I don't want to fix anything to this whatsoever because it might just be that we never have a front end GUI and it might just simply be easier to always work directly within Claude code . 
+
+"Next time you paste the backend-choice handoff file to the worker, all four additions land in the SKILL.md as durable knowledge." When you say this do you mean that I should hand this over to the worker to read and incorporate or that you have already incorporated all this? 
+
+
+
+
+---------------REPLY 5--------------------
+"Sounds like it's running a naive "does keyword X appear verbatim in section Y?"" thats correct - it seems like it knows some of the plan like main keyword vertabim in the H1 but not so much the rest and is trying to verbatim dump other keyterms into it.
+
+Our 6 step process is very dialed in and I dont wantto change much if at all. What could we accomplish if we used Dynamic Keyword Insertion for this?
+
+
+Also for this factory approach, what we should be doing is creating a set of agents, each with their own sets of skills, knowledge, and references to go and do the work that they specialize in. 
+
+Think of this like we have the factory, the infrastructure, and the steps, but what we need now is to put in place the people (or in other words, the agents) to actually deploy and work their own respective stations that they each know and understand really well. 
+
+I think that needs to be part of our step or phase when we build out the factory itself. Remind me again which phase that is? If the BI dashboard comes after that phase, we should move the BI dashboard project phase to just before that phase itself.
+
+Im also wondering why the worker session never followed the prior process/skills/resources for Phase 2 - how do we prevent that from happening again on future client projects coming out of the factory?
+
+I guess how do we go about blending the 6 step copywriting process with a keyword strategy using the keyword spreadsheet input?
+
+For my knowledge How exactly is phase two broken into steps? Is it that the worker should just be doing an analysis to begin with ? And if So what is that analysis look like what's the lens it's looking through ? 
+
+
+
+-----------------REPLY 6 ------------------
+"Why I don't recommend it as a foundational move for our factory:
+
+We already have most of DKI's benefit statically — each skill page targets one ad group with one dominant keyword theme. The H1 is anchored to the highest-volume Active keyword. Message match at the ad-group level is already high.
+Awkward-copy risk. utm_term=lmt near me produces a broken H1. Sanitization is doable but adds fragility. utm_term=prenatal massage calgary reads fine on its own; utm_term=cheap massage kensington gets weird fast.
+Fragile dependency chain. The tracking template has to include utm_term. The dynamic script has to fire before render (or you get a flash of default text). Ad blockers or third-party privacy tooling can break it silently.
+Marginal return at our granularity. DKI shines when you have 30 keywords in one ad group and one landing page. We have one landing page per skill (per ad group), so the H1 is already tightly targeted." good catch and I agree.
+
+"Where it could earn its place: as a polish backlog item (Phase 8) to test within a single skill page — inject variations of the modality name (e.g. "pregnancy massage" vs. "prenatal massage") based on the specific keyword that fired. Not to replace the H1 wholesale, but to swap 1-2 words for higher relevance to sub-variants. A/B test whether it moves conversion. If yes, adopt. If not, drop." yes but very last item.
+
+"Not recommended as a substitute for the 6-step process. DKI serves the H1; the 6-step process serves the whole page + voice + anxiety framing. Different jobs." agreed.
+
+"This belongs in Phase 7 (was Phase 6) — the factory-buildout phase. I'll add it as a section when I do the renumber." sounds good, I like this.
+
+"Systemic prevention going forward (three moves, in order of leverage):" agreed on all points.
+
+
+"Blending the 6-step process with keyword strategy" I agreed but let me expand and adjust our thinking on the "exact match is verbatim" rule in the header one as well on the hero. For Quality Score (the algorithm): No verbatim requirement exists. Landing page experience is scored on semantic relevance plus usability and transparency, not string matching. Google has no "H1 equals search term" bonus. A clear variation that means the same thing scores identically to a letter-for-letter match. There's no credible evidence otherwise, because Google doesn't expose QS at that granularity and its own guidance points to intent, not exact phrasing.
+For conversions (the human): This is where the "it's what they searched" claim comes from, and it's real but misattributed. What lifts conversions is message match, and message match is a match of meaning, not spelling. A visitor recognizes "right place" the way you recognize a friend across a room. You don't need them wearing the identical outfit from last time. You recognize the face. "RMT in Calgary" and "registered massage therapist Calgary" read as the same face.
+So the real target is exactly what you said: it reads naturally and unmistakably delivers what the query promised. The variable that actually moves the needle is the intent gap, not the string gap. Close the intent gap and you win. A headline about a different service than what they searched craters conversions. A natural rewording of the same service does not. Most case studies claiming "exact match made all the difference" are really showing message match working, and they conflate the semantic win with the literal string. Nobody has clean data proving a verbatim H1 beats a clear variation of the same intent.
+Bottom line: aim for a headline that reads well and obviously matches what they wanted. We do want to make it a close match however.
+
+"The failure mode we just saw is what happens when the "brief" step is skipped and the copywriter (or a generalist worker doing the copywriter's job) is handed the raw keyword workbook and told to "make sure the keywords appear." That's inverting the priority." understood.
+
+"Step E — Coverage sanity check (not audit). Skim once and note which theme keywords appeared naturally. If any high-volume keyword genuinely doesn't fit anywhere → that's fine. Don't invent sections to fit keywords." I would say instead have it just flag where it thinks there might be a gap because we do want to have the high volume search terms usually first highest five search terms in the list to be throughout the landing page but it should raise for a manual review as it might need a little bit more intervention and direction at that point. 
+
+"The core mental model: Phase 2 is an editorial pass, not an audit. If the deliverable is a checklist of matches, the process ran wrong. If the deliverable is a warmer page that also happens to hit the focal keyword in the H1 and weave the theme naturally through body copy, the process ran right." Are you referring to this particular phase two for getting maximum health project completed or are you referring to this as also the bedrock for the factory Or is it that we're just doing this because this page is already written ? Also what I'm concerned about with this is if we have the review re or some sort of step out of sync where we already have really good copy written like we do with a prenatal where I believe that it's pretty much done but then we run the risk of having another worker or agent model it , please provide your thoughts on this . Essentially I don't that agent to have to feel like it has to earn its keep and always make changes to copy even if it's good and maybe there needs to be one extra manual review in there because we might get really good copy on the first go and then only for this process to then come in and be an edit have an editorial review and muddle things up. Or am I getting steps out of order and misunderstanding ? 
+
+"Blending the 6-step process with keyword strategy" I agree with everything else in this section of your reply , just see the comments that I made just above though and fold those in. 
+
+I've pasted the prompt that you set for me into the worker session for phase two. 
+
+As a different note, as we progress through this work for the client Maximum Health and are building the infrastructure for the factory as we learn, we should be recording all things that are inputs and outputs and how they interact. Do you agree?
+
+On a different note for The new 8.6 GUI reference to add that this might or might not work or it might have to be implemented part ways in staff just deposit things via a GUI. I want to have some implementation ideas from the session at that time when working on this and then we can determine whether or not this is useful or helpful and speeds things up or if it should just be abandoned and kept for a single process all Claude code. 
+
+
+
+------------REPLY 7__________________
+
+"All three uses. Which is exactly why your concern matters — if Phase 2's process becomes the copywriter agent's process, and a future page is already at "shipped good" quality, the process will try to edit it anyway.
+
+The fix: assessment-first, edits-second, with a manual approval gate between." what happens before this editorial step? Is it that the copywriter follows our 6 step copywriting process and writes the actual page?
+
+"Yes on recording inputs/outputs as we go" I agreed on this section.
+
+"H1 rule reframed — kept the intent, dropped the verbatim requirement:
+
+New: "H1 delivers close semantic match to the focal keyword; no verbatim required. Google's QS doesn't reward literal H1-equals-search-term matching. Prefer close match, reserve verbatim only when it reads naturally on its own."
+Includes your "recognize the face across the room" analogy for message match" love it, thakn you.
+
+On second thought let's revert back to what you had for the steps under the heading "How Phase 2 should actually be broken into steps + the lens".  I guess what I was missing was that we already had a copywriter write The four pages that we're working through for this client, and so this specific phase two is a pass that's more editorial in nature. It may not neccisarily make up a part of the facotry, unless ou recomend it should after a copywriter has already written it.
+
+"On the scope question — Phase 2 IS all three uses" Is this really what we actually want or should we be thinking in terms of the phases in separate processes in that for maximum health right now this phase two is its own thing And when we get to the factory build out that we should be looking through it from another lens learning from our experience from building out maximum health assets ? What do you advise here and why?
+
+"Confirmed direction. Suggesting we adopt this cadence: as we work through each phase for MH, capture per-station contract stubs opportunistically — an emerging "input format → process → output format" record. Two options for where:" excellent, thank you.
+
+"I lean toward the folder approach so each station's contract has room to breathe. But your call — worker session can decide the pattern when 7.6 (multi-agent factory staffing) work kicks off. What matters is we start capturing NOW, not later. Whenever we exercise a station's inputs/outputs during Phases 1-5, that's an artifact worth writing down." agreed.
+
+
+
+
+---------------REPLY 8 -----------------------
+
+Do we need a retroactive reflection on past session conversations to capture the inputs/outputs?
+
+"Explicit "Note on scope" at the top of the process making clear that Phase 2 polishes already-written pages (produced by the 6-step process beforehand). Prevents future workers from misreading Phase 2 as a rewrite-from-scratch pass.
+A "Scope note (2026-07-03)" at the bottom explicitly saying: Phase 2 is MH-project-specific, not a factory template. The factory copywriter agent uses the 6-step production process. Whether the factory needs a separate editor agent resembling this Phase 2 pass — vs. baking quality into the copywriter's own self-checks — is a Phase 7 design decision from first principles. Phase 2 becomes a REFERENCE for that later design, not the design itself." perfect, thank you.
+
+Sent the new prompt to the worker, lets let him work now :) 
+
+
+-----------------REPLY 10 -------------------------
+
+"The Phase 0 retrospective already did the heaviest lift for the skill-page building work — it captured the "how" and "why" of what several stations effectively produced
+Most stations already have substantial artifacts in the repo: SKILL.md, the SOPs the worker created, the memory files, the plan docs. The "documentation" exists — it's just not shaped as station contracts yet
+The prior-session jsonl transcripts are huge (8.7MB+ for one of them). Mining them for contract shapes would burn a lot of tokens for diminishing returns vs. the work we still have ahead
+Cleaner path: list what documentation already exists per station, note the gaps, fill them as we exercise each station going forward. Faster and gives us contracts that match how the stations actually operate, not how they used to." Understood and I agree .
+
+"Phase 2 editorial pass is running with the worker session as we speak. That's a live station exercising real inputs (the drafted MH pages, the keyword workbook, the voice rules) and producing real outputs (a polish diff or a "no changes needed" verdict). Worth capturing the I/O for THIS station AS the worker works, because we can't rebuild that context later without effort.
+Same principle applies to any station we hit during ongoing MH work — capture at the moment we exercise it, not retroactively." understood and sounds good.
+
+"That produces a cheap "station artifact map" that guides where to invest attention going forward without a big retroactive session.
+
+"When to invoke this: as a warm-up activity when Phase 7 (factory buildout) starts — it grounds the multi-agent design work in what already exists rather than a blank page." Yes, I agree lets do it that way.
+
+"Option 2 gives us more coverage but risks over-capturing (every step becomes a "moment"). Compromise: instruct capture only on notable moments — where reasoning was non-obvious, where refusal-to-edit happened, where the framework generalized to a novel case. Not "recording every routine step."
+
+Recommendation: hold off on instructing the worker for now. Let it focus on Phase 2 → 3 → 4. When Phase 7 kicks off, THEN turn on worker-side capture as part of the multi-agent buildout — by that point we know what shapes we're looking for. For this session and the next few, you flag notable moments to me and I capture them advisor-side.
+
+Sound reasonable?" agreed, but by that point i will likely have forgoten those moments.
+
+
+
+
+--------------REPLY 11-----------------------
+
+Yes follow option A But I don't think a full UX review is necessary I think what we do is we just have it focus on images and reviews and social proof. I don't know if you Remember Me telling you about how the reviews Need to back up and make sense on that page as well For example the prenatal page currently has a review from a man but that doesn't make any sense considering all the seeing this page would be women. So what I'm kind of leaning towards and maybe you can help me identify if this is the correct way is to simply make a phase for images and for uh social proof And this is especially true because we wouldn't review all the U items necessarily that would be caught by human review which is the current phase three to iterate on the page and the experience itself. But we a very clear step in the process here but also for the factory so that the social proof lines up and the images line up with that of the skill page itself, it doesn't make sense to have someone getting hot stones on their back when we're looking at the prenatal page And yes thank you for finding that image process again Where was that supposed to come in or did it get forgotten and why? I see that you said in Phase 5 for image sourcing per page. But our other pages like lymphatic, deep tissue, therapeutic are already built and these wouldn't technically be new pages.
+
+"Rather than duplicating the process description across phases, elevate it to its own referenceable block:
+
+Where to put it: either as an SOP file (docs/sop-image-sourcing.md) or as a section in the SKILL.md that both Phase 3 and Phase 5 reference. SOP is cleaner because it's per-client-repeatable (factory-general).
+
+Then Phase 3 and Phase 5 both call it:
+
+Phase 3: "If visual review flags an image issue, invoke the image-sourcing SOP for replacement."
+Phase 5: "Per-page image sourcing follows the image-sourcing SOP."
+This also positions it correctly for the factory — every future client's new pages will need the same process, and the SOP is where it lives." agreed, But I do think that it might be a bit redundant in both places and instead we should just have what I mentioned above in my comment about how we just need to have its own phase I guess or it's one of the steps in the phases like phase 3 or something after the copy has been looked at the next natural thing to do is to make sure that the images and the reviews match . And we should follow the SOP for the images that we have documented here and we should do something similar for the reviews and in particular maybe we have to go and find the reviews like on the client's Google Business profile or one of the other review sites that they have as each client will have a different one depending on their geographic location and their preferences. I think that maybe even making these two different phases one for images and one for reviews as we should also at all times and Please inform me if this is recorded anywhere but I remember saying that we should have social proof in the profile cards of the therapists themselves that are specific to those therapists and that make sense with the page that they're on . So maybe we need to have its own phase to make sure and do a pass through all the reviews all the social proof for everyone as these might be gathered from a multitude of different places and it's going to change per client. 
+
+When it comes to thinigs like Color/brand consistency check
+Whitespace + hierarchy review
+Mobile rendering pass
+Element-copy tension (does the image support what the copy says?)
+Hero + fold prioritization.. should have thier own phase or again, another step in a phase. The most logical to me would seem to be Phase 3 for images, social proof, and the other items, or would you suggest a different appraoch and why?
+
+"Note in Phase 3 that other visual review elements (color, spacing, mobile, element-copy tension) get surfaced as flags for your judgment — and as your judgment calls happen, their processes get captured as SOPs or as "Lessons learned" entries in SKILL.md" I guess how does that work if each client has a different look and feel but say 80% of the page structure and overall approach still remains the same but we just basically update per client to work and fit or match rather creative and branding and colors and things like this. 
+
+
+
+---------------------REPLY 12 -----------------------------------
+
+"One small flag for your awareness: your Phase 2 rewrites in docs/plan-bookings-and-qs-handoff.md are still uncommitted in the working tree (I deliberately left them alone). Want me to commit those separately, or are you still iterating on them?" worker said this, what do you sggest?	
+
+"Don't split into separate phases for images and social proof. Instead, expand Phase 3 to have a "visual + social proof alignment" pass as its first step, before user iteration. Reasons:" agreed.
+
+"Skip full UX review for now. Color/brand consistency, whitespace, mobile rendering, hero fold, element-copy tension — these are real but they're mostly your judgment calls per client (client-specific look and feel). Making them steps risks the worker generating false-positive nitpicks. Better to let those surface as user-driven adjustments during Step 3.3 (your review). If a specific pattern emerges (e.g. "hero images always need to be shot from below to feel warm"), that becomes a "Lessons learned" entry as a principle." agreed.
+
+"On the "80% same structure / 20% client-specific look" question" I agree with everyitng in this section of your response.
+
+"Want me to proceed with all five?" yes.
+
+
+------------------REPLY 13 ---------------
+
+"2. Created docs/sop-image-sourcing.md — factory-general image sourcing SOP with the five-step process (search → surface → user pick → download → ffmpeg webp convert), plus when-to-invoke, gotchas, and failure modes to avoid." will this take place for the current client Maximum Health?
+
+"3. Created docs/sop-social-proof-sourcing.md — factory-general social proof sourcing SOP covering both testimonial layers. Includes:" will this happen now for Maximum Health pages ?
+
+"Maximum Health's designated review sources — is it Google Business Profile only, or also Yelp / Facebook / Lumino / other? Need the URLs."
+Here they are below, and this will need to be one ofthe new client inputs for sure. The question is to ask the client for a list or to scrape these ourselves? Also for Maximum Health they have very few reviews and most are for Tracy the owner. Because the reviews are so thin what we might want to consider is having some of the generic type reviews that don't call out any specific modality or skill to go into some of these pages just to make the page fill up a little bit more and actually have solid social proof - And we should consider this as something that we follow in the factory as well. And we should follow the idea of making sure that the social proof matches up correctly with the skill page which I believe we are but specifically to determine if one of those general type reviews comes from a man but it's on a prenatal page that doesn't make sense and so we need to build that in that sort of logic in as well.  See what you can see on these pages that might make sense on each page and therapist details.
+- main google business profile for clinic https://share.google/WWwCOfpx8zqBAqPpe
+- https://providersearch.sunlife.ca/en/health-care-provider-profile/massage-therapist/centre-for-chiropractic-care/charlotte-tooth-1034232-183769/?source=lumino&searchId=3f1d1fb2-b646-4ead-a258-214d70768a65&resultSetIndex=1&distance=13.049459263493922&position=1&mumSessionId=6350cf43-2845-44db-9dee-f57f307d217b&searchmode=NAME&searchvalue=charlotte%20tooth&location=calgary
+- https://providersearch.sunlife.ca/en/health-care-provider-profile/massage-therapist/maximum-health-wellness-centre/brookelyn-brolly-584171-290637/?source=lumino&searchId=5b63dae5-3c18-4229-b18e-9077788d9212&resultSetIndex=1&distance=2.5825396461324277&position=1&mumSessionId=6350cf43-2845-44db-9dee-f57f307d217b&searchmode=NAME&searchvalue=brookelyn%20brolly&location=calgary
+
+- https://providersearch.sunlife.ca/en/health-care-provider-profile/massage-therapist/maximum-health-wellness-centre/lindsey-stauffer-921326-290637/?source=lumino&searchId=55797368-9d0c-493b-8815-ae95a66cc02e&resultSetIndex=1&distance=2.5825396461324277&position=1&mumSessionId=6350cf43-2845-44db-9dee-f57f307d217b&searchmode=NAME&searchvalue=Lindsey%20Stauffer&location=calgary
+
+
+"Whether enough per-modality reviews exist on those sources today, or if Maximum Health needs to solicit modality-specific reviews from real patients first" See my note above about using just general type reviews if there's not enough to fill up a page ideally we want at least three to 5 reviews on each skill specific page but if not we need to use just generic ones that don't explicitly call it a modality or skill . 
+
+
+"Whether to record which reviews were used per (skill × therapist) placement to avoid duplication — small book-keeping decision"  If this means that we don't have enough and they're sharing a pool of reviews then yes we would want that so that Charlotte's profile doesn't show the same review as Brooklyn's when they're on the same skill page , at least I think that's what you're getting at is that accurate please confirm . 
