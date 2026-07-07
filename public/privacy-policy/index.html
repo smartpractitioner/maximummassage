@@ -29,7 +29,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <main class="policy">
   <div class="policy__card">
     <h1>Privacy Policy</h1>
-    <p class="policy__updated">Last Updated: April 13, 2026 &middot; Operated by Maximum Health Wellness Centre Inc. Landing Page: <a href="https://go.maximummassage.ca/" target="_blank" rel="noopener">https://go.maximummassage.ca/</a> Main Website: <a href="https://www.maximumhealth.ca/" target="_blank" rel="noopener">https://www.maximumhealth.ca/</a></p>
+    <p class="policy__updated">Last Updated: July 7, 2026 (v2.0 &mdash; reconciled to current data-storage architecture) &middot; Operated by Maximum Health Wellness Centre Inc. Landing Page: <a href="https://go.maximummassage.ca/" target="_blank" rel="noopener">https://go.maximummassage.ca/</a> Main Website: <a href="https://www.maximumhealth.ca/" target="_blank" rel="noopener">https://www.maximumhealth.ca/</a></p>
       <h2>1. About Us</h2>
       <p>This Privacy Policy explains how Maximum Health Wellness Centre Inc. (“we”, “us”, “our”) collects, uses, stores, and discloses personal information when individuals visit or interact with our advertising landing page located at <a href="https://go.maximummassage.ca/" target="_blank" rel="noopener">https://go.maximummassage.ca/</a> and when they submit information through our forms.</p>
       <p>We operate in Alberta and comply with:</p>
@@ -44,10 +44,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p>Through our form or quiz, we may collect:</p>
       <h4>Contact Information (exported and used by us):</h4>
       <ul><li>Name</li><li>Email address</li><li>Phone number</li><li>IP address</li><li>Advertising identifiers: gclid (Google Click ID), fbclid, and similar parameters</li></ul>
-      <h4>Personal Health Information (collected but NOT exported):</h4>
-      <p>These answers stay within the form platform and are not transferred, downloaded, or stored elsewhere:</p>
+      <h4>Personal Health Information (stored in a separated, access-controlled database):</h4>
+      <p>Quiz responses are collected and stored in an infrastructure separated from contact details. See Section 5 for details. These responses may include:</p>
       <ul><li>Types of pain or symptoms</li><li>How long your symptoms have been present</li><li>What treatments or solutions you’ve already tried</li><li>Impact on daily life</li><li>Any additional details you voluntarily provide</li></ul>
-      <p>We use these responses only for matching you with the appropriate therapist and to understand general trends in what concerns people contact us about.</p>
+      <p>We use these responses only for matching you with the appropriate therapist and for anonymized aggregate analysis to understand general trends in what concerns people contact us about.</p>
       <h3>B. Information Collected Automatically (via Tracking Technologies)</h3>
       <p>To measure advertising performance and improve our marketing, our landing page uses:</p>
       <h4>Google Tools</h4>
@@ -74,11 +74,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <ul><li>reCAPTCHA</li><li>IP address tracking</li><li>Server logs</li></ul>
       <h2>5. How We Handle Personal Health Information (PHI)</h2>
       <p>To ensure compliance with PIPA:</p>
-      <p>✔ Health-related answers entered into the quiz are stored only within the secure form platform ✔ These answers are never exported to spreadsheets, email, or third-party tools ✔ We review the responses only for matching you with the appropriate practitioner ✔ PHI is never transmitted to Google, Meta, Microsoft, or any advertising platforms</p>
+      <p>✔ Quiz responses are stored in an access-controlled encrypted database within our controlled infrastructure, physically separated from any contact information you provide (name, email, phone).</p>
+      <p>✔ Currently deployed on Google Workspace (Sheets) with per-user access controls; migration to Cloudflare-hosted encrypted databases (D1) is planned as our infrastructure evolves to align with our multi-client scaling.</p>
+      <p>✔ In both configurations, quiz responses are joined to contact information only by an opaque, per-session identifier accessible to authorized personnel with documented business justification.</p>
+      <p>✔ Quiz responses are used only for matching you with an appropriate practitioner and for anonymized service-improvement analysis.</p>
+      <p>✔ PHI is never transmitted to Google, Meta, Microsoft, or any advertising platforms.</p>
       <h2>6. Where Information Is Stored</h2>
       <p>Exported information (name, email, phone, IP, click IDs) may be stored in:</p>
       <ul><li>Google Sheets (Google Workspace)</li><li>Microsoft Excel / OneDrive</li><li>Local devices used by authorized team members</li></ul>
-      <p>Your PHI remains solely within the secure form platform (e.g., Landingi form, Typeform, or other provider).</p>
+      <p>Your quiz responses (PHI) are stored separately from the above contact information, in an access-controlled encrypted database as described in Section 5.</p>
+      <p>Our data storage infrastructure may evolve over time; the specific technical implementation is described in Section 5. In all configurations, the same access controls, encryption, and physical database separation are maintained.</p>
       <h2>7. Who Has Access to Your Information</h2>
       <p>Access is limited to:</p>
       <ul><li>Our internal administrative team</li><li>Certain marketing team members who manage advertising performance</li><li>IT or technical support personnel as required</li></ul>
