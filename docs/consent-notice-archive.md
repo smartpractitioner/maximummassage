@@ -8,9 +8,26 @@
 
 ---
 
-## `v2.0-2026-07` — ACTIVE (shipped)
+## `v3.0-2026-07` — ACTIVE (shipped 2026-07-14)
 
-**Effective:** 2026-07-07. First version shown in production (the quiz consent notice did not exist on the live pages before this).
+**Effective:** 2026-07-14. Reworded for warmth at Victor's request — the previous wording read like a legal notice bolted onto the quiz. **No change to what is collected, how it is stored, or what it is used for**; all four compliance elements are retained (purpose, storage, not-a-medical-assessment, privacy-policy link). Version bumped because the *exact wording shown* changed, and a consent record must be reconstructable from its version alone.
+
+**Notice text shown above quiz Q1** (`{{FLOW_NOUN}}` resolved per skill — "prenatal therapist", "lymphatic drainage therapist", "deep tissue therapist", "therapeutic massage therapist"):
+
+> Just so you know: your answers are only used to match you with the right {{FLOW_NOUN}}, and they're stored securely. It's not a medical assessment. **Read how we use your info.**
+
+- **"Read how we use your info"** links to `/privacy-policy/`.
+- **Linked privacy policy:** `public/privacy-policy/index.html`, Last Updated 2026-07-07 (v2.0).
+- **Linked terms:** `public/terms/index.html`, Last Updated 2026-07-07 (v2.0).
+- **Presentation change (same date):** the notice is now rendered in a shaded-blue panel (`.native-quiz__consent`) rather than plain fine print — more likely to actually be read, which *strengthens* the informed-consent position.
+
+---
+
+## `v2.0-2026-07` — SUPERSEDED (was live 2026-07-08 → 2026-07-14)
+
+**Effective:** 2026-07-07 → superseded by `v3.0-2026-07` on 2026-07-14.
+
+> **This version WAS live and DID capture consent.** Any `quiz_<skill>` row stamped `v2.0-2026-07` was shown exactly the wording below. Superseded because the wording was reworded for warmth (same four compliance elements, no change in what we collect or do with it) — not because anything about it was wrong.
 
 **Notice text shown above quiz Q1** (`{{FLOW_NOUN}}` resolved per skill — "prenatal therapist", "lymphatic drainage therapist", "deep tissue therapist", "therapeutic massage therapist"):
 
