@@ -8,7 +8,19 @@
 
 ---
 
-## `v3.0-2026-07` — ACTIVE (shipped 2026-07-14)
+## `v3.1-2026-07` — ACTIVE (shipped 2026-07-14)
+
+**Effective:** 2026-07-14. Small wording polish on v3.0 ("It's" → "It is"; the link now reads "Read how we use your info **here**"). **No change to what is collected, stored, or done with it.** Version bumped anyway: v3.0 was live (briefly) and any row stamped with it must remain reconstructable from this archive alone — the bar is "was this exact wording shown?", not "was the change important?".
+
+**Notice text shown above quiz Q1** (`{{FLOW_NOUN}}` resolved per skill):
+
+> Just so you know: your answers are only used to match you with the right {{FLOW_NOUN}}, and they're stored securely. It is not a medical assessment. **Read how we use your info here.**
+
+- Link target `/privacy-policy/`. Rendered in the shaded-blue `.native-quiz__consent` panel.
+
+---
+
+## `v3.0-2026-07` — SUPERSEDED (live only briefly on 2026-07-14)
 
 **Effective:** 2026-07-14. Reworded for warmth at Victor's request — the previous wording read like a legal notice bolted onto the quiz. **No change to what is collected, how it is stored, or what it is used for**; all four compliance elements are retained (purpose, storage, not-a-medical-assessment, privacy-policy link). Version bumped because the *exact wording shown* changed, and a consent record must be reconstructable from its version alone.
 

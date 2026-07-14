@@ -339,7 +339,7 @@
   // Decision 9 — opaque per-session join key (generated in utm-capture.js).
   // Sent on every backend write + the Cal embed so the quiz (Sheet 2) and the
   // lead/booking (Sheet 1) can be joined ONLY by someone with access to both.
-  const CONSENT_VERSION = 'v3.0-2026-07';
+  const CONSENT_VERSION = 'v3.1-2026-07';
   function userId() {
     try { return sessionStorage.getItem('mh_user_id') || ''; } catch (_) { return ''; }
   }
@@ -789,7 +789,7 @@
     let notice = '';
     if (qIdx === 0) {
       const flowNoun = (currentPageConfig && currentPageConfig.flowNoun) || 'massage therapist';
-      notice = `<p class="native-quiz__consent">Just so you know: your answers are only used to match you with the right ${escapeHtml(flowNoun)}, and they're stored securely. It's not a medical assessment. <a href="/privacy-policy/" target="_blank" rel="noopener">Read how we use your info</a>.</p>`;
+      notice = `<p class="native-quiz__consent">Just so you know: your answers are only used to match you with the right ${escapeHtml(flowNoun)}, and they're stored securely. It is not a medical assessment. <a href="/privacy-policy/" target="_blank" rel="noopener">Read how we use your info here</a>.</p>`;
     }
     // Back control from Q2 onward. Deliberately routed through data-action="back"
     // -> history.back() -> popstate, which is the exact path the phone's native
