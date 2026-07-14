@@ -390,7 +390,7 @@ Reconcile the **existing** client-facing legal layer with the two-sheet + `user_
 4. Retention-window defaults + per-client override structure (see `docs/sop-privacy-safeguards.md`).
 5. DSAR procedure documented + operational.
 6. Breach-response plan documented.
-7. ~~**Legal review with a template lawyer** for MH as first client.~~ **CUT 2026-07-14 — Victor's decision, risk knowingly accepted.** No counsel review before launch. The consent-model tension (Alberta playbook's informed-implied vs. the multi-jurisdiction SOP's express consent) consequently stays **unadjudicated** — an accepted open risk, not a settled question. Full reasoning + the factory implication in the **Google Ads Launch Gate** section above. Legal review remains the *recommended* default for future clients; this is an MH-specific owner risk acceptance, not a factory pattern.
+7. ~~**Legal review with a template lawyer.**~~ **Replaced 2026-07-14 by the client-sign-off model.** We don't commission counsel and don't take on the client's compliance liability; we guide the client to be as compliant as possible and **the client approves their own legal pages before go-live**. This is a **required step for every client** (enforced at onboarding, Phase 7.4), not a skipped one. **MH: already satisfied** — they reviewed the pages pre-project, returned tweaks, and signed off; the Phase 6.5 reconciliation changed *accuracy of description*, not the substantive secure-and-compliant commitment they approved, so no fresh sign-off is needed. Full reasoning + the residual open risk in the **Google Ads Launch Gate** section above.
 8. Bump `consent_version` to `v2.0-2026-07` reflecting the reconciled notice + policy text.
 
 **Factory-general framework work is Phase 7, NOT here** — the multi-jurisdiction template library, regime-detection framework, and per-client customization playbook build on this MH reconciliation but ship with the factory buildout.
@@ -411,12 +411,22 @@ Reconcile the **existing** client-facing legal layer with the two-sheet + `user_
 - ✔ **Phase 3 complete on prenatal** (3.1–3.4)
 - ✔ **Phase 4 formal E2E on prenatal**
 - ✔ **Phase 5 rollout complete on lymphatic, deep tissue, and therapeutic** — each includes its own Phase 3 (3.1–3.4) treatment + Phase 4 E2E as part of the dual-track workflow
-- ~~Phase 6.5 legal counsel sign-off~~ — **REMOVED as a gate item 2026-07-14.** See "Legal review — risk knowingly accepted" below.
+- ✔ **Client sign-off on their legal pages** — for MH this is **already satisfied**. See "Legal approval — the client signs off, not a lawyer" below.
 - Backend foundations already in place: booking flow, conversion tracking, Slack notifications (Phase 1 ✅), per-therapist Cal.com → PatientSync → ClinicSync Pro → Jane verified end-to-end, the two-sheet firewall / `user_id` join / consent recording (Phase 3.0 ✅, verified 2026-07-09), and all nine Cal.com hidden fields configured per therapist event type (✅ verified 2026-07-14).
 
-**Legal review — risk knowingly accepted (decided 2026-07-14).** Victor's call: **there will be no template-lawyer review of the reconciled privacy policy + terms before launch**, and he accepts the associated risk. This is recorded rather than silently deleted because the *reasoning* matters downstream: the docs were reconciled to the real architecture in good faith (commit `aa40448`), the Alberta playbook backs the informed-implied-consent model for AB non-regulated massage, and the residual exposure is judged acceptable at this stage. **The consent-model tension flagged for counsel** (Alberta playbook's informed-implied vs. the multi-jurisdiction SOP's express consent) therefore goes **unadjudicated** — it stays an open risk, not a resolved question. **For the factory:** legal review remains the *recommended* default for a new client; this is an MH-specific risk acceptance by the owner, not a factory pattern. Revisit if MH's traffic scales materially, if a complaint arrives, or before onboarding a client in a stricter jurisdiction.
+### Legal approval — the client signs off, not a lawyer (clarified 2026-07-14)
 
-**Net effect on the critical path:** every remaining launch prerequisite is now work directly controlled by Victor + the worker. There is no external dependency gating launch.
+**The agency liability model — factory-general, applies to every client.** We do **not** commission a template-lawyer review, and **we do not accept liability for the client's legal compliance.** Our job is to *guide the client toward being as compliant as we can make them* — the reconciled privacy policy + terms, the Alberta consent playbook, the two-sheet firewall, the safeguards SOP. But **the client reads their own legal pages and signs off before go-live.** They approve; they own it.
+
+This is a **required step for every client, not an optional one.** It is the mechanism that *replaces* "lawyer review" in the gate — not an absence of review, a different (and deliberate) allocation of liability. Enforced at onboarding in **Phase 7.4**.
+
+**Maximum Health: satisfied.** MH reviewed the privacy policy + terms on the existing landing pages before this project began, returned tweaks, and signed off approving them to go live.
+
+**Why the Phase 6.5 reconciliation did not invalidate that sign-off** (advisor flagged the question; Victor adjudicated 2026-07-14): the rewrite (commit `aa40448`) changed how *accurately* the docs describe **where** data lives — e.g. "stays within the form platform" → "access-controlled database, physically separated from contact information." It did **not** change the substantive commitment the client actually approved: that patient data is **held securely and handled compliantly**. That principle is what they signed off on, and the reconciliation *strengthens* it rather than weakening it. The storage-location nuance (Google Sheets now, Cloudflare D1 later) is an implementation detail they don't need to re-approve, and the large majority of both documents is unchanged. **No fresh sign-off required.**
+
+**Consequence to hold honestly:** with no counsel in the loop, the consent-model tension (Alberta playbook's **informed implied** consent vs. the multi-jurisdiction SOP's **express** consent) stays **unadjudicated** — an accepted open question, not a resolved one. It is jurisdictionally scoped, so it's benign for MH (Alberta, non-regulated). **Revisit before onboarding any client in a stricter jurisdiction** (BC / Ontario / Quebec / any regulated profession), where the express-consent reading likely governs.
+
+**Net effect on the critical path:** every remaining launch prerequisite is work directly controlled by Victor + the worker. **No external dependency gates launch.**
 
 **NOT prerequisites** (explicitly out of scope for launch; can trail it): ❌ Phase 6 BI + Reporting dashboard · ❌ Phase 7 portability + multi-agent factory · ❌ Phase 8 polish backlog.
 
@@ -484,6 +494,7 @@ Document the "drop this engine onto a new client" procedure in a new `/onboard-n
 4. Set up the new client's Cloudflare Pages project + Worker, paste in their Google Ads / GA4 / Cal.com credentials.
 5. Build their first skill page using `/add-skill-page` with the new keyword data from their account's workbook.
 6. Iterate via the same Phase 0-3 retrospective + Phase 2 QS audit + Phase 3 polish loop.
+7. **Client legal sign-off (REQUIRED — no client goes live without it).** Produce the client's privacy policy + terms from the factory templates, tuned to their jurisdiction via the regime table in [`sop-privacy-safeguards.md`](sop-privacy-safeguards.md). **Send them to the client to read, take their tweaks, and get documented approval before any page goes live.** We guide toward compliance; the client approves and owns it. The agency does not accept liability for the client's legal compliance, and we do not commission counsel on their behalf. Record the approval (who, when, which doc version) — see the Launch Gate's "Legal approval" section for the full model.
 
 The new client should be live with their first skill page in days, not weeks. That's the bar.
 
