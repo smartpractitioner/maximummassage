@@ -77,6 +77,16 @@
    hero ratio for THIS page only so the full composition shows without cropping
    the therapist or the mother's face. Other skill pages keep the shared ratio. */
 .hero-image { aspect-ratio: 4 / 3; }
+/* Prenatal CTA background. Overrides the shared .final-cta image (which points at
+   the generic Flow B photo) for THIS page only. background-position 72% keeps BOTH
+   her face and the belly inside the narrow mobile cover-crop; at centre the face is
+   clipped off the right edge. Same teal gradient as the shared rule. */
+.final-cta {
+  background-image:
+    linear-gradient(180deg, rgba(11, 49, 60, 0.78) 0%, rgba(11, 49, 60, 0.86) 100%),
+    url("/images/prenatal/prenatal-cta.webp");
+  background-position: 72% center;
+}
 </style>
 
 <script type="application/ld+json">
