@@ -96,6 +96,8 @@ The human picks per slot from the mockup. If none land, they give a direction ("
 
 **Only now is a credit spent.** Download the full-res into the page's image folder (e.g. `public/images/<page>/`) and tell Claude the filename.
 
+**Always take the LARGEST size the library offers** (and generate AI images at the highest resolution available). You can always downscale — downscaling looks clean and costs nothing. You can **never add detail back**, and an upscaled image is visibly soft on a big desktop screen. Claude shrinks it to the slot's real need in Step 6; the big original is the raw material, not the shipped file. (Don't worry about the original's file size — it never ships.)
+
 ### Step 6 — CLAUDE converts to webp + wires it in
 
 Convert to web-optimized webp with the standard config:
@@ -112,6 +114,39 @@ Parameters:
 Claude places the output in the correct project location, updates the page to reference it (**carrying over the `background-position` / crop tuned during the mockup step**), commits, pushes, and confirms it rendered on the live page.
 
 **Per-page overrides, not shared-CSS edits.** Skill pages share one stylesheet, so a page-specific image change (a different hero aspect-ratio, a different CTA background) goes in **that page's own inline `<style>` block** — never by editing the shared CSS, which would silently change every other page.
+
+---
+
+## Image performance budget (page load) — MANDATORY on every image, every page
+
+> **This is not optional polish.** These are paid-ad landing pages: every extra 100 KB costs load time, load time costs conversions, and slow pages are a Quality Score landing-page factor. **Optimizing for page load is a default on every image on every page, for every client — not a step someone remembers.**
+
+**The two-step rule:** source the **biggest** file available → ship the **smallest** file that still looks right in its slot. Those aren't in conflict; the big one is raw material and never ships.
+
+**Per-slot targets** (dimensions → the ffmpeg `-resize`; weight → the acceptance test):
+
+| Slot | Width | Weight target | Notes |
+|---|---|---|---|
+| **Hero** | 1200–1600px | **< 100 KB** | This is almost always the **LCP element** — it directly sets Core Web Vitals. Tightest budget on the page. Needs `fetchpriority="high"` + `<link rel="preload">`. |
+| **Full-bleed background under an overlay** (e.g. final CTA) | ~1600px | **< 80 KB** | Below the fold, and the overlay hides a lot. Quality can drop to ~70. |
+| **In-content section image** | 800–1000px | **< 60 KB** | `loading="lazy"`. |
+| **Portraits** (therapist cards / lightbox) | ~800px | **< 40 KB** | `loading="lazy"`. |
+| **Logo / icons** | — | **< 10 KB** | Prefer SVG. |
+| **WHOLE PAGE total** | — | **< 300 KB of images** | Benchmark: the prenatal page ships ~200 KB. |
+
+**Width vs. quality — spend the bytes on the right thing.** At a given file size you can have more pixels at lower quality, or fewer pixels at higher quality. Choose by slot:
+- **Under a dark overlay, or any large background** → **buy width, sacrifice quality.** The overlay hides compression artifacts, but **nothing hides upscaling blur** on a wide desktop screen. (The prenatal CTA ships 1600px @ q70 rather than 1400px @ q75 for the same ~53 KB.)
+- **A crisp, un-overlaid image the visitor looks straight at** (a hero, a face) → **buy quality.** Artifacts are visible here; be stingier with dimensions instead.
+
+**Always:** webp only in production; `loading="lazy"` on everything below the fold; `width`/`height` attributes set on every `<img>` (prevents layout shift / CLS); source originals never enter the deployed tree.
+
+**Acceptance check before shipping a page** — list what the page actually loads and add it up:
+```bash
+for img in $(grep -oE '/images/[A-Za-z0-9._/-]+\.(webp|png|jpg|svg)' public/<page>/index.html | sort -u); do
+  printf "%8d  %s\n" "$(stat -c%s "public$img")" "$img"
+done
+```
+If the total is over ~300 KB, or any single non-hero image is over ~100 KB, fix it before shipping.
 
 ---
 
