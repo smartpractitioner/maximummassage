@@ -112,9 +112,15 @@ Then Step 4 of the process checks the lookup before placing a review — if the 
 - **Medimap / Fresha / WellnessLiving** — listings exist but carry **zero** reviews.
 - **Review aggregators (e.g. Birdeye) are the one usable back door** — they mirror Google reviews and are fetchable, but typically expose **only the first handful** (5 of 50 for MH).
 
-**So, same shape as image sourcing: the human supplies the raw material, Claude does the selection work on it.** The human (who is logged into the client's GBP dashboard) **pastes or exports the review set** — reviewer name, star rating, full text. Claude then filters by audience/demographic/modality, de-dupes across placements, and drafts the placements for approval.
+**So, same shape as image sourcing: the human supplies the raw material, Claude does the selection work on it.** The human (who is logged into the client's GBP dashboard) supplies the review set — reviewer name, star rating, full text. Claude then filters by audience/demographic/modality, de-dupes across placements, and drafts the placements for approval.
 
-**Factory implication:** `review_sources` in client-config is not enough on its own — onboarding must also capture an **export/paste of the actual reviews**, because the platforms won't give them to an automated agent. Budget for a human step here on every client.
+**Capture method — screenshots are the default (simplest, chosen 2026-07-14).** The human scrolls the client's reviews and screenshots them; Claude reads the images directly and transcribes. No export tooling, no API, no copy-paste drudgery. Other formats (paste, CSV export) work too, but screenshots are the lowest-friction path and should be the standard ask at onboarding.
+
+> **Where screenshots go — never in `public/`.** Review screenshots contain **real customers' names**. They are raw client material, not site assets: drop them in the **gitignored `client-assets/reviews/`** folder (never committed, never deployed). Only the *selected review text* ever reaches the picker/page. Same rule as image source originals: raw material stays out of the repo and off the CDN.
+
+**Sun Life Lumino DOES sometimes carry patient reviews** (confirmed by Victor, 2026-07-14) — so it's worth checking per therapist, but it's inconsistent and bot-blocked to Claude, so the human must capture those too. Treat it as a bonus source on top of the Google Business Profile, not a reliable one.
+
+**Factory implication:** `review_sources` in client-config is not enough on its own — onboarding must also capture the **actual reviews** (screenshots by default), because the platforms won't give them to an automated agent. Budget for a human capture step on every client.
 
 ### Step 1 — Worker pulls candidate reviews from client sources
 
@@ -197,5 +203,5 @@ If no candidate feels right → user gives feedback ("more specific to modality"
 ## Remaining open items
 
 - **Meagan Bahnman + Tif Henderson review source URLs** — need Victor to provide, OR worker searches for them during Phase 3.2 execution and reports back what was found.
-- **Verify Sunlife Lumino actually carries public reviews** (vs. just insurance-directory credentialing info). If not, Google Business Profile is the effective single source and the thin-reviews fallback is the primary pattern.
+- ~~Verify Sunlife Lumino actually carries public reviews~~ — ✅ **RESOLVED 2026-07-14 (Victor): Lumino DOES sometimes carry patient reviews**, but inconsistently, and it is bot-blocked to Claude (403). Treat it as a bonus per-therapist source the human captures, not a reliable one. Google Business Profile remains the primary source, and the thin-reviews fallback remains the primary pattern for MH.
 - **De-duplication tracking file location** — where does the `review_id → placement` lookup live? Options: a new file `public/config/review-lookup.json` (per-client), OR `docs/agent-contracts/social-proof-lookup.md` (as a running artifact). Worker to decide during Phase 3.2 execution based on which pattern the codebase gravitates toward.

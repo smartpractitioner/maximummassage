@@ -44,3 +44,8 @@ Thumbs.db
 # Raw Lighthouse/PSI report JSON — multi-MB machine output, near-zero value once the
 # findings are summarized. Findings live in perf-cleanup-summary.md + docs/sop-page-speed.md.
 perf/*.json
+
+# Client-supplied raw assets (review screenshots, exports, etc.) — real customer
+# names; never commit, never deploy. Claude reads them locally; only the selected
+# review TEXT ends up in the picker/page. See docs/sop-social-proof-sourcing.md.
+client-assets/
