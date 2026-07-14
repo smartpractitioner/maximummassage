@@ -300,20 +300,24 @@ The 80% factory pattern is what gets captured as lessons. The 20% client-specifi
 
 **This is a review + optimization pass, not an acceptance gate.** The Phase 5 spot-check is pass/fail ("only act if LCP > 2.5s"). This is different: actively find and remove the cost, so the template *starts* fast and every cloned page inherits it.
 
-**Scope:**
-1. **Baseline** — PageSpeed Insights / Lighthouse mobile run on live prenatal. Record LCP, CLS, INP, TBT, total transfer size.
-2. **Optimize the usual suspects**, in leverage order for our stack:
-   - **Hero image** — the single biggest LCP lever. Correctly sized webp, `preload`, explicit width/height (prevents CLS), `fetchpriority="high"`.
-   - **Below-fold images** — `loading="lazy"`, never preloaded.
-   - **Render-blocking resources** — defer/async non-critical JS + CSS; inline critical CSS if it earns its keep.
-   - **Third-party scripts** — GTM, GA, Cal.com embed. **The Cal.com embed is the heaviest third-party asset and must not load until the lightbox opens.** Verify.
-   - **Font loading** — `font-display: swap`, subset if needed.
-3. **Re-measure and confirm the gain is real** (≥2 runs — Lighthouse is noisy; a single run is not evidence).
-4. **Regression-check the funnel** — quiz → grid → detail → Cal embed → booking still works. Any deferred script that breaks conversion firing is a hard fail, and no LCP gain justifies it.
+**Follow [`docs/sop-page-speed.md`](sop-page-speed.md)** — the factory-general perf SOP (engine defaults, measurement discipline, per-page checklist, failure modes). Everything below is the MH-specific framing; the SOP is the procedure.
 
 **Hard constraint (unchanged): no Lighthouse SEO check, ever.** Paid-ads-only; crawlers are blocked at Cloudflare. We run the **performance** audit only. See memory `feedback_paid_ads_no_seo.md`.
 
-**Prior art to mine before starting:** `perf/` holds ~17 Lighthouse runs from May 2026 (`baseline` → `post-render-blocking` → `post-lazy-gtm` → `post-aria` → `final`) documenting an earlier optimization campaign on Flow A/B. **The runs exist; the lessons were never written down.** Read them for what already worked before re-deriving it. **Factory implication:** whatever wins here belongs as an **engine/template default** (fast by construction), not a per-page rediscovery — capture it in a perf SOP so every page for every client starts optimized.
+**Prior art — read it first.** [`perf-cleanup-summary.md`](../perf-cleanup-summary.md) (repo root) documents the May 2026 optimization campaign on Flow A + Flow B v3 in detail: 13 tasks, before/after metrics, file changes, Cloudflare toggles, and five "unexpected findings." **Flow B v3 went from PSI 68 / LCP 7.0s → 96-97 / LCP 1.8s.** Do not re-derive this.
+
+**What that prior work did NOT cover — the actual gap 3.5 fills:**
+- **All of it was on the Flow A / Flow B *general* pages.** The skill pages (prenatal et al.) were built *afterward* on the v3 design system, so they likely *inherit* the good patterns — but **have never been measured.**
+- **The Cal.com embed is entirely new since that campaign.** It has never appeared in any audit, and it is the heaviest third-party asset on the page. **Verify it does not load until the lightbox opens.**
+
+**Five things carried forward from the prior campaign (details in the SOP):**
+1. **Lighthouse variance is severe** — the same page scored 92 / 64 / 61 on three consecutive runs. Use **PSI, ≥3 runs, report median + best.** A single run is not evidence.
+2. **The dominant LCP factor is Cloudflare cold-edge cache, not the page.** A 22KB preloaded hero still stalled 5-9s on cold edge; LCP swung 2.9s → 10.2s on cache state alone. **Unresolved.** Candidate fixes: Cloudflare Images for the hero, or a Cron edge-cache warmer. **High variance is the tell — don't chase it with more compression.**
+3. **Third-party JS can't be deleted, only deferred** — the "115KB unused JS" was GTM + gtag. GTM trigger config is the only lever.
+4. **Microsoft Clarity (~26KB) loads via an unreviewed GTM tag.** Decide: keep or remove (saves ~26KB + 50-100ms TBT). **This is a Victor decision, not a worker task.**
+5. **A cleanup that is now unblocked:** the summary said not to delete the orphaned Landingi JS because the standalone therapist pages consumed them — but **Decision 6 (2026-06-21) retired those pages.** They're now safe to delete, along with the PurgeCSS win on `landend-base.css` (~95% unused).
+
+**Factory implication:** anything that would help *every* page belongs as an **engine/template default**, not a per-page fix — that's what [`sop-page-speed.md`](sop-page-speed.md) exists to hold.
 
 ---
 

@@ -40,3 +40,7 @@ Thumbs.db
 # under a directory that was excluded as a whole.
 .claude/*
 !.claude/skills/
+
+# Raw Lighthouse/PSI report JSON — multi-MB machine output, near-zero value once the
+# findings are summarized. Findings live in perf-cleanup-summary.md + docs/sop-page-speed.md.
+perf/*.json
