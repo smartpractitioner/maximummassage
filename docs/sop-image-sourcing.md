@@ -2,7 +2,9 @@
 
 > **Purpose.** When a skill page needs a new or replacement image (new page build, or an audience-mismatched image flagged during Phase 3 review), follow this process to source, evaluate, and convert an appropriate one. Per-client-repeatable.
 >
-> **Split of labor.** Worker automates search + surface + convert. User makes the final pick. This split is intentional — the user drives selection because image "fit" is a taste + brand judgment call that's per-client.
+> **Split of labor — finding images is a HUMAN task; mocking them up is Claude's.** The human sources and shortlists the candidates (they have the taste, the client context, and the paid-library access); Claude then pulls each candidate's watermarked comp and **mocks it into the real page slot at mobile width**, numbered and annotated, so the human can compare like-for-like and choose. Claude then converts + wires the winner. This split is deliberate: image "fit" is a taste + brand judgment that must stay with a human, but *seeing it in the actual slot* is what makes that judgment reliable — and Claude can do that in seconds for a dozen candidates.
+>
+> **Never buy before you preview.** Claude can fetch any paid-library image's public watermarked comp and mock it into the real slot **before a credit is spent.** No image gets purchased until the human has seen it in the page, at mobile width, under the real overlay and crop.
 >
 > **Sources, in order of preference.** (1) **The client's own image assets** — real photos of the clinic + its practitioners, when they genuinely depict the skill and aren't sloppy (see "Source the client's assets first"). (2) **Free stock** — Pexels, Pixabay, and the wider list at [graphicmama.com/blog/free-stock-photos-websites](https://graphicmama.com/blog/free-stock-photos-websites/) (commercial use, no attribution). (3) **AI-generated** — often the *most* efficient path: describe exactly what you want and generate it, cheaper in time + money than a paid stock hunt and frequently a closer match (the prenatal hero we shipped is AI-generated — it shows a bolster + side-lying, which no free stock photo did). (4) **Paid stock** (iStock, Shutterstock, 123RF, Getty, Adobe Stock) — when free won't do the trick and AI can't get there. Cost is justified when the image makes or breaks the page. The old "free only, never paid" rule is retired: images are too load-bearing for conversions to cap quality on cost.
 
@@ -27,7 +29,7 @@
 
 ## Selection principles — what makes a landing-page image convert (read FIRST)
 
-> Images can make or break a landing page. They say more than the copy can, and they land at a **subconscious** level — a visitor sees the right image and instantly, wordlessly thinks *"yes, I want that."* So the job isn't "find a relevant photo," it's "find the image that makes this specific visitor feel the thing the page is selling." Learn these before you source, so you can supervise selections and give sharp feedback — and so the worker's picks improve over time.
+> Images can make or break a landing page. They say more than the copy can, and they work on the visitor at a **subconscious** level: the right image and they wordlessly think *"yes, I want that"* — the wrong one and something just **doesn't feel right**, and that feeling alone is enough to cost you the conversion. The visitor will never articulate why they left. **Treat image choice as deep psychological influence, not decoration.** So the job isn't "find a relevant photo," it's "find the image that makes *this* visitor feel the thing the page is selling." Learn these principles before you source, so you can choose well, brief sharply, and get better at it over time.
 
 **1. Match the theme.** The image must show *exactly what the prospect searched for*, not a generic version. A pregnancy-massage page shows a pregnant woman getting a massage — it comes full circle on the search intent. Generic "someone getting a massage" breaks the scent.
 
@@ -56,52 +58,45 @@ There are only a handful of massage types. **Once a skill page's imagery is dial
 
 ---
 
-## Process (five steps)
+## Process (six steps) — human sources, Claude mocks up, human chooses
 
-### Step 1 — Worker searches Pexels + Pixabay
+### Step 1 — HUMAN sources + shortlists the candidates
 
-Search queries should target the modality intent + audience combo. Examples:
-- Prenatal hero → search terms: "prenatal massage," "pregnancy massage," "pregnant woman relaxing," "prenatal wellness"
-- Lymphatic hero → search terms: "lymphatic drainage massage," "gentle massage," "post-surgery recovery massage"
-- Deep tissue hero → search terms: "deep tissue massage," "sports massage recovery," "back massage active adult"
-- Therapeutic (core anchor) → search terms: "therapeutic massage," "relaxing massage session," "massage therapy" — broader intent, wider net
+The human works the Selection principles above and gathers a handful of candidates for each image slot, going down the source order (client assets → free stock → AI-generated → paid stock). Search on the modality intent + audience combo. Examples:
+- Prenatal → "prenatal massage," "pregnancy massage," "pregnant woman relaxing," "prenatal wellness"
+- Lymphatic → "lymphatic drainage massage," "gentle massage," "post-surgery recovery massage"
+- Deep tissue → "deep tissue massage," "sports massage recovery," "back massage active adult"
+- Therapeutic (core anchor) → "therapeutic massage," "relaxing massage session" — broader intent, wider net
 
-**Avoid images that:**
-- Show a demographic mismatched to the audience (e.g. men for prenatal)
-- Show a modality mismatched to the skill (e.g. hot stones on a lymphatic page, medical/clinical staging on a warm-relaxation page)
-- Look overly staged / stocky (the worst case of "stock image energy")
-- Have obvious licensing watermarks or attribution requirements
+**Reject on sight:**
+- Demographic mismatched to the audience (e.g. men on a prenatal page)
+- Modality mismatched to the skill (hot stones on a lymphatic page; a prone/face-down pose on a prenatal page that promises side-lying)
+- **No usable face**, or a face that's blurred/out-of-focus — it can't carry the emotion
+- Overly staged / cheesy "stock image energy"
 
-### Step 2 — Worker surfaces 3-5 candidates with thumbnails
+**Shortlist ~5-10 per slot.** Don't agonize — the mockup step is what makes the decision easy, so it's cheap to bring more than you'll use.
 
-Present candidate images to the user with:
-- Thumbnail preview (or direct URL to view)
-- Search-term match
-- Brief note on why this candidate is a good fit (audience match, modality match, feel)
-- Any flags on why it MIGHT not be a fit (helps user weigh the tradeoffs)
+### Step 2 — HUMAN hands the candidates to the Claude session
 
-Format:
-```
-Candidate 1: [thumbnail URL / preview]
-  Search: "prenatal massage"
-  Fit: Pregnant woman, warm lighting, side-lying position — matches modality + audience
-  Flag: Slightly staged; face partially visible (could be a plus or a con)
+Paste the candidate **URLs** (paid-library page links are fine — Claude can pull the public watermarked comps) or drop downloaded files into the page's image folder.
 
-Candidate 2: [thumbnail URL / preview]
-  ...
-```
+### Step 3 — CLAUDE mocks every candidate into the real page slot
 
-Aim for 3-5, not more. More options = decision paralysis; fewer = insufficient range for a taste call.
+Claude fetches each comp and renders it **into the actual page slot** — real overlay, real copy, real CSS — at **mobile width first** (~70% of visitors), as a single side-by-side comparison page. Each candidate gets:
+- **A number** (so the human can say "go with #3" without ambiguity)
+- **The honest crop.** A slot with `background-size: cover` on a narrow mobile viewport shows only the middle strip of a landscape photo — which can slice the subject's face right off. Claude tunes `background-position` per image so the key elements survive, and states the position used.
+- **A tone flag for overlaid slots.** Where an image sits under a dark overlay (e.g. the final CTA), **warm/darker photos keep their depth and glow through it; bright/white photos flatten into a uniform wash.** Flag which is which — it often decides the winner.
+- **A one-line honest note**: why it works, and the flaw.
 
-### Step 3 — User picks
+### Step 4 — HUMAN chooses
 
-User selects one from the surfaced set. If none feel right → user gives feedback ("more candid, less staged" / "warmer color palette" / "different pose") and worker returns to Step 1 with the refined criteria.
+The human picks per slot from the mockup. If none land, they give a direction ("warmer," "less staged," "face must be sharp") and Claude re-mocks a fresh batch.
 
-### Step 4 — User downloads to a known path
+### Step 5 — HUMAN purchases + downloads the winner
 
-User downloads the picked image to a local path (e.g. `C:\tmp\image-source.jpg` or the project's `public/images/` folder). User tells worker the path.
+**Only now is a credit spent.** Download the full-res into the page's image folder (e.g. `public/images/<page>/`) and tell Claude the filename.
 
-### Step 5 — Worker runs ffmpeg conversion to webp
+### Step 6 — CLAUDE converts to webp + wires it in
 
 Convert to web-optimized webp with the standard config:
 
@@ -114,7 +109,9 @@ Parameters:
 - `-quality 80` — good visual quality with meaningful file size reduction
 - `-resize 800:0` — width 800px, height auto-scaled (preserves aspect ratio). Adjust the 800 based on placement — hero images may want 1600, thumbnails 400, etc.
 
-Worker places the output in the correct project location and updates the page's HTML to reference it.
+Claude places the output in the correct project location, updates the page to reference it (**carrying over the `background-position` / crop tuned during the mockup step**), commits, pushes, and confirms it rendered on the live page.
+
+**Per-page overrides, not shared-CSS edits.** Skill pages share one stylesheet, so a page-specific image change (a different hero aspect-ratio, a different CTA background) goes in **that page's own inline `<style>` block** — never by editing the shared CSS, which would silently change every other page.
 
 ---
 
@@ -131,7 +128,11 @@ Worker places the output in the correct project location and updates the page's 
 
 ## Failure modes to avoid
 
-- **Worker forcing an image choice** — user drives selection. If the worker "picks the best" without user input, we lose the taste + brand fit that the user is optimizing for.
+- **Claude picking the image** — the human drives selection. Claude's job is to source-on-request, mock up, annotate honestly, and recommend; the final call is a taste + brand judgment that stays with a human.
+- **Buying before previewing** — never spend a credit on an image nobody has seen in the actual slot at mobile width. Claude can always pull the watermarked comp first.
+- **Judging an image on the full frame instead of the crop** — the page shows a *cropped* strip of it. An image that's perfect flat can lose the face entirely once `cover` crops it on a phone. Always judge the mocked-up crop.
+- **Ignoring the overlay** — an image destined for an overlaid slot must be judged *under* that overlay. Bright photos flatten to nothing under a dark wash; warm/darker ones survive.
 - **Skipping the audience-match check** — the whole point of Phase 3.1 is to catch mismatches. Don't source without confirming audience alignment.
-- **Reusing an image across skill pages** without checking modality fit — Charlotte's photo works everywhere; a stock prenatal massage image does NOT belong on the lymphatic page.
+- **Reusing an image across skill pages** without checking modality fit — a stock prenatal massage image does NOT belong on the lymphatic page.
+- **Editing the shared stylesheet** for a one-page image change — use the page's own inline `<style>` override, or you silently change every other skill page.
 - **Using original (non-webp) formats in production** — always convert. Bandwidth savings + faster LCP.
