@@ -37,9 +37,23 @@ Each client has different review destinations. The factory config for each clien
 - **Client's own website** — sometimes clients maintain a "reviews" or "testimonials" page
 - **Facebook page** — client's business Facebook page may have reviews
 
-**How to gather sources per client (hybrid approach, factory-standard):**
-1. **Ask at onboarding** — client fills in a `review_sources` client-config input listing every URL where their reviews live. Fastest and most accurate for the client's own preferences.
-2. **Discover/verify programmatically** — factory searches for the client's business name on common review platforms to catch anything the client forgot to mention. Optional but useful.
+**How to gather sources per client (hybrid, factory-standard — refined 2026-07-14):**
+
+1. **Ask the client at intake — make it a standard intake question.** "Where do you believe your reviews live?" The client hands over every page/platform they know of. They are the fastest, most accurate starting point, and they'll name things you'd never find.
+2. **Then WE check + filter the platforms on our radar** — never rely on the client's list alone; they routinely forget or don't know where they've been reviewed. Cross-check the known platforms for that geography (below).
+3. **Ask the individual THERAPISTS to gather their own.** Clinic-level reviews are usually about the owner or the longest-tenured practitioners. The specific therapists on a skill page often have **zero** reviews at clinic level, and may hold reviews from a **previous clinic** or from clients who never posted publicly. Make this an explicit per-therapist ask — it is frequently the only way to get therapist-level social proof. *(Confirmed on MH: 0 reviews for Brookelyn, Lindsey, or Tif across 40 clinic reviews.)*
+4. **Seed future reviews — coach the client to route people to the platforms.** Clients often know people who'd happily write a review right now, but who'd send it as a text or an email. **Always guide those to a real review platform instead.** Why it's worth the extra friction:
+   - It's **captured permanently** and works for the client forever, not once.
+   - It lifts the client's own **profile conversion** (people who find them on Google/Lumino see a fuller, better-rated profile).
+   - Platform reviews usually carry the **reviewer's photo and name**, which converts markedly better than an unattributed quote when we place it on a skill page.
+
+### Platform landscape varies by geography (Google is the constant)
+
+- **Canada:** Google Business Profile + **Sun Life Lumino** (provider directories for health practitioners).
+- **USA:** Google Business Profile + the platforms that dominate in that region — e.g. **Healthgrades** is often more prevalent in parts of the US than a Lumino-equivalent. Yelp carries more weight in the US than in Canada.
+- **Both:** **Google is always the common thread** and is always the primary source. Start there, then add the regional platforms.
+
+Maintain the per-geography platform list in client-config so the check is repeatable rather than improvised per client.
 
 ### Maximum Health sources (as of 2026-07-03)
 
@@ -50,7 +64,7 @@ Each client has different review destinations. The factory config for each clien
 - **Meagan Bahnman:** no additional sources beyond the clinic's Google Business Profile as of 2026-07-03. Any reviews mentioning her by name in the GBP are her only current source.
 - **Tif Henderson:** no additional sources yet; **she's currently gathering reviews manually from her other clinic** for submission to Maximum Health. Once available, add her review URLs / paste-ins to this SOP. (Tif is also currently `active: false` in the picker, so her per-skill review work can wait until she's active.)
 
-**Caveat on Sunlife Lumino profiles:** these are primarily insurance-provider directory listings; whether they carry meaningful public patient reviews vs. just credentialing/coverage info needs verification at Phase 3.2 execution time. If they don't, Google Business Profile is the effective single source and the thin-reviews scenario below applies.
+**Sun Life Lumino — VERIFIED EMPTY for MH (2026-07-14).** Lumino *can* carry patient reviews, but **Charlotte, Brookelyn, Meagan and Lindsey each have NONE.** Charlotte's single review came directly from her / Google, not Lumino. So for Maximum Health the **Google Business Profile is the effective single source**, and the thin-reviews scenario below is the operative pattern. Re-check Lumino per therapist on future clients; don't assume it's populated.
 
 **Factory config expectation (Phase 7):** each client's `client-config` should include a `review_sources` array — key-value pairs of `{platform: url}` for the clinic + `{therapist_id: [urls]}` for per-therapist profiles.
 
@@ -71,6 +85,19 @@ Each client has different review destinations. The factory config for each clien
 ### Mixed approach (best case)
 
 If SOME modality-specific reviews exist + generic reviews fill the gap → mix them. Modality-specific reviews at the top of the section (strongest social proof), generic reviews below as supporting evidence. Reader gets the specificity + the volume.
+
+### ⚠️ HARD LIMIT on the fallback — never attribute a review to a therapist it isn't about
+
+**The generic-review fallback applies to the PAGE TESTIMONIAL section only. It does NOT apply to per-therapist detail-panel review cards.**
+
+The detail-panel card renders **inside a named therapist's panel, with 5 stars and a Google badge**. A visitor reasonably reads that as *"this therapist was reviewed 5 stars."* Placing a generic clinic review there — one that never mentions that therapist — **implies a personal endorsement that does not exist.** On a health page, where someone is choosing who will physically treat them (and, on prenatal, treat them while pregnant), that is a misrepresentation. **Do not do it, and do not let a thin review pool pressure you into it.**
+
+When a therapist has no real review of their own, choose one of:
+- **(a) Show no review card** — the existing `buildReviewCard()` stub guard already does this silently. Honest; leaves a social-proof hole.
+- **(b) Re-label the card as a CLINIC review** (e.g. an explicit "Review of <Clinic>" label instead of the therapist's implied attribution). Honest *and* fills the surface. Preferred interim.
+- **(c) Get a real review** — ask that therapist to gather their own (see intake step 3). This is the only real fix.
+
+**Rule of thumb:** social proof only works because the reader believes it. Anything that would embarrass the client if a reader worked out what we'd done is not social proof — it's a liability.
 
 ---
 
@@ -115,6 +142,8 @@ Then Step 4 of the process checks the lookup before placing a review — if the 
 **So, same shape as image sourcing: the human supplies the raw material, Claude does the selection work on it.** The human (who is logged into the client's GBP dashboard) supplies the review set — reviewer name, star rating, full text. Claude then filters by audience/demographic/modality, de-dupes across placements, and drafts the placements for approval.
 
 **Capture method — screenshots are the default (simplest, chosen 2026-07-14).** The human scrolls the client's reviews and screenshots them; Claude reads the images directly and transcribes. No export tooling, no API, no copy-paste drudgery. Other formats (paste, CSV export) work too, but screenshots are the lowest-friction path and should be the standard ask at onboarding.
+
+> **Tall screenshots are fine — send them as-is.** A full-page review capture can be enormous (MH's was 815 x 18,540px). Viewed whole it gets downscaled ~12x and becomes illegible, but that is **Claude's problem to solve, not the human's**: slice the image into overlapping strips (~1500px tall, ~200px overlap so no review is cut in half at a boundary) and transcribe each strip, de-duplicating across the overlaps. Delegate the transcription to a subagent to keep the main context clear. The human should never be asked to take dozens of small screenshots.
 
 > **Where screenshots go — never in `public/`.** Review screenshots contain **real customers' names**. They are raw client material, not site assets: drop them in the **gitignored `client-assets/reviews/`** folder (never committed, never deployed). Only the *selected review text* ever reaches the picker/page. Same rule as image source originals: raw material stays out of the repo and off the CDN.
 
