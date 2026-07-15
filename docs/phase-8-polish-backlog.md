@@ -397,6 +397,71 @@ The former 8.8 ("Bring PatientSync calendar provisioning in-house to the factory
 
 ---
 
+## 8.10 — Custom-rendered booking calendar UI on Cal.com's API (fluid mobile flow + full branding, Cal.com stays the backend)
+
+> **Earmarked 2026-07-15.** Design inspiration: the "Book a free strategy call" lightbox at **leadgenjay.com/consult** (Victor walked it on mobile and captured the sequence). Post-launch polish — does NOT touch the launch path.
+>
+> **Relationship to 8.1 / 8.3:** this is a **lighter cousin of 8.1 (PractiCal)** and it makes **8.3 (embed theming) moot**. 8.1 replaces Cal.com's *engine* (to kill per-practitioner provisioning + own emails). **8.10 replaces only Cal.com's *UI*** while keeping its engine + API. 8.10 does NOT deliver 8.1's primary driver (it still uses per-therapist Cal event types, so the provisioning bottleneck remains) — it's a **UI-layer upgrade**, not an engine replacement. Decide at pickup whether 8.10 is a stepping-stone worth doing before 8.1, or whether to skip straight to 8.1.
+
+### The problem this solves
+
+The current booking step is the **Cal.com inline iframe embed**. Two limitations, both inherent to embedding a third-party iframe:
+1. **UX is not fluid on mobile.** month_view shows the month grid with the selected day's time slots stacked *below* it (confirmed on-device 2026-07-15) — the visitor scrolls past a big header + calendar to reach times. There is **no iframe config** that produces the "tap date → calendar collapses → clean slot column → back button" flow; that requires rendering the calendar ourselves. (This was verified the hard way — no `layout` value does it.)
+2. **We can't brand it fully** and can't remove the Cal chrome (redundant therapist/duration/timezone header, "powered by Cal.com").
+
+### The reference flow (leadgenjay.com/consult, custom-built, NOT a Cal.com iframe)
+
+Contact details → 5-question quiz with animated progress → "You're matched with <strategist>" card → **custom month calendar** (available days styled) → tap a date → **transitions to a separate slot screen** (back arrow top-left, timezone dropdown, "Choose Time Slot", column of times) → tap a slot → inline "Select" confirm → booked. Every pixel/transition is theirs because the UI is custom; the scheduling backend is called via API.
+
+### The approach — custom UI on Cal.com's API (keeps everything downstream intact)
+
+Cal.com exposes a public API (verified 2026-07-15): `GET /v2/slots` (availability, `cal-api-version: 2024-09-04`) and `POST /v2/bookings` (create booking). So we render **our own calendar component inside the lightbox** and drive it from these endpoints. **Because it's still a real Cal.com booking, the entire downstream is preserved:** the `BOOKING_CREATED` webhook still fires → `bookings_<skill>` + Jane sync + conversion tracking all keep working unchanged. We swap only the front-end UI, not the engine.
+
+**What we gain:** the fluid collapse-and-back flow, full brand control (our colors, fonts, corner radius), no Cal chrome, and the confusing "1h 20m" label problem disappears.
+
+### Open questions / risks (resolve at pickup)
+
+- **Contact collection.** The iframe currently collects name/email/phone in Cal's own form. A custom UI means we collect it ourselves and pass it into `POST /v2/bookings`. Keep it **calendar-first** (Decision 1): pick slot → then a short name/email/phone step → confirm (Calendly-style), so completion bias is preserved.
+- **Cal API token per client** (factory config; scoped per client, matching the Cloudflare token model).
+- **Timezone, double-book races, slot-reservation** (`/v2/slots` has a reserve endpoint), error/empty-availability states (leadgenjay's "I need additional slots open" fallback is a nice pattern to mirror).
+- **Reschedule/cancel** still routed to Jane per current policy (no self-service on our side).
+- **Build vs. platform atoms:** Cal.com also ships React "Platform Atoms" (`<Booker>`, `<AvailableTimes>`) — evaluate whether those accelerate vs. a hand-rolled component against our vanilla-JS, no-build-step stack (they may force a framework we don't want; SKILL.md hard rule = plain static HTML).
+
+### Files this touches (eventual)
+
+- `public/js/therapist-picker.js` (booking step — replace the iframe init with the custom calendar), `public/css/picker.css` (calendar styles), `public/js/mh-backend.js` (route slot/booking API calls through the abstraction so the endpoint stays swappable), per-client config (Cal API token, event-type IDs per therapist).
+
+---
+
+## 8.11 — Quiz + therapist-picker interaction polish (palpable selections, animated progress, rounded buttons)
+
+> **Earmarked 2026-07-15.** Design inspiration: same leadgenjay.com/consult flow (images 1-6 of Victor's capture). **Entirely our own code — zero Cal.com dependency.** Cheap, low-risk, high perceived-quality; can be pulled forward independently of 8.10 if a visible upgrade is wanted without the big calendar rebuild.
+
+### What Victor liked and wants ported (using OUR colors, not theirs)
+
+1. **Rounded button corners** on the quiz + picker (softer radius than current).
+2. **Palpable selection animation** — tapping an answer **fills/illuminates the whole option card in a gradual motion** (not an instant state flip), *then* eases into the next question. The gradual fill + delayed advance is what makes it feel responsive and engaging.
+3. **Radio-button styling** that reads more tactile (the filled-circle-with-check treatment).
+4. **Back button placed at the bottom** of the step (below the primary CTA), not the top.
+5. **Smooth animated progress bar** — the fill **slides** to the new value with easing rather than jumping in discrete jerks.
+6. All themed in the client's brand colors.
+
+### Why it matters
+
+The quiz + picker is where completion bias is built (SKILL.md: easy → harder questions). Micro-interactions that feel responsive and "palpable" increase the felt momentum and reduce drop-off. This is polish on the highest-leverage engagement surface, on components we fully own.
+
+### Factory angle — engine UX vs. brand skin (important)
+
+Split deliberately when built:
+- **Engine defaults (benefit every client):** the selection-fill animation, the eased progress-bar fill, back-button placement, the radio-interaction pattern. These are *interaction-quality* improvements — bake them into the engine so every client's quiz/picker inherits them.
+- **Per-client brand skin (config, not engine):** corner-radius value, colors, fonts. These are exactly the **design tokens the brand-capture step (7.2a) / designer station owns** — cross-reference that item. The *behavior* is engine; the *look* is tokens.
+
+### Files this touches
+
+- `public/js/therapist-picker.js` (quiz/selection/progress logic), `public/css/picker.css` (button radius, selection-fill + progress-bar transitions, back-button placement). All CSS transitions/animations — no new dependencies, no build step.
+
+---
+
 ## Future items (add as they come up)
 
 > Drop new subsections here as `7.9`, `8.10`, etc. when polish items surface during Phases 0-6. Keep each entry brief — what it is, why it matters, any sketch or dependency. Format follows the sections above.
