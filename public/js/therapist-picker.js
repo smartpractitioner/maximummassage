@@ -119,6 +119,7 @@
       tags: ['Myofascial release', 'Trigger point', 'Dynamic cupping', 'Lymphatic drainage', 'Pre/post-partum', 'Reiki', 'Back pain', 'Injury recovery', 'Chronic pain', 'Client education'],
       review: {
         text: 'Charlotte is an experienced and knowledgeable professional! [...] Best massage therapist ever! Highly recommend!!',
+        reviewerName: 'Adriana Sartori',
         source: 'Google review'
       },
       experience: [
