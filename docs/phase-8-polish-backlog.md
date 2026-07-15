@@ -33,6 +33,8 @@ This phase is a **parking lot** for everything that isn't core to the booking fu
 > **Scope caveat:** this is **not** a nice-to-have polish item — it's a major architectural build (a whole booking engine + PatientSync integration). Given its factory-blocker status, **consider promoting it to its own dedicated phase (Phase 9 or similar)** rather than treating it as end-of-list polish work when picked up. Re-evaluate at backlog-sweep time.
 >
 > **Does NOT block the current client.** Maximum Health launches on **Cal.com now** — speed to launch is the priority. The Cal.com embeds get swapped for the owned calendar later, which stays cheap because the booking step routes through the `mhBackend` abstraction (repoint the booking step + endpoint, not a funnel rebuild).
+>
+> **MUST PRESERVE the custom booking UX built in Phase 3.5 (added 2026-07-15).** As of 2026-07-15 the booking step is no longer the Cal.com iframe — it's our **own custom calendar UI** (the fluid "tap date → calendar collapses → slot column + back button" flow Victor specified from leadgenjay.com/consult; see plan Phase 3.5 Part B + [`worker-instructions-booking-quiz-experience-upgrade.md`](worker-instructions-booking-quiz-experience-upgrade.md)), rendered by us and driven by Cal.com's API. **When PractiCal replaces the Cal.com engine, it must keep this exact front-end UX** — PractiCal swaps the *engine behind* our calendar (availability + booking writes + Jane sync), NOT the calendar UI itself. In practice this makes 8.1 *easier*: the UI + contact step + `/booking-confirmed/` redirect already exist and just re-point their slot/booking calls from Cal's API to PractiCal via `mhBackend`. Do not rebuild the booking UI during 8.1 — preserve it.
 
 ### Context — why this item exists
 
@@ -213,7 +215,7 @@ Before designing the email cadence or any escalation logic, **collect 30+ days o
 
 ## 8.3 — Cal.com embed theming to match the landing page brand
 
-> **Moot if 8.1 (Cal.com replacement) ships** — the owned calendar layer removes Cal.com's embed entirely, which means there's no third-party UI to theme. Keep this section only as a fallback if we decide NOT to build 8.1 and stay on Cal.com long-term. Was 8.2 before the 2026-07-02 reorder.
+> **MOOT as of 2026-07-15 — superseded by Phase 3.5 Part B (custom booking UI, was 8.10).** There is no longer a Cal.com iframe to theme: the booking step is now our own fully-branded custom calendar UI. This item is effectively done by the 3.5 upgrade (which delivers full brand control, not just embed theming). Retained only for history. (Also would have been moot under 8.1.) Was 8.2 before the 2026-07-02 reorder.
 
 ### Context — why this item exists
 
@@ -399,7 +401,9 @@ The former 8.8 ("Bring PatientSync calendar provisioning in-house to the factory
 
 ## 8.10 — Custom-rendered booking calendar UI on Cal.com's API (fluid mobile flow + full branding, Cal.com stays the backend)
 
-> **Earmarked 2026-07-15.** Design inspiration: the "Book a free strategy call" lightbox at **leadgenjay.com/consult** (Victor walked it on mobile and captured the sequence). Post-launch polish — does NOT touch the launch path.
+> **PULLED FORWARD to active work as plan Phase 3.5 (Part B) on 2026-07-15.** Victor's call: build it now into the canonical prenatal template so every rollout page + future client inherits it (shared engine code). Spec: [`worker-instructions-booking-quiz-experience-upgrade.md`](worker-instructions-booking-quiz-experience-upgrade.md). This entry is retained as the design rationale; the active work + status live in the plan doc's Phase 3.5. Sequencing: ships AFTER Part A (quiz polish, 8.11) with an approval gate between.
+>
+> **Earmarked 2026-07-15.** Design inspiration: the "Book a free strategy call" lightbox at **leadgenjay.com/consult** (Victor walked it on mobile and captured the sequence).
 >
 > **Relationship to 8.1 / 8.3:** this is a **lighter cousin of 8.1 (PractiCal)** and it makes **8.3 (embed theming) moot**. 8.1 replaces Cal.com's *engine* (to kill per-practitioner provisioning + own emails). **8.10 replaces only Cal.com's *UI*** while keeping its engine + API. 8.10 does NOT deliver 8.1's primary driver (it still uses per-therapist Cal event types, so the provisioning bottleneck remains) — it's a **UI-layer upgrade**, not an engine replacement. Decide at pickup whether 8.10 is a stepping-stone worth doing before 8.1, or whether to skip straight to 8.1.
 
@@ -435,7 +439,9 @@ Cal.com exposes a public API (verified 2026-07-15): `GET /v2/slots` (availabilit
 
 ## 8.11 — Quiz + therapist-picker interaction polish (palpable selections, animated progress, rounded buttons)
 
-> **Earmarked 2026-07-15.** Design inspiration: same leadgenjay.com/consult flow (images 1-6 of Victor's capture). **Entirely our own code — zero Cal.com dependency.** Cheap, low-risk, high perceived-quality; can be pulled forward independently of 8.10 if a visible upgrade is wanted without the big calendar rebuild.
+> **PULLED FORWARD to active work as plan Phase 3.5 (Part A) on 2026-07-15** — the first, lower-risk half of the experience upgrade; ships first, then Victor approves before Part B (8.10). Spec: [`worker-instructions-booking-quiz-experience-upgrade.md`](worker-instructions-booking-quiz-experience-upgrade.md). This entry retained as design rationale; active status lives in the plan doc's Phase 3.5.
+>
+> **Earmarked 2026-07-15.** Design inspiration: same leadgenjay.com/consult flow (images 1-6 of Victor's capture). **Entirely our own code — zero Cal.com dependency.**
 
 ### What Victor liked and wants ported (using OUR colors, not theirs)
 

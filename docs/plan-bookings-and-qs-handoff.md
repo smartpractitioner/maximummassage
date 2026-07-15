@@ -238,7 +238,7 @@ Variations rotate through later sections; the hero anchors to the focal intent. 
 
 Phase 2 handled copy. Phase 3 aligns the **non-copy elements** that need to match audience/intent — specifically images and social proof — then opens the door to user-driven iteration on the whole page.
 
-Six sequential steps (3.0 added 2026-07-03; page-speed pass added 2026-07-14 as 3.4, with lessons-capture moved to 3.5 so it captures the speed-pass lessons):
+Seven sequential steps (3.0 added 2026-07-03; page-speed pass added 2026-07-14 as 3.4; booking/quiz experience upgrade pulled forward from Phase 8 as 3.5 on 2026-07-15; lessons-capture is always last, now 3.6):
 
 ### 3.0 — Two-sheet + `user_id` architecture (Decision 9 firewall, ships first)
 
@@ -309,9 +309,21 @@ Full UX review (color/brand, whitespace, mobile rendering, hero fold, element-co
 
 **Factory implication:** anything that would help *every* page belongs as an **engine/template default**, not a per-page fix — that's what [`sop-page-speed.md`](sop-page-speed.md) exists to hold.
 
-### 3.5 — Record rationale as "Lessons learned from prenatal" (always the final sub-step of Phase 3)
+### 3.5 — Booking + quiz experience upgrade (engine-level; pulled forward from Phase 8 on 2026-07-15)
 
-**Runs last, after 3.4**, so it captures the lessons from *every* preceding sub-step — including the page-speed pass. Each Phase 3 adjustment (from 3.1, 3.2, 3.3, or 3.4) gets recorded into `.claude/skills/add-skill-page/SKILL.md` under a new "Lessons learned from prenatal" section, framed as **portable principles**, not client-specific content. Examples:
+**What:** upgrade the shared picker/quiz/booking funnel to match the fluid, palpable mobile experience Victor captured from **leadgenjay.com/consult**. Two parts, **done one at a time with an approval gate between them**:
+- **Part A — quiz + picker interaction polish** (was Phase 8 item 8.11): rounded buttons, a palpable selection-fill animation, tactile radios, bottom back button, a smooth animated progress bar, gentle question transitions.
+- **Part B — custom calendar UI on Cal.com's API** (was Phase 8 item 8.10): replace the Cal.com iframe with our own calendar that does the **tap-date → calendar collapses → slot column + back button** flow, driven by Cal.com's `GET /v2/slots` + `POST /v2/bookings`. **Cal.com stays the engine** (the PractiCal engine swap, 8.1, is still Phase 8), so the `BOOKING_CREATED` webhook, Jane sync, monthly-cap derivation, and `/booking-confirmed/` conversion are all preserved.
+
+**Why now, not Phase 8 (Victor, 2026-07-15):** the quiz/picker/booking step is **shared engine code** (one `therapist-picker.js`), so building this on the canonical prenatal page bakes it into the template that every rollout page *and every future client* inherits. Doing it at the source sets the standard for everything that follows. It's engine work, not prenatal-content work — recorded here because prenatal is where it's built + QA'd first.
+
+**Full spec:** [`docs/worker-instructions-booking-quiz-experience-upgrade.md`](worker-instructions-booking-quiz-experience-upgrade.md) — hard constraints (keep Cal engine, preserve attribution, calendar-first, no build step), the API flow, contact-after-slot collection, and the required downstream-intact verification. **Manual step for Victor:** generate a Cal.com API key (ideally proxied through the backend, token server-side). Reference screenshots go to the worker.
+
+**Impact on the sequence:** Part B replaces the live booking step, so **Phase 4 E2E now validates the new custom calendar + polished quiz**, not the old iframe. This lands before Phase 4. Durable factory patterns (custom-UI-on-Cal-API approach, quiz interaction standards as engine defaults) get recorded in [`.claude/skills/add-skill-page/SKILL.md`](../.claude/skills/add-skill-page/SKILL.md) as part of the build, and swept into 3.6 below.
+
+### 3.6 — Record rationale as "Lessons learned from prenatal" (always the final sub-step of Phase 3)
+
+**Runs last, after 3.5**, so it captures the lessons from *every* preceding sub-step — including the page-speed pass (3.4) and the booking/quiz experience upgrade (3.5). Each Phase 3 adjustment (from 3.1, 3.2, 3.3, 3.4, or 3.5) gets recorded into `.claude/skills/add-skill-page/SKILL.md` under a new "Lessons learned from prenatal" section, framed as **portable principles**, not client-specific content. Examples:
 
 - ✅ **Portable principle:** "When a benefit reads as too clinical for the audience, soften the framing — anxious visitors need warmth, not clinical accuracy."
 - ✅ **Portable principle:** "Testimonial gender/context should match the primary audience of the skill page — men reviewing prenatal creates cognitive friction even if the content is accurate."
@@ -325,6 +337,8 @@ The 80% factory pattern is what gets captured as lessons. The 20% client-specifi
 ## Phase 4 — End-to-end testing
 
 Once prenatal is solid, run a full test pass before moving to other pages.
+
+> **Updated 2026-07-15:** as of the Phase 3.5 experience upgrade, the booking step is our **custom calendar UI on Cal.com's API**, not the Cal.com iframe. The per-therapist steps below that reference "Cal.com inline embed loads" now mean "our custom calendar loads and books via the API." The critical assertions are unchanged and if anything more important: the booking still completes, the `BOOKING_CREATED` webhook still carries full attribution, `bookings_<skill>` + Jane + cap all update, and `booking_confirmed` fires once. Also validate the new quiz interactions render correctly.
 
 **Per-therapist flow validation (each of the 4 active therapists — Tif skipped):**
 1. Open `/prenatal-massage-calgary/?utm_source=test&utm_campaign=e2e&gclid=test123` in incognito
@@ -436,7 +450,7 @@ Reconcile the **existing** client-facing legal layer with the two-sheet + `user_
 **Why full page coverage is the real gate (the actual rationale):** Google Ads campaigns are structured as **multiple ad groups per campaign**, each targeting a specific keyword theme (prenatal, lymphatic, deep tissue, therapeutic-anchor) and each needing **its own dedicated landing page** for Quality Score + message match. Launching with only prenatal ready means the campaign has **no landing pages for the other ad groups** → you either pause those ad groups (a fragmented campaign) or point them at mismatched pages (which Google Ads doesn't optimize well). So the launch gate is "**all the landing pages that fill this campaign's ad groups are ready**," not "the first page is done." A single polished page does not launch a campaign.
 
 **Prerequisites for launch (ALL required):**
-- ✔ **Phase 3 complete on prenatal** (3.1–3.5, including the 3.4 page-speed optimization pass, with lessons captured last in 3.5)
+- ✔ **Phase 3 complete on prenatal** (3.1–3.6, including the 3.4 page-speed pass and the 3.5 booking/quiz experience upgrade, with lessons captured last in 3.6)
 - ✔ **Phase 4 formal E2E on prenatal**
 - ✔ **Phase 5 rollout complete on lymphatic, deep tissue, and therapeutic** — each includes its own Phase 3 treatment (images, social proof, user review) + Phase 4 E2E as part of the dual-track workflow. (They inherit prenatal's 3.4 optimizations via the template, so each needs only the per-page perf **spot-check**, not a full optimization pass.)
 - ✔ **Client sign-off on their legal pages** — for MH this is **already satisfied**. See "Legal approval — the client signs off, not a lawyer" below.
