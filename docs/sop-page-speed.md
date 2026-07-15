@@ -12,7 +12,7 @@
 
 ## When to invoke
 
-- **Phase 3.5** — full review + optimization pass on the client's **canonical template page** (for MH: prenatal). Runs after content is final (3.3) and **before** Phase 4 E2E.
+- **Phase 3.4** — full review + optimization pass on the client's **canonical template page** (for MH: prenatal). Runs after content is final (3.3), before the lessons-capture step (3.5), and before Phase 4 E2E.
 - **Phase 5 per-page rollout** — a short **spot-check** on each cloned page. They inherit the template's optimizations, so the only realistic regression source is the page's own new assets (usually the hero image).
 - **Any time a new third-party script is added** (a new tag, a new embed). Third-party weight is the thing most likely to silently undo prior work.
 
@@ -65,7 +65,7 @@ These are settled. A new page should ship with all of them already true.
 
 **This is the dominant LCP factor on MH and it is NOT a page problem.** The hero image is small (22KB) and preloaded, yet LCP swings between **2.9s and 10.2s** depending purely on whether Cloudflare's edge has the image cached. On a cold edge fetch the hero can stall for **5–9 seconds**.
 
-No amount of image optimization fixes this — the asset is already tiny. The two candidate fixes, **neither yet implemented, both to be evaluated on measured evidence at the client's Phase 3.5 pass**:
+No amount of image optimization fixes this — the asset is already tiny. The two candidate fixes, **neither yet implemented, both to be evaluated on measured evidence at the client's Phase 3.4 pass**:
 1. **Cloudflare Images** for the hero — better edge distribution than a static asset pull.
 2. **An edge cache warmer** — a Cron Trigger that periodically requests the page/hero to keep edges warm. (Cloudflare Cron Triggers are free and already in the factory's Cloudflare stack.)
 

@@ -238,7 +238,7 @@ Variations rotate through later sections; the hero anchors to the focal intent. 
 
 Phase 2 handled copy. Phase 3 aligns the **non-copy elements** that need to match audience/intent — specifically images and social proof — then opens the door to user-driven iteration on the whole page.
 
-Six sequential steps (3.0 added 2026-07-03; 3.5 added 2026-07-14):
+Six sequential steps (3.0 added 2026-07-03; page-speed pass added 2026-07-14 as 3.4, with lessons-capture moved to 3.5 so it captures the speed-pass lessons):
 
 ### 3.0 — Two-sheet + `user_id` architecture (Decision 9 firewall, ships first)
 
@@ -282,19 +282,9 @@ You review the page (all elements — copy, images, social proof, layout, brand 
 
 Full UX review (color/brand, whitespace, mobile rendering, hero fold, element-copy tension) intentionally lives here as user-driven judgment rather than worker-driven audit. Those elements are mostly client-specific look-and-feel calls that a worker running an audit would false-positive-nitpick. Better surfaced by your review than by worker patrols.
 
-### 3.4 — Record rationale as "Lessons learned from prenatal"
+### 3.4 — Page speed review + optimization (added 2026-07-14; reordered ahead of lessons-capture 2026-07-15)
 
-Each Phase 3 adjustment (from 3.1, 3.2, or 3.3) gets recorded into `.claude/skills/add-skill-page/SKILL.md` under a new "Lessons learned from prenatal" section, framed as **portable principles**, not client-specific content. Examples:
-
-- ✅ **Portable principle:** "When a benefit reads as too clinical for the audience, soften the framing — anxious visitors need warmth, not clinical accuracy."
-- ✅ **Portable principle:** "Testimonial gender/context should match the primary audience of the skill page — men reviewing prenatal creates cognitive friction even if the content is accurate."
-- ❌ **NOT portable (client-specific content):** "Prenatal hero should use teal on off-white." (Colors are client-config, not lessons.)
-
-The 80% factory pattern is what gets captured as lessons. The 20% client-specific content lives in client-config (Phase 7).
-
-### 3.5 — Page speed review + optimization (added 2026-07-14)
-
-**Runs after 3.3 (page content is final) and BEFORE Phase 4 E2E.** That ordering is load-bearing: perf work (deferring/lazy-loading scripts) can silently break conversion firing, so the E2E suite must validate the **optimized** page, not the pre-optimization one. Any lesson this step produces gets recorded per 3.4.
+**Runs after 3.3 (page content is final) and BEFORE Phase 4 E2E.** That ordering is load-bearing: perf work (deferring/lazy-loading scripts) can silently break conversion firing, so the E2E suite must validate the **optimized** page, not the pre-optimization one. **It also runs before the lessons-capture step (3.5), deliberately — the speed pass produces portable lessons of its own (what actually moved LCP, cold-edge handling, Cal-embed deferral), and 3.5 must be able to sweep those up.** That's why lessons-capture is always the *last* sub-step of Phase 3.
 
 **Why prenatal specifically, and why this step didn't exist:** the only page-speed check in the plan was the Phase 5 per-page spot-check — and Phase 5 covers the *remaining* pages. Prenatal, the **canonical template every other page is cloned from**, had no perf pass at all. Perf debt in the template propagates to all four pages. Fix it at the source.
 
@@ -306,18 +296,29 @@ The 80% factory pattern is what gets captured as lessons. The 20% client-specifi
 
 **Prior art — read it first.** [`perf-cleanup-summary.md`](../perf-cleanup-summary.md) (repo root) documents the May 2026 optimization campaign on Flow A + Flow B v3 in detail: 13 tasks, before/after metrics, file changes, Cloudflare toggles, and five "unexpected findings." **Flow B v3 went from PSI 68 / LCP 7.0s → 96-97 / LCP 1.8s.** Do not re-derive this.
 
-**What that prior work did NOT cover — the actual gap 3.5 fills:**
+**What that prior work did NOT cover — the actual gap 3.4 fills:**
 - **All of it was on the Flow A / Flow B *general* pages.** The skill pages (prenatal et al.) were built *afterward* on the v3 design system, so they likely *inherit* the good patterns — but **have never been measured.**
 - **The Cal.com embed is entirely new since that campaign.** It has never appeared in any audit, and it is the heaviest third-party asset on the page. **Verify it does not load until the lightbox opens.**
 
 **Five things carried forward from the prior campaign (details in the SOP):**
 1. **Lighthouse variance is severe** — the same page scored 92 / 64 / 61 on three consecutive runs. Use **PSI, ≥3 runs, report median + best.** A single run is not evidence.
-2. **The dominant LCP factor is Cloudflare cold-edge cache, not the page.** A 22KB preloaded hero still stalled 5-9s on cold edge; LCP swung 2.9s → 10.2s on cache state alone. **Unresolved. High variance is the tell — don't chase it with more compression.** **➡️ ACTION AT 3.5 (decided 2026-07-14):** measure prenatal first, then **evaluate the two candidate fixes on their merits and integrate only if they're worth it** — (a) **Cloudflare Images** for the hero (better edge distribution) and (b) a **Cron edge-cache warmer** (Cloudflare Cron Triggers are free and already in the Phase 7 stack). Bring the assessment to Victor rather than adopting either by default; if the measured variance turns out to be small, do nothing.
+2. **The dominant LCP factor is Cloudflare cold-edge cache, not the page.** A 22KB preloaded hero still stalled 5-9s on cold edge; LCP swung 2.9s → 10.2s on cache state alone. **Unresolved. High variance is the tell — don't chase it with more compression.** **➡️ ACTION AT 3.4 (decided 2026-07-14):** measure prenatal first, then **evaluate the two candidate fixes on their merits and integrate only if they're worth it** — (a) **Cloudflare Images** for the hero (better edge distribution) and (b) a **Cron edge-cache warmer** (Cloudflare Cron Triggers are free and already in the Phase 7 stack). Bring the assessment to Victor rather than adopting either by default; if the measured variance turns out to be small, do nothing.
 3. **Third-party JS can't be deleted, only deferred** — the "115KB unused JS" was GTM + gtag. GTM trigger config is the only lever.
 4. ~~**Microsoft Clarity — keep or remove?**~~ **RESOLVED 2026-07-14: KEEP.** Victor's call. The ~26KB + 50-100ms TBT cost is accepted; the heatmap / session-replay data is worth it. Do **not** remove the Clarity GTM tag as part of any perf pass, and do not re-raise this at each page.
 5. **A cleanup that is now unblocked:** the summary said not to delete the orphaned Landingi JS because the standalone therapist pages consumed them — but **Decision 6 (2026-06-21) retired those pages.** They're now safe to delete, along with the PurgeCSS win on `landend-base.css` (~95% unused).
 
 **Factory implication:** anything that would help *every* page belongs as an **engine/template default**, not a per-page fix — that's what [`sop-page-speed.md`](sop-page-speed.md) exists to hold.
+
+### 3.5 — Record rationale as "Lessons learned from prenatal" (always the final sub-step of Phase 3)
+
+**Runs last, after 3.4**, so it captures the lessons from *every* preceding sub-step — including the page-speed pass. Each Phase 3 adjustment (from 3.1, 3.2, 3.3, or 3.4) gets recorded into `.claude/skills/add-skill-page/SKILL.md` under a new "Lessons learned from prenatal" section, framed as **portable principles**, not client-specific content. Examples:
+
+- ✅ **Portable principle:** "When a benefit reads as too clinical for the audience, soften the framing — anxious visitors need warmth, not clinical accuracy."
+- ✅ **Portable principle:** "Testimonial gender/context should match the primary audience of the skill page — men reviewing prenatal creates cognitive friction even if the content is accurate."
+- ✅ **Portable principle (from 3.4):** "High LCP *variance* points at cold-edge cache, not the page — diagnose before compressing." (The specific fix chosen is client-config; the diagnostic principle is portable.)
+- ❌ **NOT portable (client-specific content):** "Prenatal hero should use teal on off-white." (Colors are client-config, not lessons.)
+
+The 80% factory pattern is what gets captured as lessons. The 20% client-specific content lives in client-config (Phase 7).
 
 ---
 
@@ -383,7 +384,7 @@ For therapeutic (new page): no dual-track since there's nothing to back up. Clea
 
 Each page rollout includes a quick acceptance pass on the four LP technical factors. Not optimization — just confirmation they're acceptable. Per the QS-for-LP transcript these are mostly non-issues for our stack:
 
-- **Load time:** mobile LCP < 2.5s. Hero image preload in place, no oversized assets, no render-blocking scripts. Spot-check via PageSpeed Insights mobile run, log the LCP number, only act if it's > 2.5s. **This is legitimately a spot-check (not an optimization pass) because these pages are cloned from a prenatal template already optimized in Phase 3.5** — so the only realistic regression source is this page's own new assets (usually the hero image). If a page comes back slow, the hero is the first suspect.
+- **Load time:** mobile LCP < 2.5s. Hero image preload in place, no oversized assets, no render-blocking scripts. Spot-check via PageSpeed Insights mobile run, log the LCP number, only act if it's > 2.5s. **This is legitimately a spot-check (not an optimization pass) because these pages are cloned from a prenatal template already optimized in Phase 3.4** — so the only realistic regression source is this page's own new assets (usually the hero image). If a page comes back slow, the hero is the first suspect.
 - **Spider ability:** robots.txt allows crawl (it doesn't on go.maximummassage.ca because paid-ads-only, per memory — so this factor is intentionally fine-as-is for us; the QS spider check is about whether Google can read the page, not whether we want them to index it).
 - **Transparency:** clinic name + address + phone link + privacy + terms all visible in footer. Already in place.
 - **Navigability:** the lightbox-funnel is acceptable as a single-page LP per the transcript.
@@ -435,9 +436,9 @@ Reconcile the **existing** client-facing legal layer with the two-sheet + `user_
 **Why full page coverage is the real gate (the actual rationale):** Google Ads campaigns are structured as **multiple ad groups per campaign**, each targeting a specific keyword theme (prenatal, lymphatic, deep tissue, therapeutic-anchor) and each needing **its own dedicated landing page** for Quality Score + message match. Launching with only prenatal ready means the campaign has **no landing pages for the other ad groups** → you either pause those ad groups (a fragmented campaign) or point them at mismatched pages (which Google Ads doesn't optimize well). So the launch gate is "**all the landing pages that fill this campaign's ad groups are ready**," not "the first page is done." A single polished page does not launch a campaign.
 
 **Prerequisites for launch (ALL required):**
-- ✔ **Phase 3 complete on prenatal** (3.1–3.5, including the 3.5 page-speed optimization pass)
+- ✔ **Phase 3 complete on prenatal** (3.1–3.5, including the 3.4 page-speed optimization pass, with lessons captured last in 3.5)
 - ✔ **Phase 4 formal E2E on prenatal**
-- ✔ **Phase 5 rollout complete on lymphatic, deep tissue, and therapeutic** — each includes its own Phase 3 (3.1–3.4) treatment + Phase 4 E2E as part of the dual-track workflow. (They inherit prenatal's 3.5 optimizations via the template, so each needs only the per-page perf **spot-check**, not a full optimization pass.)
+- ✔ **Phase 5 rollout complete on lymphatic, deep tissue, and therapeutic** — each includes its own Phase 3 treatment (images, social proof, user review) + Phase 4 E2E as part of the dual-track workflow. (They inherit prenatal's 3.4 optimizations via the template, so each needs only the per-page perf **spot-check**, not a full optimization pass.)
 - ✔ **Client sign-off on their legal pages** — for MH this is **already satisfied**. See "Legal approval — the client signs off, not a lawyer" below.
 - Backend foundations already in place: booking flow, conversion tracking, Slack notifications (Phase 1 ✅), per-therapist Cal.com → PatientSync → ClinicSync Pro → Jane verified end-to-end, the two-sheet firewall / `user_id` join / consent recording (Phase 3.0 ✅, verified 2026-07-09), and all nine Cal.com hidden fields configured per therapist event type (✅ verified 2026-07-14).
 
