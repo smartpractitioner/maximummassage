@@ -162,6 +162,111 @@
   margin-top: 1px;
 }
 .benefit-text { min-width: 0; }
+
+/* Desktop-only elements — hidden on mobile; the desktop layer re-shows them. */
+.hero-h1--d, .hero-sub--d, .offer-scarcity, .guarantee-band { display: none; }
+
+/* =====================================================================
+   DESKTOP LAYER (Phase 3.3). >=1024px only; mobile untouched. Mobile fonts,
+   brand tokens, guarantee promoted to its own band. Prenatal-only for now.
+   Pattern: colour-band sections stay full-width blocks (bg spans edge-to-edge);
+   their inner content is capped at 1180 and centred. No fragile calc padding.
+   ===================================================================== */
+@media (min-width: 1024px) {
+  main { display: block; }
+  /* Force every section full-width; some were shrink-wrapping inconsistently. */
+  main > section, .guarantee-band { width: 100%; box-sizing: border-box; }
+  /* flow-b-v3.css caps these at max-width:560px + adds huge side-padding to
+     .final-cta on >=480px (a mobile/tablet treatment). Undo it for desktop. */
+  .stats, .why, .healing, .testimonials, .final-cta { max-width: none; }
+  .final-cta { padding-inline: 0; }
+  .footer { max-width: 1180px; margin-inline: auto; padding-inline: 40px; box-sizing: border-box; }
+  .hero, .benefits, .faq { max-width: 1180px; margin-inline: auto; padding-inline: 40px; }
+  .hero-topbar { padding-inline: max(40px, calc((100vw - 1180px) / 2)); }
+
+  /* Colour bands: full-width bg, inner content centred at 1180 */
+  .stats > *, .why > *, .testimonials > * {
+    width: min(100%, 1180px); margin-inline: auto; padding-inline: 40px; box-sizing: border-box;
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    display: grid; grid-template-columns: 0.94fr 1.06fr; gap: 56px; align-items: center;
+    padding-top: 40px; padding-bottom: 68px;
+    background: linear-gradient(180deg, #FCEFCF 0%, var(--page-bg) 100%);
+  }
+  .hero > * { min-width: 0; }
+  .hero-content { text-align: left; max-width: none; margin: 0; }
+  .social-pill { margin-left: 0; }
+  .hero-h1--m, .hero-sub--m { display: none; }
+  .hero-h1--d { display: block; margin: 0 0 20px; font-size: 44px; line-height: 1.08; letter-spacing: -0.02em; color: var(--ink); }
+  .hero-sub--d { display: block; margin: 0 0 28px; font-size: 20px; line-height: 1.5; color: var(--ink-soft); max-width: 520px; }
+  .hero-image { aspect-ratio: auto; min-width: 0; height: 100%; min-height: 480px; align-self: stretch; margin-top: 0; }
+  .hero-image img { width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+
+  .offer-card { background: transparent; border: 0; box-shadow: none; padding: 0; max-width: 540px; margin: 0; }
+  .offer-eyebrow { margin-bottom: 18px; }
+  .offer-price-row { justify-content: flex-start; margin-bottom: 16px; }
+  .offer-price { font-size: 54px; line-height: 1; }
+  .offer-cur { font-size: 0.62em; font-weight: 600; vertical-align: 6px; margin-right: 2px; }
+  .offer-price-old { font-size: 22px; }
+  .fudx-grid { justify-content: flex-start; }
+  .offer-scarcity { display: block; margin: 16px 0 0; font-size: 13px; font-weight: 700; letter-spacing: .02em; color: #C15A20; }
+  .offer-card .guarantee { display: none; }
+
+  /* ---- Guarantee band ---- */
+  .guarantee-band { display: block; background: var(--alt-bg-cool); border-top: 1px solid #CFE6E9; padding-block: 64px; }
+  .guarantee-band__inner { display: flex; align-items: center; gap: 36px; max-width: 900px; margin: 0 auto; padding-inline: 40px; box-sizing: border-box; }
+  .guarantee-band__badge { flex: 0 0 auto; width: 68px; height: 68px; border-radius: 50%; background: var(--brand-teal); display: grid; place-items: center; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--brand-teal), 0 8px 18px -8px rgba(20,90,100,.6); }
+  .guarantee-band__text h2 { margin: 0; font-size: 40px; line-height: 1.06; letter-spacing: -0.01em; color: var(--ink); }
+  .guarantee-band__text h2 span { color: var(--brand-teal); }
+  .guarantee-band__text p { margin: 12px 0 0; font-size: 20px; line-height: 1.5; color: var(--ink-soft-2); max-width: 720px; }
+
+  /* ---- Stats: 4 across ---- */
+  .stats { background: var(--surface-card); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding-block: 44px; }
+  .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  .stat-big { font-size: 42px; }
+
+  /* ---- Benefits: numbered 2-col ---- */
+  .benefits { padding-block: 84px; }
+  .benefits h2 { text-align: left; font-size: 40px; max-width: 640px; margin: 0 0 40px; }
+  .benefits-list { max-width: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0 64px; counter-reset: bnum; }
+  .benefits-list li { min-width: 0; border-top: 1px solid #EAE0D8; padding: 26px 0; gap: 22px; align-items: flex-start; }
+  .benefits-list li .benefit-icon { display: none; }
+  .benefits-list li::before { counter-increment: bnum; content: counter(bnum, decimal-leading-zero); font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 28px; color: var(--brand-teal); min-width: 42px; line-height: 1.1; }
+  .benefit-title { font-size: 19px; }
+
+  /* ---- Why: 3-col ---- */
+  .why { background: var(--alt-bg-cool); padding-block: 84px; }
+  .why-header { max-width: 760px; margin-inline: auto; margin-bottom: 48px; }
+  .why-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  .why-card { min-width: 0; padding: 32px; }
+
+  /* ---- Healing: image left / text right (wrapper centres the 2-col) ---- */
+  .healing { background: var(--alt-bg-warm); padding-block: 84px; }
+  .healing-inner { width: min(100%, 1180px); margin-inline: auto; padding-inline: 40px; box-sizing: border-box; display: grid; grid-template-columns: 1fr 1fr; column-gap: 64px; align-items: center; }
+  .healing-inner > * { min-width: 0; }
+  .healing-image { grid-column: 1; grid-row: 1 / span 20; margin: 0; }
+  .healing-inner > :not(.healing-image) { grid-column: 2; max-width: none; }
+  .healing h2 { text-align: left; font-size: 40px; margin-top: 0; }
+
+  /* ---- Testimonials: static 3-up ---- */
+  .testimonials { background: var(--alt-bg-cool); padding-block: 84px; }
+  .testimonial-list { flex-direction: row; overflow: visible; gap: 28px; margin-inline: auto; padding: 0 40px; scroll-snap-type: none; box-sizing: border-box; }
+  .testimonial-card { flex: 1 1 0; min-width: 0; max-width: none; }
+  .testimonial-dots { display: none; }
+
+  /* ---- FAQ ---- */
+  .faq { padding-block: 84px; }
+  .faq h2 { text-align: center; }
+  .faq-list { max-width: 820px; margin: 0 auto; }
+
+  /* ---- Final CTA ---- */
+  .final-cta { padding-block: 100px; }
+  .final-cta > * { width: min(100%, 820px); margin-inline: auto; padding-inline: 40px; box-sizing: border-box; }
+  .final-cta h2 { font-size: 46px; }
+  .final-cta p { font-size: 20px; max-width: 660px; }
+}
 </style>
 
 <script type="application/ld+json">
@@ -228,13 +333,15 @@
       <span>Rated <b>4.9/5</b> by 737+ on Lumino Health</span>
     </div>
 
-    <h1>Prenatal, postnatal, and postpartum massage. Support at every stage of pregnancy and beyond.</h1>
-    <p class="hero-sub">Specialized care from RMTs who’ve trained for this work and many of whom have lived it themselves. Side-lying, safe, and adaptable from trying to conceive through to your sixth-week postpartum check and beyond.</p>
+    <h1 class="hero-h1--m">Prenatal, postnatal, and postpartum massage. Support at every stage of pregnancy and beyond.</h1>
+    <h1 class="hero-h1--d">Prenatal, postnatal, and postpartum massage.</h1>
+    <p class="hero-sub hero-sub--m">Specialized care from RMTs who’ve trained for this work and many of whom have lived it themselves. Side-lying, safe, and adaptable from trying to conceive through to your sixth-week postpartum check and beyond.</p>
+    <p class="hero-sub hero-sub--d">Pregnancy care from RMTs who’ve trained for this work <em>(many of whom have lived it themselves)</em>. Side-lying, safe, and adaptable from trying to conceive through to your postpartum check.</p>
 
     <div class="offer-card">
       <div class="offer-eyebrow">New Client Starter Session · 60 min</div>
       <div class="offer-price-row">
-        <div class="offer-price">$49</div>
+        <div class="offer-price"><span class="offer-cur">$</span>49</div>
         <div class="offer-price-old">$124</div>
       </div>
 
@@ -256,6 +363,8 @@
           <span>Matched with a therapist you'll love</span>
         </div>
       </div>
+
+      <p class="offer-scarcity">&#9203; Limited starter-session availability each week</p>
 
       <div class="guarantee">
         <div class="guarantee-row">
@@ -304,6 +413,19 @@
   </div>
 </section>
 
+<!-- Guarantee band (desktop-only; on mobile the guarantee lives inside the offer card) -->
+<section class="guarantee-band" aria-label="Our guarantee">
+  <div class="guarantee-band__inner">
+    <div class="guarantee-band__badge" aria-hidden="true">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>
+    </div>
+    <div class="guarantee-band__text">
+      <h2>100% Guarantee, <span>love it or you don’t pay*</span></h2>
+      <p>Paying for someone that doesn’t meet expectations is a bummer. “Try us before you buy us,” we’re so confident we’ll be the last therapist you’ll work with, we guarantee it.</p>
+    </div>
+  </div>
+</section>
+
 <!-- ============ 2. KEY STATS ============ -->
 <section class="stats">
   <div class="stats-grid">
@@ -319,7 +441,7 @@
   <h2>Benefits of pregnancy and postpartum massage</h2>
   <ul class="benefits-list">
     <li>
-      <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="#D77BAE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8v18.4"/><path d="M9.2 6.2h5.6M9.2 10.6h5.6M9.2 15h5.6M9.2 19.4h5.6"/></svg>
+      <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="#D77BAE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c-2.2 2-2.2 3.6 0 5.6s2.2 3.6 0 5.6-2.2 3.6 0 5.6"/><path d="M9.6 5.6h4.8M9.6 11.2h4.8M9.6 16.8h4.8" opacity=".5"/></svg>
       <div class="benefit-text">
         <p class="benefit-title">Less back, hip, and pelvic pain.</p>
       <p class="benefit-body">As your centre of gravity shifts, your low back and hips take on extra load. Targeted side-lying work eases that strain.</p>
@@ -408,7 +530,8 @@
 
 <!-- ============ 5. HEALING ============ -->
 <section class="healing">
-  <div class="healing-image">
+  <div class="healing-inner">
+<div class="healing-image">
     <img src="/images/prenatal/prenatal-healing.webp" alt="Pregnant woman connecting warmly with her massage therapist" width="1000" height="860" loading="lazy">
   </div>
   <h2>Pregnancy massage that’s so much more than just an hour on a table</h2>
@@ -419,6 +542,7 @@
     <li><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="none" stroke="#D77BAE" stroke-width="1.6"/><path d="M7.5 12.5 L10.5 15.5 L16.5 9.5" fill="none" stroke="#D77BAE" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>A long-term focus on understanding you and your body</span></li>
   </ul>
   <button type="button" class="btn-cta" data-open-picker>Book Your $49 Starter Session</button>
+  </div>
 </section>
 
 <!-- ============ 6. TESTIMONIALS (Phase 3.2: prenatal-aligned - real Google reviews, women only.
