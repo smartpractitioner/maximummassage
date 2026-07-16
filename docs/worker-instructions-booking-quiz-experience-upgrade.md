@@ -1,5 +1,7 @@
 # Worker instructions — Booking + quiz experience upgrade (engine-level)
 
+> **REVISED 2026-07-15:** Part B's Cal.com API proxy is now a **Cloudflare Pages Function** (following `functions/track.js`), NOT Apps Script. If you read this file during Part A, re-read the "Proxy the Cal.com API…" subsection under Part B before building it.
+
 > **Read this whole brief before starting.** This is a **shared-engine** upgrade to the picker/quiz/booking funnel in `public/js/therapist-picker.js` + `public/css/picker.css`. It is NOT prenatal-content work — it changes the funnel *engine*, so it propagates to every skill page and every future client automatically. Do the work + QA on the **prenatal page** (canonical template), then it benefits all pages.
 >
 > **Decided 2026-07-15 (Victor).** Design target: the "Book a free strategy call" lightbox at **leadgenjay.com/consult** (mobile). Pulled forward from Phase 8 items 8.10 (custom calendar UI) + 8.11 (quiz/picker polish) into active work as **plan Phase 3.5**. The PractiCal engine swap (8.1) stays Phase 8 — do NOT touch the Cal.com *engine*, only its *UI*.
@@ -40,11 +42,19 @@ All of the above are CSS transitions/animations + small JS timing tweaks. No dep
 
 Replace the Cal.com inline iframe (currently at ~`therapist-picker.js:1028`) with our own calendar, matching the leadgenjay flow (images 7-9): **month calendar → tap an available date → the calendar collapses and the view slides to a clean column of that day's time slots with a back button → tap a slot → confirm.**
 
-### Manual step for Victor BEFORE the worker can integrate
+### Proxy the Cal.com API through a Cloudflare Pages Function (NOT client-side, NOT Apps Script) — revised 2026-07-15
 
-Generate a **Cal.com API key** (Cal.com → Settings → Developer → API Keys) and provide it. It becomes per-client config (`window.MH_CAL_API_TOKEN` or via the backend — see security note). Scope it minimally.
+The two Cal.com API calls (slots read + booking create) run through a **Cloudflare Pages Function**, following the exact pattern **already in this repo** at [`functions/track.js`](../functions/track.js) (which proxies to GA4 with a secret held as a Cloudflare Pages environment variable). This supersedes any earlier "proxy via mhBackend/Apps Script" wording.
 
-**Security note — do NOT ship the API token in client-side JS if it can create bookings for the whole account.** Preferred: proxy the two Cal API calls (slots read, booking create) **through our backend** (`mhBackend` → Apps Script now, Cloudflare Worker later) so the token stays server-side. Confirm the token's blast radius with Victor; if it's a scoped read/booking token that's acceptable client-side, that's a fallback, but the backend proxy is the right factory pattern (and it keeps the endpoint swappable for the Phase 8 PractiCal migration).
+**Why a proxy is non-negotiable:** booking creation must never run in the browser — a write-capable key in client-side JS lets anyone spam or cancel bookings on the therapists' calendars — and Cal.com keys are account-level (broad), so the slots read can't safely expose one either. Both calls go server-side.
+
+**Why a Pages Function specifically (not Apps Script):** it's faster (edge, sub-50ms, which matters because the visitor is waiting when they tap a date), it's the pattern already running in this repo, the key lives as a proper CF secret, and it deploys automatically with the normal Pages push — no wrangler, no separate Worker, no Apps Script redeploy ritual. It's also a natural first step toward the Phase 7 Cloudflare backend rather than throwaway Apps Script work.
+
+**Build:** new Pages Function(s) — e.g. `functions/cal/slots.js` (GET availability) and `functions/cal/book.js` (POST create booking) — mirroring the `functions/track.js` structure (`onRequestGet` / `onRequestPost(context)`, read secrets from `context.env`, return JSON). The front-end calendar calls these **same-origin** endpoints (`/cal/slots`, `/cal/book`); the function attaches the secret Cal key and calls Cal.com; **the key never reaches the browser.**
+
+**Manual step for Victor (keys — he already has them):** Victor has a **Cal.com API key per therapist calendar**. Add each as a **Cloudflare Pages environment variable** (Cloudflare → Pages → Settings → Environment Variables, set for **both** Production and Preview), keyed by therapist — e.g. `CAL_KEY_BROOKELYN`, `CAL_KEY_MEAGAN`, `CAL_KEY_CHARLOTTE`, `CAL_KEY_LINDSEY`. The Pages Function selects the right key by the requested therapist. Confirm the exact env-var names + per-therapist event-type IDs with Victor before wiring.
+
+**Downstream is unchanged:** a booking created via `POST /v2/bookings` still fires Cal's `BOOKING_CREATED` webhook → Apps Script → `bookings_<skill>` + Jane, exactly as today. The Pages Function only handles the front-end's slot-read + booking-create; the webhook path (Channel B) is untouched.
 
 ### Endpoints (verify exact shapes against current Cal.com API v2 docs — measure twice)
 
