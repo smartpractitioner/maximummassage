@@ -51,10 +51,9 @@
   --mh-radius-control: 16px;          /* softer corners on options + picker cards */
   --mh-select-fill: #E4F2F3;          /* brand tint an option eases to when picked */
   --mh-anim-fill: 300ms;              /* selection fill / illuminate */
-  --mh-anim-slide: 400ms;             /* question-to-question cross-fade (feathery) */
+  --mh-anim-fade: 350ms;             /* question-to-question fade (pure opacity, ease-out; matches leadgenjay .hr-step) */
   --mh-anim-bar: 480ms;               /* progress bar glide */
   --mh-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-  --mh-ease-soft: cubic-bezier(0.22, 1, 0.36, 1);  /* gentle, feathery deceleration for question transitions */
 }
 
 /* box-sizing on overlay descendants only — global * resets would
@@ -440,27 +439,19 @@
   border-radius: 4px;
 }
 
-/* Feathery question-to-question CROSS-FADE (direction-aware). The incoming
-   question fades + drifts in while the outgoing one fades + drifts out over it,
-   so there is no hard cut. Small drift, opacity-led, gentle deceleration. */
-@keyframes mhQinFwd   { from { opacity: 0; transform: translateX(10px);  } to { opacity: 1; transform: translateX(0); } }
-@keyframes mhQinBack  { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes mhQoutFwd  { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-8px); } }
-@keyframes mhQoutBack { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(8px);  } }
-.native-quiz.mh-qin-fwd   { animation: mhQinFwd   var(--mh-anim-slide) var(--mh-ease-soft) both; }
-.native-quiz.mh-qin-back  { animation: mhQinBack  var(--mh-anim-slide) var(--mh-ease-soft) both; }
-.native-quiz.mh-qout-fwd  { animation: mhQoutFwd  320ms var(--mh-ease-soft) both; }
-.native-quiz.mh-qout-back { animation: mhQoutBack 320ms var(--mh-ease-soft) both; }
+/* Question-to-question transition: a PURE opacity fade (no slide), matching
+   leadgenjay's .hr-step (0.35s ease-out on opacity). A positional slide has to
+   stop somewhere and that stop reads as "clipped"; a straight fade settles
+   cleanly and feels gentle. */
+@keyframes mhQFade { from { opacity: 0; } to { opacity: 1; } }
+.native-quiz.mh-qfade { animation: mhQFade var(--mh-anim-fade) ease-out both; }
 
 @media (prefers-reduced-motion: reduce) {
   .native-quiz__bar-fill,
   .native-quiz__option,
   .native-quiz__radio,
   .native-quiz__radio::after { transition: none; }
-  .native-quiz.mh-qin-fwd,
-  .native-quiz.mh-qin-back,
-  .native-quiz.mh-qout-fwd,
-  .native-quiz.mh-qout-back { animation: none; }
+  .native-quiz.mh-qfade { animation: none; }
 }
 
 /* ---------- Therapist picker grid ---------- */
