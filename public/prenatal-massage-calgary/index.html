@@ -12,7 +12,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://app.cal.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:ital,opsz,wght@0,12..96,500;0,12..96,600;0,12..96,700;1,12..96,400;1,12..96,500;1,12..96,700&family=Manrope:wght@400;500;600;700&family=Mulish:wght@500;700;800&display=swap">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:ital,opsz,wght@0,12..96,500;0,12..96,600;0,12..96,700;1,12..96,400;1,12..96,500;1,12..96,700&family=Manrope:wght@400;500;600;700&family=Mulish:wght@500;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:ital,opsz,wght@0,12..96,500;0,12..96,600;0,12..96,700;1,12..96,400;1,12..96,500;1,12..96,700&family=Manrope:wght@400;500;600;700&family=Mulish:wght@500;700;800&display=swap"></noscript>
 
 <link rel="preload" as="image" fetchpriority="high" href="/images/flow-b-v3/logo.webp">
 <link rel="preload" as="image" fetchpriority="high" href="/images/prenatal/prenatal-hero.webp">
@@ -21,7 +22,765 @@
 <meta property="og:description" content="Specialized prenatal, postnatal, and postpartum massage. Support at every stage of pregnancy and beyond. $49 starter session.">
 <meta property="og:image" content="/images/prenatal/prenatal-hero.webp">
 
-<link rel="stylesheet" href="/css/flow-b-v3.css?v=v3-book2">
+<style data-inlined-from="/css/flow-b-v3.css">
+/* Flow B v3 — mobile-first landing page (cream theme).
+   Tokens, typography, and component styles for the new
+   handoff design. See AB testing/Flow B prototype/. */
+
+/* Self-host Mulish 800 latin only — this is the font that renders the H1
+   "Reduce pain, calm nerves..." which is the LCP element. PSI 2026-05-07
+   showed 1,340 ms LCP element render delay caused by the H1 waiting for
+   Google's gstatic woff2 to arrive after the Google Fonts CSS parsed.
+   With this self-host + a <link rel="preload"> in the HTML head, the
+   font binary loads in parallel with the page HTML, so the H1 hits its
+   final state much sooner. Other Mulish weights + Bricolage + Manrope
+   still come from Google Fonts (small enough that the second-hop cost
+   is acceptable for non-LCP text). */
+@font-face {
+  font-family: 'Mulish';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/mulish-800-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  --page-bg: #FAEAC9;
+  --alt-bg-warm: #F2EEE6;
+  --alt-bg-cool: #D6EDED;
+  --surface-card: #FFFFFF;
+  --surface-offer: #FFF6E2;
+  --ink: #0E3A47;
+  --ink-soft: #5A6E73;
+  --ink-soft-2: #3F4F54;
+  --brand-teal: #1F8FA6;
+  --brand-teal-dark: #155F70;
+  --brand-pink: #D77BAE;
+  --brand-cream-border: #E6C988;
+  --star-gold: #F5A623;
+  --rule: rgba(14, 58, 71, 0.14);
+  --shadow-offer: 0 14px 36px rgba(14, 58, 71, 0.10);
+  --shadow-card: 0 6px 18px rgba(14, 58, 71, 0.08);
+  --shadow-image: 0 14px 32px rgba(14, 58, 71, 0.18);
+  --shadow-cta: 0 6px 14px rgba(31, 143, 166, 0.22);
+  --shadow-cta-cream: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--page-bg);
+  color: var(--ink);
+  font-family: "Manrope", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img { max-width: 100%; display: block; }
+
+a { color: var(--brand-teal); text-decoration: none; }
+
+button { font-family: inherit; }
+
+/* ---------- Reusable: CTA pill ---------- */
+.btn-cta {
+  display: block;
+  width: 100%;
+  background: var(--brand-teal);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 999px;
+  padding: 18px;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  cursor: pointer;
+  box-shadow: var(--shadow-cta);
+  transition: background 150ms ease, transform 80ms ease;
+  -webkit-tap-highlight-color: transparent;
+  text-align: center;
+  text-decoration: none;
+}
+.btn-cta:hover { background: var(--brand-teal-dark); }
+.btn-cta:active { transform: scale(0.98); }
+
+.btn-cta-cream {
+  background: #FAEAC9;
+  color: var(--ink);
+  font-weight: 700;
+  box-shadow: var(--shadow-cta-cream);
+}
+.btn-cta-cream:hover { background: #F2DCAB; }
+
+/* ---------- Section base ---------- */
+.section { padding: 40px 22px; }
+.section-warm { background: var(--alt-bg-warm); }
+.section-cool { background: var(--alt-bg-cool); }
+.section-page { background: var(--page-bg); }
+
+.section h2 {
+  margin: 0 0 14px;
+  font-family: "Mulish", "Manrope", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.6px;
+  line-height: 1.12;
+  color: var(--brand-teal);
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  background: var(--page-bg);
+  padding: 14px 22px 50px;
+  position: relative;
+}
+
+/* ---------- Site topbar (logo + Call us, sticky across whole page) ---------- */
+/* Lives outside .hero so its sticky containing block is <body>; otherwise
+   it would scroll away with the hero section. */
+.hero-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--page-bg);
+  padding: 10px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 1px 0 rgba(14, 58, 71, 0.06);
+}
+.hero-logo { height: 36px; width: auto; }
+.hero-call {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--brand-teal);
+  color: #FFFFFF;
+  border: 0;
+  border-radius: 999px;
+  padding: 9px 14px 9px 12px;
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  box-shadow: 0 4px 10px rgba(31, 143, 166, 0.22);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.hero-call svg { display: block; }
+
+.hero-content { text-align: center; }
+
+.social-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #FFFFFF;
+  border-radius: 999px;
+  padding: 6px 12px 6px 7px;
+  border: 1px solid var(--brand-cream-border);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+  font-size: 11px;
+  color: var(--brand-teal-dark);
+  line-height: 1.25;
+  margin-bottom: 20px;
+  font-weight: 600;
+  max-width: 92%;
+}
+.social-pill img { height: 22px; width: auto; flex-shrink: 0; }
+.stars { display: inline-flex; gap: 1px; }
+.stars svg { display: block; }
+
+.hero h1 {
+  font-family: "Mulish", "Manrope", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 36px;
+  line-height: 1.04;
+  letter-spacing: -0.6px;
+  color: var(--ink);
+  margin: 2px 0 16px;
+  text-wrap: balance;
+}
+
+.hero-sub {
+  font-size: 16px;
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin: 0 0 20px;
+  text-wrap: pretty;
+}
+
+/* Offer card */
+.offer-card {
+  background: var(--surface-offer);
+  border: 1px solid rgba(230, 201, 136, 0.5);
+  border-radius: 22px;
+  padding: 22px 18px;
+  text-align: center;
+  box-shadow: var(--shadow-offer);
+}
+.offer-eyebrow {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 13.5px;
+  letter-spacing: 1.4px;
+  font-weight: 700;
+  color: var(--brand-teal-dark);
+  opacity: 0.95;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+.offer-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+.offer-price {
+  font-family: "Mulish", "Manrope", system-ui, sans-serif;
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--brand-teal-dark);
+  letter-spacing: -1.2px;
+  line-height: 1;
+}
+.offer-price-old {
+  font-size: 19px;
+  color: var(--ink-soft);
+  text-decoration: line-through;
+  font-weight: 500;
+}
+.fudx-grid {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 14px;
+  row-gap: 12px;
+  text-align: left;
+}
+.fudx-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--brand-teal-dark);
+}
+.fudx-item svg { flex-shrink: 0; margin-top: 1px; }
+
+.guarantee {
+  margin-top: 28px;
+  text-align: center;
+}
+.guarantee-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.guarantee-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+}
+.guarantee-title {
+  font-family: "Mulish", "Manrope", system-ui, sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  color: var(--brand-teal-dark);
+  /* Reserve the rendered line-box height so a fallback→web-font swap
+     can't reflow this element. PSI flagged the .guarantee block as
+     the entire CLS budget on 2026-05-07. */
+  min-height: 26px;
+}
+.guarantee-sub {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--brand-teal-dark);
+  min-height: 19.2px;
+}
+.guarantee-body {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-soft-2);
+  text-wrap: pretty;
+}
+.guarantee-body em { font-style: italic; }
+
+/* Hero image */
+.hero-image {
+  margin-top: 28px;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.15);
+  aspect-ratio: 4 / 4.7;
+  background: #222;
+}
+.hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---------- Key Stats ---------- */
+.stats {
+  background: var(--page-bg);
+  padding: 36px 22px 12px;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 12px;
+  row-gap: 12px;
+}
+.stat-card {
+  background: #FFFFFF;
+  border: 1px solid var(--brand-cream-border);
+  border-radius: 18px;
+  padding: 22px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 120px;
+  text-align: center;
+}
+.stat-big {
+  font-family: "Mulish", "Manrope", system-ui, sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  line-height: 1.05;
+  color: var(--ink);
+}
+.stat-label {
+  font-size: 12.5px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+/* ---------- Why Work With Us ---------- */
+.why { background: var(--alt-bg-warm); padding: 40px 22px 32px; }
+.why-header { text-align: center; margin-bottom: 28px; }
+.why-header h2 {
+  font-size: 30px;
+  margin-bottom: 10px;
+  letter-spacing: -0.6px;
+  line-height: 1.1;
+}
+.why-sub {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+.why-sub-emph {
+  color: var(--ink);
+  border-bottom: 2px solid var(--brand-pink);
+  padding-bottom: 1px;
+  font-weight: 700;
+}
+.why-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.why-card {
+  background: #FFFFFF;
+  border: 1px solid var(--brand-cream-border);
+  border-radius: 18px;
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+.why-card img { width: 48px; height: 48px; }
+.why-card h3 {
+  margin: 0;
+  font-family: "Mulish", "Manrope", system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+.why-card p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+  font-weight: 500;
+}
+.why .btn-cta { margin-top: 28px; }
+
+/* ---------- What We Help With ---------- */
+.help { background: var(--page-bg); padding: 40px 22px 32px; }
+.help h2 { font-size: 30px; letter-spacing: -0.6px; line-height: 1.1; margin: 0 0 34px; }
+.help-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+  max-width: 280px;
+  margin: 0 auto;
+}
+.help-group-title {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 12.5px;
+  letter-spacing: 1.6px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--brand-pink);
+  margin-bottom: 14px;
+}
+.help-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.help-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14.5px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--ink);
+}
+.help-list svg { flex-shrink: 0; margin-top: 1px; }
+
+/* ---------- Healing ---------- */
+.healing { background: var(--alt-bg-cool); padding: 40px 22px 32px; }
+.healing-image {
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.15);
+  aspect-ratio: 4 / 3.6;
+  background: #222;
+  margin-bottom: 28px;
+}
+.healing-image img { width: 100%; height: 100%; object-fit: cover; }
+.healing h2 { font-size: 28px; letter-spacing: -0.6px; line-height: 1.12; }
+.healing-body {
+  margin: 0 0 26px;
+  font-size: 15px;
+  line-height: 1.55;
+  font-weight: 600;
+  color: var(--ink-soft-2);
+  text-wrap: pretty;
+  text-align: center;
+}
+.healing-list {
+  list-style: none;
+  margin: 0 auto 32px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 320px;
+}
+.healing-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14.5px;
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--ink);
+}
+.healing-list svg { flex-shrink: 0; margin-top: 1px; }
+
+/* ---------- Testimonials ---------- */
+.testimonials { background: var(--alt-bg-cool); padding: 44px 22px 48px; }
+.testimonials h2 { font-size: 26px; letter-spacing: -0.5px; line-height: 1.15; margin: 0 0 26px; }
+.testimonial-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.testimonial-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 22px 20px 18px;
+  box-shadow: var(--shadow-card);
+}
+.testimonial-headline {
+  margin: 0 0 14px;
+  font-family: "Bricolage Grotesque", Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 17px;
+  line-height: 1.3;
+  color: var(--ink);
+  letter-spacing: -0.1px;
+  text-wrap: pretty;
+}
+.testimonial-body {
+  margin: 0 0 18px;
+  font-family: "Bricolage Grotesque", Georgia, serif;
+  font-style: italic;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+.testimonial-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.testimonial-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.testimonial-name-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.testimonial-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.testimonial-foot svg.google-g { flex-shrink: 0; }
+
+/* ---------- FAQ ---------- */
+.faq { background: var(--alt-bg-warm); padding: 44px 22px; }
+.faq h2 { font-size: 28px; letter-spacing: -0.6px; line-height: 1.12; margin: 0 0 24px; }
+.faq-list { border-bottom: 1px solid var(--rule); }
+.faq-item { border-top: 1px solid var(--rule); }
+.faq-q {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 18px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--ink);
+  font-size: 15.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.1px;
+}
+.faq-q-text { flex: 1; text-wrap: pretty; }
+.faq-toggle {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--brand-teal);
+  color: var(--brand-teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+  margin-top: 2px;
+  transition: transform 200ms ease;
+}
+.faq-item.open .faq-toggle { transform: rotate(45deg); }
+.faq-a {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink-soft-2);
+  white-space: pre-wrap;
+  text-wrap: pretty;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0;
+  transition: max-height 280ms ease, opacity 280ms ease, padding 280ms ease;
+}
+.faq-item.open .faq-a {
+  max-height: 1500px;
+  opacity: 1;
+  padding: 0 0 22px;
+}
+
+/* ---------- Final CTA (overlay) ---------- */
+.final-cta {
+  position: relative;
+  padding: 80px 22px 72px;
+  background-image:
+    linear-gradient(180deg, rgba(11, 49, 60, 0.78) 0%, rgba(11, 49, 60, 0.86) 100%),
+    url("/images/flow-b-v3/woman-massage.webp");
+  background-size: cover;
+  background-position: center;
+  color: #FFFFFF;
+  overflow: hidden;
+  text-align: center;
+}
+.final-cta-eyebrow {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif;
+  font-style: italic;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #7FD7DD;
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+.final-cta h2 {
+  margin: 0 0 18px;
+  font-family: "Mulish", "Manrope", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 32px;
+  letter-spacing: -0.7px;
+  line-height: 1.08;
+  color: #FFFFFF;
+  text-wrap: balance;
+}
+.final-cta p {
+  margin: 0 auto 32px;
+  max-width: 320px;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.92);
+  text-wrap: pretty;
+}
+
+/* ---------- Footer ---------- */
+.footer {
+  background: #FFFFFF;
+  padding: 44px 22px 36px;
+  color: var(--ink);
+}
+.footer-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+.footer-logo img { max-width: 220px; width: 100%; height: auto; }
+.footer-brand { text-align: center; margin-bottom: 20px; }
+.footer-brand-name {
+  font-family: "Mulish", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--brand-teal);
+  margin-bottom: 4px;
+}
+.footer-brand-tag {
+  font-size: 13.5px;
+  color: var(--brand-teal);
+  opacity: 0.9;
+}
+.footer-map {
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 18px;
+  box-shadow: 0 6px 16px rgba(14, 58, 71, 0.10);
+  aspect-ratio: 5 / 3.4;
+  background: #E8EEF0;
+}
+.footer-map iframe { width: 100%; height: 100%; border: 0; display: block; }
+.footer-address {
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--brand-teal);
+  margin-bottom: 8px;
+}
+.footer-credit {
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  margin-bottom: 20px;
+}
+.footer-credit a { color: var(--brand-teal); text-decoration: underline; }
+.footer-legal {
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--brand-teal);
+  margin-bottom: 6px;
+}
+.footer-legal a { color: var(--brand-teal); text-decoration: underline; }
+.footer-legal .sep { margin: 0 8px; opacity: 0.6; }
+.footer-copy {
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-bottom: 24px;
+}
+.footer-divider {
+  height: 1px;
+  background: rgba(14, 58, 71, 0.12);
+  margin: 0 0 22px;
+}
+.footer-fineprint {
+  margin: 0 0 14px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+.footer-fineprint:last-child { margin-bottom: 0; }
+.footer-fineprint .star { font-weight: 700; color: var(--ink); }
+
+/* ---------- Tablet/desktop tightening ---------- */
+@media (min-width: 480px) {
+  .hero, .stats, .why, .help, .healing, .testimonials, .faq, .footer {
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .final-cta {
+    /* background image stays full-bleed */
+    padding-left: max(22px, calc((100% - 480px) / 2));
+    padding-right: max(22px, calc((100% - 480px) / 2));
+  }
+}
+
+@media (min-width: 768px) {
+  .hero, .stats, .why, .help, .healing, .testimonials, .faq, .footer {
+    max-width: 560px;
+  }
+}
+
+</style>
 <link rel="preload" as="style" href="/css/picker.css?v=v3-book17" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="/css/picker.css?v=v3-book17"></noscript>
 

@@ -35,7 +35,7 @@
 | 3.2 | Social proof alignment | ✅ |
 | 3.3 | User review + iteration | ✅ |
 | 3.5 | Booking + quiz experience upgrade | ✅ Part A ✅ · Part B ✅ live + Jane sync + attribution confirmed |
-| 3.4 | Page-speed pass | 🔄 picker.css (32KB) made async/non-blocking; fonts-async + inline-core-CSS pending Victor's call |
+| 3.4 | Page-speed pass | ✅ prenatal has **no render-blocking external CSS** (picker.css + fonts async, core flow-b-v3 inlined). Fonts-async on all 5 pages; core-inline rolls to the others in Phase 5. (LCP still CF-edge-variance-dominated per SOP.) |
 | 3.6 | Lessons capture → SKILL.md | ⬜ |
 
 *(3.5 was done ahead of 3.4 on purpose — speed is best measured after the new calendar JS landed.)*
