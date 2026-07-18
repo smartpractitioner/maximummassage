@@ -30,6 +30,18 @@
 
 **Dropped: Pingdom.** Its ruleset is YSlow-era and it produced two false signals on MH in one run: graded compression **F(0)** when Brotli was verifiably working (HTML 78,979 → 20,242 bytes on the wire), and reported a 734KB page including 167KB of Google Maps that is `loading="lazy"` in the footer and never loads for a real visitor. Obsolete advice ("put JavaScript at bottom", "make fewer HTTP requests") is actively misleading under HTTP/2.
 
+### How to actually run the tests (for whoever is doing the measuring)
+
+You do **not** need to interpret the results — capture them properly and hand them off.
+
+1. **PSI** (<https://pagespeed.web.dev>) — paste the URL, choose **Mobile**, run. **Do not change any settings — there are none to change, and that's the point.** Run it **3×** (scores swing).
+2. **GTmetrix** — set **Connection: 4G Slow**, **Test server: closest to the client** (Seattle for Calgary), and a **current mobile device profile** (e.g. Samsung Galaxy S25 — keep it current; device profiles are a PRO feature, on free you set the viewport instead).
+3. **Page Gym** — set the equivalent mobile + throttled profile and the nearest region.
+4. **⚠️ Turn OFF any ad-blocker option** in the tool (GTmetrix has an "Adblock Plus" toggle). Our visitors arrive from paid ads with GTM/gtag/Clarity loading — blocking them produces a flattering score that **does not reflect a real visitor.**
+5. **Screenshot the full report** (the whole scrolling page, including the Insights/Structure sections) and **send the screenshots to Claude Code.** Do not summarise or re-type them — the raw screenshot carries the waterfall, per-file sizes, and flagged items that the analysis depends on. If a screenshot is too large to attach, split it into 2–3 vertical slices.
+
+> **Always verify what's actually deployed before trusting a result.** On 2026-07-18 a 1-day image `Cache-Control` served the *previous* hero to every tool, so PSI reported "image larger than it needs to be (640x480)" for a file we'd already fixed. If you change an asset, **cache-bust it (`?v=N`) or confirm `cf-cache-status`/`Age` before measuring** — otherwise you are measuring the old build and don't know it.
+
 **The discipline that keeps this honest:**
 1. **Never tune PSI's config.** The whole point is that Google chose it. Tuning it to get green is self-deception.
 2. **Fix the GTmetrix / Page Gym config ONCE per client, write it down here, and never change it ad hoc** — otherwise every re-test is a new experiment and trends are meaningless.
