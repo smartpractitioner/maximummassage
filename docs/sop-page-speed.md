@@ -18,6 +18,29 @@
 
 ---
 
+## THE STANDARD TEST MATRIX (run this on every client page)
+
+**Three tools, three different jobs. Not "three opinions to average" — each answers a question the others can't.**
+
+| Tool | Question it answers | Config | Rule |
+|---|---|---|---|
+| **PageSpeed Insights** | *"How will Google grade us?"* | **Fixed — Slow 4G, Moto G, PSI's defaults. You do NOT get to choose.** | The **pass/fail gate.** Green here or the step isn't done. |
+| **GTmetrix** | *"What do real customers actually feel?"* | **Audience-matched:** nearest test server, real connection (4G ~9/5 Mbps), true device viewport | The **realism check** + it has a CrUX tab. Same Lighthouse engine as PSI, so it's directly comparable. |
+| **Page Gym** | *"WHY is it slow, and what if I changed X?"* | Match the audience profile | The **diagnostic bench.** Real throttling, per-file *unused bytes*, and hypothesis-testing without a deploy. |
+
+**Dropped: Pingdom.** Its ruleset is YSlow-era and it produced two false signals on MH in one run: graded compression **F(0)** when Brotli was verifiably working (HTML 78,979 → 20,242 bytes on the wire), and reported a 734KB page including 167KB of Google Maps that is `loading="lazy"` in the footer and never loads for a real visitor. Obsolete advice ("put JavaScript at bottom", "make fewer HTTP requests") is actively misleading under HTTP/2.
+
+**The discipline that keeps this honest:**
+1. **Never tune PSI's config.** The whole point is that Google chose it. Tuning it to get green is self-deception.
+2. **Fix the GTmetrix / Page Gym config ONCE per client, write it down here, and never change it ad hoc** — otherwise every re-test is a new experiment and trends are meaningless.
+3. **Never average scores across tools, and never quote whichever is prettiest.** MH prenatal scored **90 (Page Gym, Fast 4G)**, **98% (GTmetrix, 4G)** and **59–73 (PSI, Slow 4G)** *on the same build*. That spread is network profile, not accuracy.
+4. **Where two independent engines agree, trust it.** Page Gym (0.147) and PSI (0.15) independently caught the same CLS — that's what proved it was real, not an artifact. Both later confirmed the fix (GTmetrix 0.02).
+5. **One tool disagreeing = investigate before acting.** Both Pingdom "findings" evaporated on inspection.
+
+**MH worked example — the locked config:** GTmetrix: Seattle (nearest free server to Calgary), 4G 9/5 Mbps 125ms, 384×832. Page Gym: Midrange mobile, us-west. PSI: defaults, mobile.
+
+*(Test-server location mostly moves TTFB, not the diagnosis — we're on Cloudflare's global edge. Match it for realism; don't over-index on it.)*
+
 ## Tooling decision: PSI is the scorecard, Page Gym is the workbench (2026-07-18)
 
 **Decision: use BOTH, for different jobs. Do not replace PSI as the primary.**
