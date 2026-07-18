@@ -86,6 +86,68 @@ Three things learned the hard way on the prenatal 3.4 pass — all factory-gener
 
 3. **Do NOT pay Cloudflare Argo Smart Routing or Cache Reserve for a static Pages site.** Verified (2026-07-17): Argo ($5/mo/domain + $0.10/GB) optimizes the path to *your origin*; a Pages site's "origin" is Cloudflare's own storage — there is no slow origin hop to accelerate. Cache Reserve prevents *eviction*, which only matters if eviction is your bottleneck (it wasn't — see the variance test). **The $5 isn't the risk; buying the wrong lever is.** Exhaust the free structural fixes first.
 
+### Target: get the PSI metrics into the GREEN, not just "better" (Victor, 2026-07-18)
+
+**Why this is a real target and not vanity.** Google's ad Quality Score / page-experience
+signalling leans on the same page-speed model PSI exposes, and the *initial* assessment is
+made at launch — when there's no CrUX history to average against. If a page launches
+measuring poorly, that first impression can persist, because re-crawling/re-sampling is
+resource-gated and infrequent. **So the bar for a launch page is green metrics, not
+"improved" metrics** — and it's cheaper to hit that before launch than to fix a bad
+starting reputation afterwards.
+
+Practical consequence: **do not close a 3.4 pass on "it got faster."** Close it on the
+metrics being green (or the residual being a *diagnosed, accepted* environmental limit,
+documented as such).
+
+### ⚠️ CLS is intermittent — trust the FAST run, not the slow one (MH, 2026-07-18)
+
+**A slow/cold PSI run can report CLS 0 while the page genuinely has CLS 0.107.** We hit
+exactly this: three runs read `CLS 0.107 / — / 0`, and the **0 came from the *slowest*
+run** (LCP 7.6s) while the 0.107 came from the *fastest* (LCP 1.7s). On a heavily
+throttled load, late-arriving fonts/content settle before the shift-measurement window;
+on a fast load the swap lands *after* first paint and is correctly counted.
+
+**Rule: read CLS off your fastest run. A "CLS 0" on a cold run is not evidence of a fix.**
+We nearly closed 3.4 on that false signal.
+
+### Font-swap CLS: use metric-matched fallbacks (`size-adjust`) — engine default
+
+The most common CLS source on a brand-font page is the **fallback → web-font swap**: the
+fallback has different metrics, so text reflows when the real font lands and everything
+below it shifts. Per-element `min-height` is whack-a-mole (it can't cover text that
+*re-wraps*, or the elements upstream that push a block down).
+
+**The systemic fix**, and now the engine default:
+
+```css
+@font-face {
+  font-family: 'Brand-fallback';
+  src: local('Arial');
+  size-adjust: 125.28%;      /* computed, not guessed */
+  ascent-override: 80.22%;
+  descent-override: 19.96%;
+  line-gap-override: 0%;
+}
+/* then: font-family: "Brand", "Brand-fallback", system-ui, sans-serif; */
+```
+
+Compute the overrides from the **real font metrics** (we used `fontTools`: read
+`unitsPerEm`, `hhea.ascent/descent/lineGap`, `OS/2.xAvgCharWidth` for both the brand font
+and Arial; `size-adjust` = ratio of em-normalized average char widths; the ascent/descent
+overrides are the brand font's values divided by that ratio). **Don't guess these values.**
+
+Why this over the alternatives:
+| Option | CLS | Brand | Cost |
+|---|---|---|---|
+| **Metric-matched fallback** ✅ | ~0 | brand font still renders | 0 bytes, 0 preloads |
+| `font-display: optional` | 0 | ❌ shows system font on cold first load | free |
+| Self-host + preload every weight | ~0 | fine | ❌ preloads compete with the hero (LCP) |
+
+`local('Arial')` is safe on Linux/PSI infra too — fontconfig aliases Arial to the
+metric-compatible Liberation Sans. **Verify the fix by re-rendering pre/post and diffing
+the images** (ours were pixel-identical, proving no regression once fonts load).
+
 ### The free field-data lever: a cron cache-warmer (built for MH, `cache-warmer/`)
 
 The cold-edge/TTFB variance is a **real-user (CrUX / page-experience) problem**, and it matters most **at launch**: CrUX is empty until ads drive traffic, so Google's first field impression is whatever the first visitors get, and re-sampling is infrequent — a cold launch can stick. The fix is a **Cloudflare Worker with a Cron Trigger** that re-fetches the page's LCP-critical URLs every few minutes to keep them warm in the edge/tiered cache (*"a resource warmed at the upper tier propagates to lower tiers on first regional request"*). Free (Workers free tier), stays in-network, factory-general (config-driven target list). It warms the **real edge/field path**; it does **not** touch the PSI lab throttle — set that expectation explicitly. See [`cache-warmer/`](../cache-warmer/) for the worked MH example. This is now an **engine default candidate** — a client's page should ship with warming configured, not add it after a cold launch.
