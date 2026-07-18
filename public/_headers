@@ -34,9 +34,15 @@
 #
 # Deliberately a SHORT edge TTL: this is the live ad funnel, so a bad deploy must not
 # stick. If a deploy needs to go out instantly, purge the Cloudflare cache.
-# NOTE: if this doesn't flip cf-cache-status off DYNAMIC, Cloudflare Pages is ignoring
-# it and it needs a dashboard Cache Rule (Cache eligibility: eligible) instead.
-/prenatal-massage-calgary/
-  Cache-Control: public, max-age=0, s-maxage=600, stale-while-revalidate=86400
+# ⚠️ TESTED 2026-07-18: this header ALONE does NOT work. After deploying it,
+# cf-cache-status stayed DYNAMIC across repeated requests, because Cloudflare decides
+# cache ELIGIBILITY by file extension BEFORE it ever consults Cache-Control. An
+# extensionless HTML URL is ineligible no matter what we send here.
+# The header is still correct and is kept because it governs the TTL once a
+# dashboard **Cache Rule** marks the path eligible ("Eligible for cache" + Edge TTL
+# "Use cache-control header if present"). Without that rule this line is inert.
+#
+# Only the wildcard is needed — it already matches the directory index. Listing the
+# exact path too made Cloudflare emit the Cache-Control header TWICE (concatenated).
 /prenatal-massage-calgary/*
   Cache-Control: public, max-age=0, s-maxage=600, stale-while-revalidate=86400
