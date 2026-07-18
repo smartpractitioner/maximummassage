@@ -22,7 +22,7 @@
      (fonts are always CORS-fetched, even same-origin). -->
 <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/mulish-800-latin.woff2">
 <link rel="preload" as="image" fetchpriority="high" href="/images/flow-b-v3/logo.webp">
-<link rel="preload" as="image" fetchpriority="high" imagesrcset="/images/prenatal/prenatal-hero-sm.webp 640w, /images/prenatal/prenatal-hero.webp 1019w" imagesizes="(min-width: 1024px) 46vw, 100vw">
+<link rel="preload" as="image" fetchpriority="high" imagesrcset="/images/prenatal/prenatal-hero-sm.webp 780w, /images/prenatal/prenatal-hero.webp 1019w" imagesizes="(min-width: 1024px) 46vw, 100vw">
 
 <meta property="og:title" content="Prenatal, Postnatal & Postpartum Massage Calgary | Maximum Health">
 <meta property="og:description" content="Specialized prenatal, postnatal, and postpartum massage. Support at every stage of pregnancy and beyond. $49 starter session.">
@@ -65,17 +65,53 @@
 @font-face {
   font-family: 'Mulish-fallback';
   src: local('Arial');
-  size-adjust: 125.28%;
-  ascent-override: 80.22%;
-  descent-override: 19.96%;
+  size-adjust: 111.06%;
+  ascent-override: 90.49%;
+  descent-override: 22.51%;
   line-gap-override: 0%;
 }
 @font-face {
   font-family: 'Bricolage-fallback';
   src: local('Arial');
-  size-adjust: 122.11%;
-  ascent-override: 76.16%;
-  descent-override: 22.11%;
+  /* 105.5% (not the 110.03% frequency-average) is deliberate: measured against the
+     real CTA string "See Therapists - Book Your Session", the average-derived value
+     rendered 302.4px vs the web font's 289.9px in a 294px box — so the fallback
+     wrapped to 2 lines and the web font didn't, producing the single largest layout
+     shift on the page (PSI attributed CLS 0.150 to .btn-cta). Matching the *rendered
+     width* makes wrap behaviour identical in both states at every viewport, which is
+     what CLS actually measures. ascent/descent re-derived for this size-adjust. */
+  font-weight: 400 600;
+  size-adjust: 105.5%;
+  ascent-override: 88.16%;
+  descent-override: 25.59%;
+  line-gap-override: 0%;
+}
+/* Second Bricolage face, SAME family name but weight-scoped to 700+. At bold weights
+   the local('Arial') fallback resolves to Arial *Bold*, which is proportionally wider
+   than Arial Regular, so a single size-adjust can't serve both: the 105.5% tuned for
+   the 600-weight CTA rendered the 700-weight .offer-eyebrow 5.8% too wide (331.5px in
+   a 330px box), wrapping it to 2 lines while the web font fit on 1. Measured match for
+   700 is 99.71%. The browser picks the face by computed weight, so the font stacks
+   stay unchanged. */
+@font-face {
+  font-family: 'Bricolage-fallback';
+  src: local('Arial');
+  font-weight: 700 900;
+  size-adjust: 99.71%;
+  ascent-override: 93.27%;
+  descent-override: 27.08%;
+  line-gap-override: 0%;
+}
+/* Manrope is the BASE body font (it cascades to any element without an explicit
+   family — e.g. .guarantee-body), so it needs a matched fallback too. Missing this
+   one left .guarantee 22.5px taller once Manrope loaded (exactly one 14.5px/1.55
+   line), which was the whole remaining shift after the H1 and CTA were fixed. */
+@font-face {
+  font-family: 'Manrope-fallback';
+  src: local('Arial');
+  size-adjust: 104.45%;
+  ascent-override: 102.06%;
+  descent-override: 28.72%;
   line-gap-override: 0%;
 }
 
@@ -108,7 +144,7 @@ html, body {
   padding: 0;
   background: var(--page-bg);
   color: var(--ink);
-  font-family: "Manrope", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Manrope", "Manrope-fallback", "Helvetica Neue", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -1211,7 +1247,7 @@ button { font-family: inherit; }
   </div>
 
   <div class="hero-image">
-    <img src="/images/prenatal/prenatal-hero.webp" srcset="/images/prenatal/prenatal-hero-sm.webp 640w, /images/prenatal/prenatal-hero.webp 1019w" sizes="(min-width: 1024px) 46vw, 100vw" alt="Pregnant woman receiving a calm side-lying prenatal massage" width="1019" height="768" fetchpriority="high">
+    <img src="/images/prenatal/prenatal-hero.webp" srcset="/images/prenatal/prenatal-hero-sm.webp 780w, /images/prenatal/prenatal-hero.webp 1019w" sizes="(min-width: 1024px) 46vw, 100vw" alt="Pregnant woman receiving a calm side-lying prenatal massage" width="1019" height="768" fetchpriority="high">
   </div>
 </section>
 
