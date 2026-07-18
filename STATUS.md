@@ -45,11 +45,11 @@
 | Requirement | Status |
 |---|---|
 | Prenatal Phase 3 complete (3.1–3.6) | ✅ **all complete** — 3.4 signed off 2026-07-18 |
-| Prenatal Phase 4 E2E | 🔄 booking/attribution/GA4/Ads-tag/sheet/Jane all verified; gated on double-booking fix + Ads-conversion confirms day-1 |
+| Prenatal Phase 4 E2E | 🔄 booking/attribution/GA4/Ads-tag/sheet/Jane all verified; gated on (a) double-booking confirm after 2026-07-20 and (b) Ads-conversion confirms day-1 |
 | Lymphatic — full treatment + E2E | ⬜ |
 | Deep tissue — full treatment + E2E | ⬜ |
 | Therapeutic — new build + splitter cutover + E2E | ⬜ |
 | Legal sign-off (client) | ✅ |
-| No external dependency blocking | 🔄 lawyer cut · Jane sync live, but **double-booking dedup pending Justin** (ClinicSync at-least-once webhook) |
+| No external dependency blocking | 🔄 lawyer cut · Jane sync live. **Double-booking root cause identified 2026-07-18:** ClinicSync Pro hit a new event cap → times out → never returns 2xx → **Cal.com retries the webhook** → a Jane record per retry. Our side is clean (Apps Script dedupes by `uid`, hence 1 sheet row + 1 Slack while Jane got 2–4). **Verify after ClinicSync billing resets to 0/200 on 2026-07-20.** Not blocking Phase 5 build work. |
 
 **Not gating** (can trail launch): Phase 6 BI · Phase 7 factory/PractiCal · Phase 8 polish.
