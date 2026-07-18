@@ -1,301 +1,457 @@
 # Cloudflare Page-Speed Playbook (portable)
 
-> **What this is.** A hand-off of everything we learned optimizing a Cloudflare-hosted
-> site for load speed — written so you can drop it into a **Claude Code session** and
-> have it act on it. It's client-agnostic; our worked example is a Maximum Health
-> paid-ad landing page on **Cloudflare Pages**, but the principles apply to any
-> Cloudflare-hosted site.
+> **What this is.** Everything we learned running a full page-speed optimization on a
+> Cloudflare-hosted site, written so you can drop it into a **Claude Code session** and
+> have it act on it. Client-agnostic; our worked example is a landing page on
+> **Cloudflare Pages** that went from CLS 0.107 → **0**, payload **−44%**, and real-user
+> Core Web Vitals **passing**.
 >
-> **How to use it with Claude Code.** Put this file in your repo (e.g. `docs/`), then
-> tell your session: *"Read docs/cloudflare-page-speed-playbook.md and run the
-> per-page pass in section 6 on [page]."* Each section is tagged so you know what's
-> universal vs. what you must adapt:
+> **How to use it with Claude Code.** Put this file in your repo (e.g. `docs/`), then say:
+> *"Read docs/cloudflare-page-speed-playbook.md and run the per-page pass in §8 on [page]."*
 >
-> - **[UNIVERSAL]** — true for any site, apply as-is.
-> - **[STACK-DEPENDENT]** — the right answer depends on your architecture; see §0.
-> - **[ADAPT]** — we did this for our specific site; adapt the specifics to yours.
+> Sections are tagged: **[UNIVERSAL]** apply as-is · **[STACK-DEPENDENT]** depends on your
+> architecture (§0) · **[ADAPT]** we did this for our site, adapt the specifics.
 
 ---
 
-## 0. FIRST — figure out your architecture (it changes the advice) [STACK-DEPENDENT]
-
-A lot of "should I pay Cloudflare for X?" answers flip depending on this. Before
-optimizing, answer: **does your site serve from Cloudflare's own storage, or does
-Cloudflare sit in front of a separate origin server?**
+## 0. FIRST — check your architecture (it changes the advice) [STACK-DEPENDENT]
 
 | Your setup | What it means | Key implication |
 |---|---|---|
-| **Cloudflare Pages** / **Workers Static Assets** (static files, no backend) | Cloudflare *is* the origin. No separate server to reach. | Paid path-acceleration (Argo) and origin-shielding (Cache Reserve) have **little to offer** — there's no slow origin hop. Free levers win. |
-| **A dynamic origin behind a Cloudflare zone** (e.g. a rebuilt WordPress/Node/other backend, or a headless CMS) | Cloudflare proxies requests to *your* server. | Origin latency is real, so **Tiered Cache (free), then Argo/Cache Reserve can genuinely help**, plus cache-control + "Cache Everything" rules. |
+| **Cloudflare Pages / Workers Static Assets** (static files, no backend) | Cloudflare *is* the origin | Paid path-acceleration has **nothing to offer** — no slow origin hop exists. Free levers win. |
+| **A dynamic origin behind a Cloudflare zone** (rebuilt WordPress/Node, headless CMS) | Cloudflare proxies to *your* server | Origin latency is real → **Tiered Cache (free) first, then Argo/Cache Reserve may genuinely help** |
 
-**A Wix → Cloudflare migration can land on either.** If you exported/rebuilt the site
-as static files served by Pages, you're in row 1. If there's still a backend the site
-calls, you're in row 2. **Confirm this first** — tell your Claude Code session to check
-whether the project is a Pages deploy (static output dir) or a Worker/zone in front of
-an origin, and proceed accordingly.
+**A Wix → Cloudflare migration can land on either.** Have your session confirm whether the
+project is a Pages deploy (static output dir) or a Worker/zone in front of an origin.
 
-> ⚠️ **One thing that does NOT carry over from our project:** our site is a
-> **paid-ads-only funnel**, so we deliberately *block search crawlers* and never run
-> an SEO audit. **A migrated business website is the opposite — it wants SEO.** Do run
-> the Lighthouse SEO check, keep crawlers allowed, and treat organic discoverability
-> as a goal. Ignore any "no SEO / block crawlers" advice you see in our internal docs.
+> ⚠️ **One thing that does NOT carry over from our project:** ours is a **paid-ads-only
+> funnel**, so we deliberately block search crawlers and never run an SEO audit. **A
+> migrated business website is the opposite — it wants SEO.** Run the Lighthouse SEO
+> check, keep crawlers allowed. Ignore any "no SEO" advice you see in our internal docs.
 
 ---
 
-## 1. Measurement discipline — get this right or every conclusion is noise [UNIVERSAL]
+## 1. The toolkit — four tools, four different jobs [UNIVERSAL]
 
-**Lighthouse/PSI run-to-run variance is severe.** We saw the *same page* score
-**92, 64, 61** on three back-to-back runs with zero code change, and later **60, 80,
-65** minutes apart. A single run is not evidence.
+**Not four opinions to average. Each answers a question the others can't.**
 
-1. **Use PageSpeed Insights (PSI)** (pagespeed.web.dev) as the primary instrument —
-   more stable than local Lighthouse cold runs. DevTools → Lighthouse is fine too and
-   bypasses any crawler block on the fetcher.
-2. **Run ≥3 times. Report median + best**, never one number.
-3. **Mobile, simulated throttling** — that's the traffic that matters.
-4. **Record the metrics that move:** LCP, CLS, INP/TBT, Speed Index, total transfer.
-5. **A "gain" inside the noise band is not a gain.** Re-measure before claiming a win.
+| Tool | Question it answers | Config | Role |
+|---|---|---|---|
+| **PageSpeed Insights** | *"How will **Google** grade us?"* | **Fixed — you don't get to choose** | The **pass/fail gate** + only source of CrUX |
+| **GTmetrix** | *"What do **real customers** feel?"* | Audience-matched (below) | **Realism check**; same Lighthouse engine as PSI, so directly comparable |
+| **[Page Gym](https://pagegym.com)** | *"**Why**, and what if I changed X?"* | Audience-matched | **Diagnostic bench** |
+| **Cloudflare Web Analytics** | *"What are **actual visitors** getting, right now?"* | just enable it | **Live field truth** — free RUM, no 28-day CrUX lag |
 
-### Which tool? PSI as the scorecard, Page Gym as the workbench [UNIVERSAL]
+**Why PSI stays primary:** it's the scorekeeper's own scoreboard and the only place CrUX
+field data appears. Optimizing against a third-party score Google never reads is
+optimizing the wrong number.
 
-Use **both**, for different jobs — don't replace PSI as primary:
+**Why Page Gym earns a place:** Lighthouse/PSI does a **full-speed load then *simulates*
+the slow network over the recorded data**; Page Gym **actually applies the throttling**.
+That difference is real, and it means *some of the run-to-run variance you'll chase is a
+Lighthouse modelling artifact, not your page.* Its waterfall + **per-file "unused bytes"**
+is far better for finding causes, and it can test a hypothetical optimization without a
+deploy. Lab-only (no CrUX), no accessibility/SEO audits, solo-developer project — great
+diagnostic, **don't make it a dependency**.
 
-- **PageSpeed Insights** is *Google's own* scoreboard and the **only source of CrUX field data** (real-user metrics). If the goal is "will Google judge this page well," PSI is authoritative by definition. It also carries the **accessibility / best-practices / SEO** audits — which matter a lot for a normal business site that wants organic search.
-- **[Page Gym](https://pagegym.com)** is a better *lab diagnostic*: real waterfall, per-host transfer sizes, request chaining, **per-file "unused bytes"**, and it can test a hypothetical optimization without deploying. Crucially it applies **real network throttling**, whereas Lighthouse/PSI does a full-speed load and then *simulates* the slow connection over the recorded data — so some PSI run-to-run variance is a modeling artifact, not your page. It is **lab-only (no CrUX)** and has **no accessibility/SEO audit**.
+**Enable Cloudflare Web Analytics on day one** for every client, so field data is already
+accumulating before traffic arrives. Its **Debug View names the actual LCP element per
+URL** — on our site that identified a specific background image as the P99 LCP element,
+which directly justified compressing it. **Read P75** (the percentile Google grades);
+ignore P99 until the sample is large.
 
-⚠️ **Scores across tools are NOT comparable** — a page measured **90 on Page Gym (Fast 4G)** and **59–73 on PSI (Slow 4G)** on the identical build. That's the network profile, not accuracy. Use PSI's pessimistic number as the bar; **where two independent tools agree, trust the finding** (both caught the same CLS, which proved it was real).
+**❌ Dropped: Pingdom.** Its ruleset is YSlow-era and it produced two false signals in a
+single run: graded compression **F(0)** when Brotli was verifiably working (HTML
+78,979 → 20,242 bytes on the wire), and reported a 734KB page including 167KB of Google
+Maps that is `loading="lazy"` in the footer and **never loads for a real visitor**. Advice
+like "put JavaScript at bottom" / "make fewer HTTP requests" is actively misleading under
+HTTP/2.
 
-⚠️ Page Gym's probes can be blocked by aggressive bot/CDN rules — allowlist via <https://pagegym.com/bots> if a test won't fetch.
+### How to actually run the tests (hand this to whoever measures)
 
-### The two insights that save the most wasted effort
+1. **PSI** — paste URL, **Mobile**, run **3×**. Change nothing; there's nothing to change.
+2. **GTmetrix** — **Connection: 4G Slow**, **test server closest to the client**, current
+   mobile device profile (device emulation is PRO; on free you set the viewport).
+3. **Page Gym** — equivalent mobile + throttled profile, nearest region.
+4. **⚠️ Turn OFF any ad-blocker toggle.** GTmetrix defaults to Adblock Plus, which strips
+   the tag-manager JS a real visitor loads. It inflates the score and is **not** a real
+   visitor's experience.
+5. **Expand every collapsed accordion before capturing** — the per-file sizes and flagged
+   URLs live inside them; a collapsed screenshot is nearly useless.
+6. **Capture every GTmetrix tab** — Summary, Performance, Structure, CrUX, Waterfall.
+7. **Send all screenshots to Claude Code.** Don't summarise or re-type; the raw capture
+   carries the waterfall and per-file data the analysis depends on. Split tall images into
+   2–3 vertical slices.
 
-**(a) The PSI score is computed ONLY from the metrics** — FCP, LCP, TBT, Speed Index,
-CLS. Everything under **Diagnostics** — *"Reduce unused JavaScript"*, *"Minify CSS/JS"*,
-*"Use efficient cache lifetimes"* — is labelled by PSI itself *"these numbers don't
-directly affect the Performance score."* Clearing them makes the error list shrink and
-*feels* like progress, but **the score won't move.** Spend your budget on the metrics.
-
-**(b) The variance signature tells you what kind of problem you have — read it first:**
-- **Consistent slow LCP** across runs (e.g. 8.0 / 8.2 / 7.8s) = a **structural / lab-throttle** bound. On PSI's simulated "Slow 4G", this is largely the *simulation* grinding through your bytes. Real users on real networks are much faster. The lever is **fewer/smaller bytes on the critical path**.
-- **Wide score spread** across runs (e.g. 60 → 80 → 65) = **TTFB / cold-edge variance** — the "first load has to warm the cache" effect. That's a **real field-data problem** (see §4).
+> 🪤 **Verify what's actually deployed BEFORE measuring.** We spent a round analysing
+> phantom findings because a 1-day image `Cache-Control` was serving the *previous* hero to
+> every tool — PSI complained "image is larger than it needs to be (640x480)" about a file
+> we'd already fixed. **Cache-bust changed assets (`?v=N`) or check `cf-cache-status`/`Age`
+> first**, or you're measuring the old build and don't know it.
 
 ---
 
-## 2. Engine defaults — bake these in (the 80%) [UNIVERSAL]
+## 2. Measurement discipline [UNIVERSAL]
 
-A fast page ships with all of these already true. Have Claude Code verify each:
+**Variance is severe.** The same page scored **92 / 64 / 61** on three consecutive runs
+with zero code change; later **73 / 61 / 59 / 70 / 61** *while getting objectively lighter
+every step*. A single run is not evidence. **Run ≥3, report median + best.**
+
+### (a) The score is computed ONLY from the metrics
+
+FCP, LCP, TBT, Speed Index, CLS. Everything under **Diagnostics** — *"Reduce unused
+JavaScript"*, *"Minify CSS/JS"*, *"Use efficient cache lifetimes"* — is labelled by PSI
+itself **"these numbers don't directly affect the Performance score."** Clearing them
+shrinks the error list and *feels* productive, but the number won't move. **Spend the
+budget on the metrics.**
+
+### (b) The variance signature tells you which problem you have
+
+- **Consistently slow LCP** (8.0 / 8.2 / 7.8s) = **lab-throttle / byte-bound**. The lever is
+  fewer/smaller bytes on the critical path.
+- **Wide score spread** (60 → 80 → 65) = **TTFB / cold-edge variance** — a real field
+  problem (§6).
+- **TBT swinging 120 → 370ms on identical code** = contention on the tool's shared test
+  machines. Not you.
+
+### (c) ⚠️ CLS is intermittent — trust the FAST run
+
+**A slow run can report CLS 0 while the page genuinely has CLS 0.107.** We hit exactly
+this: the `0` came from the *slowest* run (LCP 7.6s) and the `0.107` from the *fastest*
+(LCP 1.7s). On a heavily throttled load, late content settles before the measurement
+window; on a fast load the swap lands after first paint and is correctly counted.
+**Read CLS off your fastest run. "CLS 0" on a cold run is not evidence of a fix.**
+
+### (d) Scores are not comparable across tools
+
+Our identical build scored **97 (Page Gym, Fast 4G)**, **95% (GTmetrix, 4G Slow)** and
+**61 (PSI, Slow 4G)**. That's network profile, not accuracy. **Never average them; never
+quote whichever is prettiest.** But **where two independent engines agree, trust it** —
+Page Gym (0.147) and PSI (0.15) independently caught the same CLS, which is what proved it
+was real rather than an artifact.
+
+---
+
+## 3. Engine defaults — bake these in [UNIVERSAL]
 
 **Critical path**
-- **Inline the page's core CSS into `<head>`.** One fewer request, nothing blocking.
-  (This alone took one of our pages from LCP 7.0s → 1.8s.)
-- **Async-load non-critical CSS**: `rel="preload" as="style"` + `onload="this.rel='stylesheet'"`, with a `<noscript>` fallback.
-- **No render-blocking JS.** `defer`/`async` everything not needed for first paint.
-- **Fonts:** self-host the font that renders your **LCP element**, at the *exact weight
-  used*, and **preload it**: `<link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/…">`. `font-display: swap`. Trim to only the weights you use.
-  (Self-hosting without the preload does almost nothing — the browser doesn't discover
-  the font until it parses the CSS. We shipped that gap once; the preload is the point.)
+- **Inline the page's core CSS** into `<head>`. (Took one of our pages LCP 7.0s → 1.8s.)
+- **Async-load non-critical CSS**: `rel="preload" as="style"` + `onload="this.rel='stylesheet'"` + `<noscript>` fallback.
+- **No render-blocking JS** — `defer`/`async` everything not needed for first paint.
+- **Self-host + PRELOAD the font that renders your LCP element**:
+  `<link rel="preload" as="font" type="font/woff2" crossorigin href="...">`.
+  ⚠️ **Self-hosting without the preload does almost nothing** — the browser doesn't discover
+  the font until it parses the CSS. We shipped that gap once; the preload is the point.
 
 **Images**
-- **Hero (the LCP element):** correctly-sized webp, **responsive `srcset`**, `preload`
-  with `fetchpriority="high"`, explicit `width`/`height` (prevents CLS).
-- **Size images to their *rendered* size.** We shipped a logo at **1574×1543 that
-  rendered at 22×22** (75KB → 2.5KB once resized) and a mobile hero at **780w that
-  phones display at ~368px** (37KB → 20KB at 640w). Check rendered dimensions, not just
-  file size.
-- **Below-the-fold images:** `loading="lazy"` + `decoding="async"`. **Never preload a
-  below-fold image** — it steals bandwidth from the hero.
-- **Always webp.** Convert source originals; never ship PNG/JPG originals to the CDN.
+- **Hero (the LCP element):** right-sized webp, responsive `srcset`, `preload` +
+  `fetchpriority="high"`, explicit `width`/`height`.
+- **Below the fold:** `loading="lazy"` + `decoding="async"`. **Never preload a below-fold
+  image** — it steals bandwidth from the hero.
+- **Size to *rendered* size.** We shipped a logo at **1574×1543 rendering at 22×22**
+  (75KB → 2.5KB once resized).
+- **Background images behind a dark overlay can be compressed brutally** — ours sat under a
+  78–86% gradient; 1600×1066 @ 54.7KB → 1200×800 @ q58 = **29.4KB**, visually identical.
+
+> 🪤 **The responsive-image trap that bit us.** We shrank the mobile hero to **640w** —
+> and made things *worse*. The test device needed 368 CSS px × 1.75 DPR = **644px**, so 640w
+> was *just* too small and the browser **upgraded to the 1019w desktop file (64KB instead of
+> 37KB)**. **Compute `CSS width × DPR` and make sure a variant sits comfortably above it.**
 
 **Third-party (the biggest ongoing risk)**
-- **Defer every third-party until it's needed** (booking embeds, chat widgets, etc.).
-- **You can't delete tag-manager JS, only defer it.** Our "115KB unused JS" was almost
-  all Google Tag Manager + gtag config — no code fix exists; the only lever is GTM
-  trigger configuration. Don't waste a cycle trying to delete it.
-- **Audit what the tag manager actually fires.** We found Microsoft Clarity (~26KB)
-  loading via a GTM tag nobody had flagged. Every unreviewed tag is invisible weight.
+- Defer every third-party until needed (booking embeds, chat widgets).
+- **You can't delete tag-manager JS, only defer it.** Our "118KB unused JS" is almost all
+  GTM + gtag config. The only lever is tag-manager configuration — don't waste a cycle.
+- **Audit what the tag manager actually fires.** We found Microsoft Clarity (~26KB) loading
+  via a tag nobody had flagged.
 
-**Cloudflare zone toggles** (dashboard, no deploy):
-- Brotli compression **ON** · Early Hints **ON** · **Rocket Loader OFF** (it breaks
-  already-optimized pages) · respect existing Cache-Control.
+**Cloudflare zone toggles:** Brotli **ON** · Early Hints **ON** · Rocket Loader **OFF**
+(it breaks already-optimized pages).
 
 ---
 
-## 3. Killing CLS (Cumulative Layout Shift) — how we went 0.107 → 0 [UNIVERSAL]
+## 4. Killing CLS: metric-matched fallback fonts [UNIVERSAL]
 
-CLS is layout jumping as the page loads. The usual culprits and fixes:
-- **Font swap on the LCP text** → self-host + **preload** that font (§2). This was our
-  single biggest CLS contributor.
-- **JS reading layout geometry repeatedly** (`offsetLeft`/`offsetWidth` in a scroll
-  handler = "forced reflow") → **cache the values once** (recompute on `resize`), don't
-  read them in the loop.
-- **Late-arriving content with no reserved space** (images/embeds/banners) → set
-  explicit `width`/`height` or a min-height so the box doesn't grow after paint.
+**The #1 CLS source on a brand-font page is the fallback → web-font swap:** different
+metrics, so text reflows when the real font lands and everything below it shifts.
+Per-element `min-height` is whack-a-mole — it can't cover text that *re-wraps*, or elements
+upstream that push a block down.
+
+**The fix — a fallback font whose metrics are adjusted to match the real one:**
+
+```css
+@font-face {
+  font-family: 'Brand-fallback';
+  src: local('Arial');
+  size-adjust: 111.06%;      /* computed, never guessed */
+  ascent-override: 90.49%;
+  descent-override: 22.51%;
+  line-gap-override: 0%;
+}
+/* then: font-family: "Brand", "Brand-fallback", system-ui, sans-serif; */
+```
+
+Chosen deliberately over the alternatives:
+
+| Option | CLS | Brand | Cost |
+|---|---|---|---|
+| **Metric-matched fallback** ✅ | ~0 | brand font still renders | 0 bytes, 0 preloads |
+| `font-display: optional` | 0 | ❌ shows system font on cold first load | free |
+| Self-host + preload every weight | ~0 | fine | ❌ preloads compete with the hero |
+
+### How to compute the values (don't guess — we got this wrong twice)
+
+⚠️ **Do NOT use `OS/2.xAvgCharWidth`.** It averages *all* glyphs including wide/symbol
+glyphs and **overstated our text width by ~13%**, which forced extra line-wraps and made
+CLS *worse* (0.107 → 0.15). Use a **frequency-weighted average of actual English letter
+advances**:
+
+```python
+from fontTools.ttLib import TTFont
+FREQ = {'a':8.2,'b':1.5,'c':2.8,'d':4.3,'e':12.7,'f':2.2,'g':2.0,'h':6.1,'i':7.0,
+        'j':0.15,'k':0.77,'l':4.0,'m':2.4,'n':6.7,'o':7.5,'p':1.9,'q':0.095,'r':6.0,
+        's':6.3,'t':9.1,'u':2.8,'v':0.98,'w':2.4,'x':0.15,'y':2.0,'z':0.074,' ':17.0}
+
+def metrics(path):
+    f = TTFont(path); upm = f['head'].unitsPerEm
+    cmap = f.getBestCmap(); hmtx = f['hmtx']; h = f['hhea']
+    n = d = 0.0
+    for ch, w in FREQ.items():
+        g = cmap.get(ord(ch))
+        if g: n += w * (hmtx[g][0]/upm); d += w
+    return n/d, upm, h.ascent, h.descent, h.lineGap
+
+aw, *_            = metrics('C:/Windows/Fonts/arial.ttf')   # the fallback
+w, upm, asc, desc, gap = metrics('your-font.woff2')
+sa = w/aw
+print(f'size-adjust: {sa*100:.2f}%')
+print(f'ascent-override: {(asc/upm)/sa*100:.2f}%')
+print(f'descent-override: {(abs(desc)/upm)/sa*100:.2f}%')
+```
+
+### Three traps we hit after that
+
+1. **A stack you didn't notice.** Our biggest residual shift came from an element inheriting
+   a **different base font stack** we'd never patched. **Audit what the page *actually*
+   renders** via computed styles, not by reading CSS:
+   ```js
+   document.querySelectorAll('*').forEach(el => { const cs = getComputedStyle(el);
+     /* tally cs.fontFamily.split(',')[0] + cs.fontWeight + cs.fontStyle */ });
+   ```
+2. **Bold weights need their own face.** At `font-weight: 700` the `local('Arial')` fallback
+   resolves to **Arial *Bold***, a different width ratio — one `size-adjust` can't serve
+   600 and 700. Use **weight-scoped `@font-face` rules sharing one family name**:
+   ```css
+   @font-face { font-family:'Brand-fallback'; src:local('Arial'); font-weight:400 600; size-adjust:105.5%; … }
+   @font-face { font-family:'Brand-fallback'; src:local('Arial'); font-weight:700 900; size-adjust:99.71%; … }
+   ```
+3. **Per-string wrap boundaries.** Average-width matching still let one button wrap (fallback
+   302.4px vs web font 289.9px in a 294px box). **Measure the actual string** and tune to
+   match its *rendered width* — matching widths makes wrap behaviour identical at every
+   viewport, which is what CLS measures.
+
+### Verify it properly
+
+Render the page twice — **fonts blocked** vs **fonts loaded** — and diff every above-fold
+element's box. This is the single most useful technique in this document:
+
+```python
+# Playwright: route-abort **/*.woff2 + fonts.googleapis/gstatic for the "fallback" run,
+# then compare el.bounding_box() y/height for each element across both runs.
+```
+Our worst above-fold delta went **75px → 0** this way, across 4 viewport widths.
 
 ---
 
-## 4. "First load is slow" / cold-edge — the field-data problem [STACK-DEPENDENT]
+## 5. Trimming the font payload — the *axis* is the cost, not the weight count [UNIVERSAL]
 
-**Diagnosis:** wide *run-to-run score spread* (§1b). The first byte (TTFB) is slow when
-the edge cache is cold, then fast once warm.
+Google Fonts serves **one variable file per family**, so requesting 4 weights doesn't cost
+4 downloads. What costs is **extra variable axes**. Our display font requested an
+**optical-size axis** (`opsz,wght@0,12..96,…`):
 
-**Why it matters at launch:** real-user metrics (Google's **CrUX** field data) are empty
-until traffic flows, so the *first* visitors' experience is what Google's page-experience
-signals sample — and re-sampling is infrequent, so a cold launch can stick. This is a
-**real-user** problem, distinct from the PSI *lab* number (which cache warmth does **not**
-change — set that expectation clearly).
+| Request | Downloaded |
+|---|---|
+| With `opsz` axis | **75.1 KB** |
+| Same weights, **no `opsz`** | **40.4 KB** ← −35KB for one URL edit |
+| Body font: 3 weights (variable) | 29.3 KB |
+| Only the weight actually used | **13.0 KB** |
 
-**The fix depends on your architecture (§0):**
-
-- **Static Pages site:** **don't pay** for Argo Smart Routing ($5/mo/domain + $0.10/GB)
-  or Cache Reserve — they accelerate an *origin* you don't have. Instead:
-  1. Confirm **Tiered Cache** is on (free) — a cold edge then pulls from a nearby warm
-     tier, not cold storage.
-  2. Give static assets sane `Cache-Control` so the edge holds them (e.g. long
-     `max-age` for content-addressed/immutable files like fonts; a shorter TTL like
-     1 day for fixed-filename images that occasionally change).
-  3. Deploy the **free cron cache-warmer** (Appendix A) to keep the LCP-critical URLs
-     hot — especially for launch + low-traffic overnight hours.
-
-- **Dynamic origin behind Cloudflare:** here the paid products **can** earn their keep.
-  Order of operations: (1) **Tiered Cache (free)**, (2) aggressive **Cache-Control +
-  "Cache Everything"** for cacheable routes so Cloudflare serves without hitting your
-  origin, (3) evaluate **Argo** (faster CF↔origin path) and **Cache Reserve** (persistent
-  R2-backed cache, prevents eviction) *on measured evidence* — adopt only if the variance
-  is actually costing you. Verified pricing (2026): Argo = **$5/mo per domain + $0.10/GB**.
-
-**Rule of thumb:** exhaust the free structural levers before paying. The money isn't the
-risk — buying a lever that doesn't fit your architecture is.
+**Our font payload went 141.8 → 90.8 KB (−36%) by editing the Google Fonts URL.** Audit
+real usage first (computed styles, §4), then request only the weights/styles that render
+and drop unneeded axes. Verify by **intercepting the actual network responses**, not by
+estimating — and note a scroll may pull extra files (a lazy Google Maps iframe pulled in
+42KB of Roboto that had nothing to do with us).
 
 ---
 
-## 5. What NOT to waste time on [UNIVERSAL]
+## 6. TTFB, cold edge, and "first load is slow" [STACK-DEPENDENT]
 
-- **Diagnostics that don't move the score** (§1a) — minify, "reduce unused JS", cache
-  lifetimes on third-party scripts you don't control.
-- **Hand-minifying** when Cloudflare **Brotli** already compresses CSS/JS on the wire
-  and you have no build step — marginal gain, real maintenance cost. Do it in a build
-  pipeline or skip it.
-- **Chasing the PSI lab number when the problem is field/edge** (§4). Different problem,
-  different tool.
-- **Preloading below-fold images.** Actively harmful — steals the hero's bandwidth.
-- **Trying to delete tag-manager JS.** You can't; defer it.
-- **Trusting a single Lighthouse run.** Median of 3, minimum.
+### 6a. Cache the HTML at the edge — usually the biggest remaining lever
+
+**Cloudflare does NOT edge-cache HTML by default.** It judges cache *eligibility* by
+**file extension**, so an extensionless URL like `/your-page/` goes to origin on **every
+request** (`cf-cache-status: DYNAMIC`). TTFB gates both FCP and LCP.
+
+⚠️ **A `Cache-Control` header in `_headers` does NOT fix this — we tested it and it stayed
+`DYNAMIC`.** Eligibility is judged *before* Cache-Control is read. Keep the header (it
+governs TTL once eligible) but it is **inert alone**.
+
+**It needs a zone-level Cache Rule** — and it is **NOT** under Workers & Pages (that
+section's "Build cache" is unrelated — it caches build artifacts). Go to the **domain/zone**
+→ **Caching → Cache Rules → Create rule**:
+
+- Expression: `Hostname` equals your host **AND** `URI Path` **wildcard** `/your-path*`
+- **Cache eligibility** → *Eligible for cache*
+- **Edge TTL** → *Use cache-control header if present…*
+- **Browser TTL** → leave unset / respect origin
+
+Pair with, in `_headers`:
+```
+/your-path/*
+  Cache-Control: public, max-age=0, s-maxage=600, stale-while-revalidate=86400
+```
+Browsers always revalidate (visitors never see stale) while the **edge answers for 10
+minutes without an origin trip**. Keep the edge TTL short on a live funnel so a bad deploy
+can't stick; purge manually for anything urgent.
+
+> 🪤 **The gotcha that will silently no-op your rule:** the `wildcard` operator needs an
+> **explicit `*`**. `/your-path` matches that string *exactly* and will **not** match
+> `/your-path/` (with trailing slash) — your actual page.
+
+**Verify against a control.** Request the page repeatedly *and* a path the rule doesn't
+cover. Ours: rule path **HIT ×8** (`Age: 28`), control path **DYNAMIC ×3**. Expect
+`MISS`→`DYNAMIC` flapping for the first minute while it propagates — re-test.
+
+### 6b. Don't buy the wrong lever
+
+**Static Pages site: don't pay** for Argo Smart Routing (**$5/mo/domain + $0.10/GB**) or
+Cache Reserve — they accelerate an *origin* you don't have. Use free **Tiered Cache**,
+sane `Cache-Control`, and the cron warmer (Appendix A).
+
+**Dynamic origin behind Cloudflare:** these *can* earn their keep — but in order:
+(1) Tiered Cache (free), (2) Cache-Control + "Cache Everything" for cacheable routes,
+(3) *then* evaluate Argo/Cache Reserve **on measured evidence**.
+
+### 6c. Image cache TTL
+
+Long TTLs satisfy the "efficient cache policy" audit, but if filenames aren't
+content-hashed, **a swap keeps serving stale**. We use `max-age=2592000` (30 days) plus a
+`?v=N` bust whenever an image changes — **do not rely on the TTL expiring** (that's exactly
+how the tools ended up measuring our old hero for hours).
 
 ---
 
-## 6. The per-page pass — checklist + definition of done [UNIVERSAL]
+## 7. What NOT to waste time on [UNIVERSAL]
 
-Have Claude Code run this per page:
-
-1. **Baseline** — PSI mobile, ≥3 runs. Record median + best for LCP, CLS, INP/TBT,
-   Speed Index, transfer size.
-2. **Confirm the §2 engine defaults hold** on this page. The usual regression is a new
-   hero image that's oversized, un-preloaded, or missing width/height.
-3. **Check third-party weight** — anything new added since last audit?
-4. **Fix what's actually broken, in leverage order:** hero image → render-blocking
-   resources → third-party deferral → fonts → CSS trim. (Skip diagnostics per §5.)
-5. **Re-measure** (≥3 runs). Confirm the gain exceeds the noise band.
-6. **Regression-test the site's key flows.** ⚠️ Not optional. Deferring/lazy-loading a
-   script can silently break analytics or conversion firing — and those *are* the
-   third-party scripts you're most tempted to defer. Walk the important paths and confirm
-   nothing broke.
-
-> **Definition of done (the gate):** the pass is done only when the fixes are **measured
-> on the LIVE page** and the target is confirmed — not when they're merely applied.
-> "Applied" ≠ "done." If you can't measure it, it stays in-progress and you say so.
+- **Diagnostics that don't move the score** (§2a) — minify, unused JS, third-party cache TTLs.
+- **Hand-minifying** when Cloudflare **Brotli** already compresses on the wire and you have
+  no build step. Ours: HTML 78,979 → 20,242 bytes (74%) with zero minification. Do it in a
+  build pipeline or skip it.
+- **Trying to delete tag-manager JS.** You can't; defer it or accept it.
+- **Preloading below-fold images.**
+- **Chasing the lab number when the problem is field/edge** — different problem, different tool.
+- **Trusting a single run.**
 
 ---
 
-## Appendix A — the free cron cache-warmer (copy-paste template)
+## 8. The per-page pass + when to stop [UNIVERSAL]
 
-A tiny **Cloudflare Worker** on a **Cron Trigger** that re-fetches your LCP-critical
-URLs every few minutes to keep them warm in the edge/tiered cache. Free (Workers free
-tier: 100k req/day; a 5-min cron ≈ 8,640/mo). It warms the **real edge/field path**; it
-does **not** change the PSI lab throttle.
+1. **Verify what's deployed** (cache-bust / `cf-cache-status`) — *before* measuring.
+2. **Baseline** — PSI mobile ×3, median + best.
+3. **Confirm the §3 engine defaults hold.**
+4. **Check third-party weight** — anything new since last audit?
+5. **Fix in leverage order:** HTML edge-caching → hero image → render-blocking → font
+   payload/CLS → third-party deferral. (Skip diagnostics per §7.)
+6. **Re-measure ×3.** Confirm the gain exceeds the noise band.
+7. **Regression-test the funnel.** ⚠️ Not optional — deferring/lazy-loading a script can
+   silently break analytics or conversion firing, and those *are* the scripts you're most
+   tempted to defer.
 
-**`warmer/src/warmer.js`**
+> **Definition of done:** the pass is done only when fixes are **measured on the LIVE page**.
+> "Applied" ≠ "done."
+
+### Knowing when to stop — the simulation floor
+
+Set the bar at **green metrics** (Google's initial assessment happens at launch, when
+there's no CrUX history to average against, and a poor first impression persists because
+re-sampling is infrequent). **But don't chase a lab number past the point of meaning.**
+
+We stopped when: everything we controlled was green or dramatically better, **CLS was
+confirmed fixed by four independent sources**, payload was down 44%, and **the field data
+said real visitors were fine** (CrUX *Passed*, RUM **LCP P75 608ms**, CLS/INP 100% good) —
+while PSI's Slow-4G LCP stayed ~8s. That residual was the **simulation floor plus 285KB of
+tag-manager JS the client had deliberately chosen to keep**. That's a business trade-off,
+not a page defect. **When the remaining gap is explained by a known, accepted decision,
+stop and say so.**
+
+---
+
+## Appendix A — free cron cache-warmer
+
+A Cloudflare Worker on a Cron Trigger that re-fetches your LCP-critical URLs so the edge
+stays warm. Free (100k req/day; a 5-min cron ≈ 8,640/mo). It warms the **real edge/field
+path**; it does **not** change the PSI lab throttle.
+
 ```js
-const UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
-  '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-
-// Stable URLs only — no ?v= cache-busted assets (they change and would warm a stale
-// URL). The page HTML (with inlined critical CSS) + hero image(s) + the self-hosted
-// LCP font are the critical path. Add your pages/heroes here.
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+           '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+// Stable URLs only — no ?v= assets, they change and would warm a stale URL.
 const TARGETS = [
   'https://YOUR-DOMAIN/',
   'https://YOUR-DOMAIN/images/hero.webp',
   'https://YOUR-DOMAIN/fonts/your-lcp-font.woff2',
 ];
-
 async function warm(url) {
   try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': UA, 'Accept': '*/*' },
-      cf: { cacheEverything: true },
-    });
-    await res.arrayBuffer(); // drain so the edge fully stores it
+    const res = await fetch(url, { headers:{ 'User-Agent':UA }, cf:{ cacheEverything:true } });
+    await res.arrayBuffer();
     return { url, status: res.status, cache: res.headers.get('cf-cache-status') };
-  } catch (e) {
-    return { url, error: String((e && e.message) || e) };
-  }
+  } catch (e) { return { url, error: String(e?.message || e) }; }
 }
-
 export default {
-  async scheduled(event, env, ctx) {
-    ctx.waitUntil(Promise.all(TARGETS.map(warm)));
-  },
-  // GET the worker URL to run a warm pass on demand and see each cf-cache-status.
-  async fetch(request, env, ctx) {
-    const warmed = await Promise.all(TARGETS.map(warm));
-    return new Response(JSON.stringify({ warmed }, null, 2), {
-      headers: { 'content-type': 'application/json; charset=utf-8' },
-    });
+  async scheduled(event, env, ctx) { ctx.waitUntil(Promise.all(TARGETS.map(warm))); },
+  async fetch() {   // GET the worker URL to run on demand and see cf-cache-status
+    return new Response(JSON.stringify(await Promise.all(TARGETS.map(warm)), null, 2),
+      { headers:{ 'content-type':'application/json' } });
   },
 };
 ```
-
-**`warmer/wrangler.toml`**
 ```toml
+# wrangler.toml
 name = "cache-warmer"
 main = "src/warmer.js"
 compatibility_date = "2026-07-01"
-
 [triggers]
-crons = ["*/5 * * * *"]   # every 5 min; loosen to */10 or */15 if you prefer
-
+crons = ["*/5 * * * *"]
 [observability]
 enabled = true
 ```
-
-**Deploy**
 ```bash
-cd warmer
-npx wrangler login     # one-time; opens a browser to authorize the right CF account
-npx wrangler deploy    # deploys + registers the cron
+cd warmer && npx wrangler login && npx wrangler deploy
 ```
-
-**Smoke-test:** open the printed `*.workers.dev` URL → JSON of each asset; refresh once →
-most should flip to `"cache": "HIT"`. Confirm the cron in Cloudflare → Workers & Pages →
-cache-warmer → Observability/Logs (a line every 5 min).
-
-**Caveat (be honest with yourself):** a single cron colo can't guarantee *every* edge is
-individually warm, but warming the upper tier means all colos' first-hit pulls come from a
-warm tier. Its payoff is in field data, not the lab score.
+Smoke-test: open the printed `*.workers.dev` URL, refresh once → most assets flip to `HIT`.
 
 ---
 
-## Appendix B — quick reference: our measured wins (worked example)
+## Appendix B — measured results (worked example)
 
 | Fix | Before → After | Metric moved |
 |---|---|---|
 | Inline core CSS + defer all JS | render-blocking eliminated | LCP 7.0s → 1.8s |
-| Preload self-hosted LCP font + cache scroll-handler geometry | CLS 0.107 → **0** | CLS |
-| Right-size mobile hero (780w → 640w) | 37KB → 20KB | LCP bytes |
-| Right-size logo | 75KB → 2.5KB | transfer |
-| Cron cache-warmer | cold edge → warm first-hit | field/CrUX, not lab |
-| Argo/Cache Reserve on a static Pages site | — | **skipped (wrong lever)** |
+| Preload self-hosted LCP font | — | LCP render-delay |
+| **Metric-matched fallback fonts** | **CLS 0.107 → 0** | CLS |
+| Drop the font's `opsz` axis + unused weights | 141.8 → 90.8 KB | payload |
+| Right-size hero | 37 → 28.5 KB | LCP bytes |
+| Compress overlaid CTA background | 54.7 → 29.4 KB | payload |
+| Right-size logo | 75 → 2.5 KB | payload |
+| **HTML edge-cache (zone Cache Rule)** | DYNAMIC → HIT | TTFB / FCP |
+| **Totals** | **647 → 362 KB, 44 → 30 requests** | −44% |
+| Argo / Cache Reserve on a static Pages site | — | **skipped (wrong lever)** |
 
-*Note: the residual "~8s LCP on PSI Slow-4G" was diagnosed as the lab throttle, not a
-page defect — real-network users are far faster. Don't chase a simulated-network number
-into paying for infrastructure that won't move it.*
+**Final state:** Page Gym **97** (Fast 4G, no blocking) · GTmetrix **A / 95%** · CrUX
+**Passed** · RUM **LCP P75 608ms, CLS & INP 100% good** · PSI 61 on Slow 4G (simulation
+floor + accepted tag load).
+
+*Two regressions we caused and caught by measuring: a 640w hero that triggered a 1019w
+download, and `size-adjust` values derived from the wrong metric that made CLS worse.
+**Measure after every change — reasoning about it is not enough.***

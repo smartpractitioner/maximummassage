@@ -17,7 +17,7 @@
 | 0 | Session retrospective | ✅ |
 | 1 | Booking flow (Cal.com, conversions, Slack) | ✅ |
 | 2 | Copy + keyword theming (prenatal) | ✅ |
-| **3** | **Prenatal iteration (canonical template)** | 🔄 |
+| **3** | **Prenatal iteration (canonical template)** | ✅ (3.0–3.6 all complete) |
 | 4 | End-to-end test on prenatal | ⬜ |
 | 5 | Rollout: lymphatic, deep tissue, therapeutic | ⬜ |
 | 6.5 | Legal + consent (client sign-off model) | ✅ satisfied (MH) |
@@ -35,7 +35,7 @@
 | 3.2 | Social proof alignment | ✅ |
 | 3.3 | User review + iteration | ✅ |
 | 3.5 | Booking + quiz experience upgrade | ✅ Part A ✅ · Part B ✅ live + Jane sync + attribution confirmed |
-| 3.4 | Page-speed pass | 🔄 **iterative QA loop with Victor** (not done until he approves). **Target = GREEN metrics, not just "improved"** (launch-time page-experience assessment sticks). **CLS: the earlier "0" was a false signal from cold runs — fast runs showed 0.107; fixed systemically with computed metric-matched fallback fonts (`size-adjust`), pending re-measure.** Earlier: Mulish-800 preload + carousel-position cache. Hero mobile webp 37KB→20KB (780→640w). Forced reflow → one-time init only. **Remaining is LCP ~7.8s = Slow-4G LAB throttle, NOT cold-edge** (proven: runs vary 60–80 = TTFB variance, LCP magnitude is throttle-bound). Verified conclusion: **don't pay Argo/Cache Reserve** — they fix origin/eviction, irrelevant to a static Pages site. Free field-data lever: **cache-warmer Worker (cron) — ✅ deployed & smoke-tested (HIT confirmed)**. Minify/unused-JS = diagnostics, PSI says they *don't* affect the score. Loop: Victor re-runs PSI → approve. |
+| 3.4 | Page-speed pass | ✅ **done — Victor signed off 2026-07-18** after the full iterative QA loop. **CLS 0.107 → 0** (metric-matched `size-adjust` fallback fonts; confirmed by 4 independent sources). **Payload −44%** (647KB→362KB, 44→30 requests): font axis trim (Bricolage `opsz` dropped, 77→41KB), right-sized hero, CTA bg 54.7→29.4KB. **HTML edge-cached** via zone Cache Rule (`_headers` alone cannot — verified). Cache-warmer Worker deployed. **Field data passing: CrUX "Passed", RUM LCP P75 608ms, CLS/INP 100% good.** Residual PSI LCP ~8s = Slow-4G *simulation floor* + the 285KB GTM/gtag we deliberately keep — not a page defect. Method captured in [`docs/sop-page-speed.md`](docs/sop-page-speed.md). |
 | 3.6 | Lessons capture → SKILL.md | ✅ Part B gotchas recorded (E.164, dual cal-api-version, webhook uid-dedupe, SVG flags, Ads-conversion timing, 502-debug, page-speed) |
 
 *(3.5 was done ahead of 3.4 on purpose — speed is best measured after the new calendar JS landed.)*
@@ -44,7 +44,7 @@
 
 | Requirement | Status |
 |---|---|
-| Prenatal Phase 3 complete (3.1–3.6) | 🔄 3.5/3.6 done; **3.4 in the QA optimization loop** (working the full PSI list, Victor approves before done) |
+| Prenatal Phase 3 complete (3.1–3.6) | ✅ **all complete** — 3.4 signed off 2026-07-18 |
 | Prenatal Phase 4 E2E | 🔄 booking/attribution/GA4/Ads-tag/sheet/Jane all verified; gated on double-booking fix + Ads-conversion confirms day-1 |
 | Lymphatic — full treatment + E2E | ⬜ |
 | Deep tissue — full treatment + E2E | ⬜ |
